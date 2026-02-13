@@ -32,16 +32,38 @@ namespace MapLevelFramework
         private void PatchInternalClasses()
         {
             // SectionLayer_SunShadows 是 internal 类，无法用 [HarmonyPatch] 属性
-            var sunShadowType = AccessTools.TypeByName("Verse.SectionLayer_SunShadows");
-            if (sunShadowType != null)
+            try
             {
-                var original = AccessTools.Method(sunShadowType, "Regenerate");
-                if (original != null)
+                var sunShadowType = AccessTools.TypeByName("Verse.SectionLayer_SunShadows");
+                if (sunShadowType == null)
                 {
-                    var prefix = new HarmonyMethod(
-                        AccessTools.Method(typeof(Patches.Patch_SunShadows), nameof(Patches.Patch_SunShadows.Prefix)));
-                    HarmonyInstance.Patch(original, prefix: prefix);
+                    Log.Warning("[MapLevelFramework] SectionLayer_SunShadows type not found.");
+                    return;
                 }
+
+                // Patch Regenerate - 重新生成时跳过层级区域内的建筑阴影
+                var regenerate = AccessTools.Method(sunShadowType, "Regenerate");
+                if (regenerate != null)
+                {
+                    HarmonyInstance.Patch(regenerate,
+                        prefix: new HarmonyMethod(AccessTools.Method(
+                            typeof(Patches.Patch_SunShadows), nameof(Patches.Patch_SunShadows.Prefix))));
+                    Log.Message("[MapLevelFramework] Patched SectionLayer_SunShadows.Regenerate OK.");
+                }
+
+                // Patch DrawLayer - 绘制时跳过与层级区域重叠的 section 的阴影
+                var drawLayer = AccessTools.Method(sunShadowType, "DrawLayer");
+                if (drawLayer != null)
+                {
+                    HarmonyInstance.Patch(drawLayer,
+                        prefix: new HarmonyMethod(AccessTools.Method(
+                            typeof(Patches.Patch_SunShadows), nameof(Patches.Patch_SunShadows.DrawLayerPrefix))));
+                    Log.Message("[MapLevelFramework] Patched SectionLayer_SunShadows.DrawLayer OK.");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Log.Error($"[MapLevelFramework] Failed to patch SunShadows: {ex}");
             }
         }
     }

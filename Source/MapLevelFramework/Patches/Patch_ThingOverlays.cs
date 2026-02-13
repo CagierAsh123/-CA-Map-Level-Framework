@@ -54,4 +54,21 @@ namespace MapLevelFramework.Patches
             return !filter.ContainsBaseMapCell(t.Position);
         }
     }
+
+    /// <summary>
+    /// Pawn.DrawShadowAt 补丁 -
+    /// DynamicDrawManager 在 shouldDrawShadow 时直接调用此方法，
+    /// 绕过了 DynamicDrawPhase，需要单独 patch。
+    /// </summary>
+    [HarmonyPatch(typeof(Pawn), nameof(Pawn.DrawShadowAt))]
+    public static class Patch_Pawn_DrawShadowAt
+    {
+        public static bool Prefix(Pawn __instance)
+        {
+            var filter = LevelManager.ActiveRenderFilter;
+            if (filter == null) return true;
+            if (filter.hostMap != __instance.Map) return true;
+            return !filter.ContainsBaseMapCell(__instance.Position);
+        }
+    }
 }

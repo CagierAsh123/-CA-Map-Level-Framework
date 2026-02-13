@@ -14,24 +14,19 @@ namespace MapLevelFramework.Patches
     {
         private static readonly Color32 LowVertexColor = new Color32(0, 0, 0, 0);
         private static readonly FieldInfo sectionField;
-        private static readonly FieldInfo mapField;
+        private static bool loggedOnce;
 
         static Patch_SunShadows()
         {
             sectionField = typeof(SectionLayer).GetField("section",
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            mapField = typeof(MapDrawLayer).GetField("map",
-                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            if (sectionField == null)
+                Log.Error("[MapLevelFramework] Failed to find SectionLayer.section field!");
         }
 
         private static Section GetSection(SectionLayer layer)
         {
             return sectionField?.GetValue(layer) as Section;
-        }
-
-        private static Map GetMap(SectionLayer layer)
-        {
-            return mapField?.GetValue(layer) as Map;
         }
 
         public static bool Prefix(SectionLayer __instance)
@@ -44,8 +39,30 @@ namespace MapLevelFramework.Patches
             if (filter.hostMap != section.map) return true;
             if (!section.CellRect.Overlaps(filter.area)) return true;
 
+            if (!loggedOnce)
+            {
+                Log.Message("[MapLevelFramework] SunShadows Prefix intercepted regeneration.");
+                loggedOnce = true;
+            }
+
             RegenerateFiltered(__instance, section, filter);
             return false;
+        }
+
+        /// <summary>
+        /// DrawLayer 前缀 - 如果 section 与层级区域重叠，直接跳过绘制。
+        /// 这是一个保险措施：即使 Regenerate 没被触发，也能阻止阴影显示。
+        /// </summary>
+        public static bool DrawLayerPrefix(SectionLayer __instance)
+        {
+            var filter = LevelManager.ActiveRenderFilter;
+            if (filter == null) return true;
+
+            var section = GetSection(__instance);
+            if (section == null) return true;
+            if (filter.hostMap != section.map) return true;
+
+            return !section.CellRect.Overlaps(filter.area);
         }
 
         private static void RegenerateFiltered(SectionLayer layer, Section section, LevelData filter)
