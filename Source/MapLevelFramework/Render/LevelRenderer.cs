@@ -107,10 +107,10 @@ namespace MapLevelFramework.Render
         {
             switch (layerName)
             {
-                case "SectionLayer_Fog":
-                case "SectionLayer_FogOverlay":
+                case "SectionLayer_FogOfWar":
                 case "SectionLayer_Darkness":
                 case "SectionLayer_LightingOverlay":
+                case "SectionLayer_Snow":
                     return true;
                 default:
                     return false;

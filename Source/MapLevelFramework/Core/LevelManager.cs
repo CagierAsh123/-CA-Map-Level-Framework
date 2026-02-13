@@ -285,6 +285,9 @@ namespace MapLevelFramework
                 mapParent.ExtraGenStepDefs, null, true, false);
             Find.World.pocketMaps.Add(mapParent);
 
+            // 清除子地图迷雾（层级地图不需要战争迷雾）
+            ClearFog(levelMap);
+
             // 共享天气/光照（如果配置了）
             if (data.levelDef == null || data.levelDef.shareWeather)
             {
@@ -306,6 +309,18 @@ namespace MapLevelFramework
             catch (Exception ex)
             {
                 Log.Warning($"[MapLevelFramework] Failed to share environment: {ex.Message}");
+            }
+        }
+
+        private void ClearFog(Map levelMap)
+        {
+            if (levelMap?.fogGrid == null) return;
+            foreach (IntVec3 cell in levelMap.AllCells)
+            {
+                if (cell.InBounds(levelMap) && levelMap.fogGrid.IsFogged(cell))
+                {
+                    levelMap.fogGrid.Unfog(cell);
+                }
             }
         }
 
