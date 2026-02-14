@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using RimWorld;
 using Verse;
+using Verse.AI;
 
 namespace MapLevelFramework
 {
@@ -27,6 +28,31 @@ namespace MapLevelFramework
 
             CreateOrUpdateLevel(mgr);
         }
+
+        // ========== 右键菜单 ==========
+
+        public override IEnumerable<FloatMenuOption> GetFloatMenuOptions(Pawn selPawn)
+        {
+            foreach (var opt in base.GetFloatMenuOptions(selPawn))
+                yield return opt;
+
+            // pawn 必须和楼梯在同一张地图
+            if (selPawn.Map != this.Map) yield break;
+
+            if (!StairTransferUtility.TryGetTransferTarget(this, out Map destMap, out IntVec3 destPos))
+                yield break;
+
+            bool isOnSubMap = LevelManager.IsLevelMap(this.Map, out _, out _);
+            string label = isOnSubMap ? "下楼" : "上楼";
+
+            yield return new FloatMenuOption(label, delegate
+            {
+                Job job = JobMaker.MakeJob(MLF_JobDefOf.MLF_UseStairs, this);
+                selPawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
+            });
+        }
+
+        // ========== 层级创建 ==========
 
         /// <summary>
         /// 扫描有屋顶的连通区域，创建或更新层级。
@@ -68,6 +94,10 @@ namespace MapLevelFramework
                 // 刷新子地图地形（新增的格子铺地板）
                 RefreshLevelTerrain(existing, hostMap);
                 existing.RebuildActiveSections();
+
+                // 在子地图同位置放置楼梯（如果还没有）
+                SpawnStairsOnLevel(existing.LevelMap, Position);
+
                 Log.Message($"[MLF] Updated level {targetElevation}: total {existing.usableCells.Count} cells, bounds={existing.area}");
             }
             else
@@ -78,9 +108,32 @@ namespace MapLevelFramework
                 {
                     level.usableCells = roofedCells;
                     level.RebuildActiveSections();
+
+                    // 在子地图同位置放置楼梯
+                    SpawnStairsOnLevel(level.LevelMap, Position);
+
                     Log.Message($"[MLF] Created level {targetElevation}: {roofedCells.Count} cells, bounds={bounds}");
                 }
             }
+        }
+
+        /// <summary>
+        /// 在子地图的指定位置放置楼梯（如果该位置还没有楼梯）。
+        /// </summary>
+        private void SpawnStairsOnLevel(Map levelMap, IntVec3 pos)
+        {
+            if (levelMap == null || !pos.InBounds(levelMap)) return;
+
+            // 检查该位置是否已有楼梯
+            var things = levelMap.thingGrid.ThingsListAtFast(pos);
+            for (int i = 0; i < things.Count; i++)
+            {
+                if (things[i] is Building_Stairs) return;
+            }
+
+            var stairs = (Building_Stairs)ThingMaker.MakeThing(this.def, this.Stuff);
+            stairs.targetElevation = this.targetElevation;
+            GenSpawn.Spawn(stairs, pos, levelMap);
         }
 
         /// <summary>
@@ -132,7 +185,13 @@ namespace MapLevelFramework
             TerrainDef floor = DefDatabase<TerrainDef>.GetNamedSilentFail("WoodPlankFloor")
                 ?? TerrainDefOf.WoodPlankFloor;
             TerrainDef openAir = DefDatabase<TerrainDef>.GetNamedSilentFail("MLF_OpenAir");
+            TerrainDef levelBase = DefDatabase<TerrainDef>.GetNamedSilentFail("MLF_LevelBase");
             if (openAir == null) return;
+
+            // 获取 underGrid 用于设置底层地形
+            var underGridField = typeof(TerrainGrid).GetField("underGrid",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            TerrainDef[] underGrid = underGridField?.GetValue(levelMap.terrainGrid) as TerrainDef[];
 
             foreach (IntVec3 cell in level.area)
             {
@@ -143,6 +202,12 @@ namespace MapLevelFramework
                     if (levelMap.terrainGrid.TerrainAt(cell) == openAir)
                     {
                         levelMap.terrainGrid.SetTerrain(cell, floor);
+                    }
+                    // 确保底层是 LevelBase（支持所有地板建造）
+                    if (underGrid != null && levelBase != null)
+                    {
+                        int index = levelMap.cellIndices.CellToIndex(cell);
+                        underGrid[index] = levelBase;
                     }
                 }
                 else

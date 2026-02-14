@@ -9,3 +9,4 @@ B:\rimworld-code\_SourceCode\Develop\多层\【CA】地图多层框架 Map Level
 B:\rimworld-code\_SourceCode\Develop\多层\【CA】地图多层框架 Map Level Framework\Source\MapLevelFramework\obj\Debug\net472\MapLevel.BA759BDA.Up2Date
 B:\rimworld-code\_SourceCode\Develop\多层\【CA】地图多层框架 Map Level Framework\Source\MapLevelFramework\obj\Debug\net472\MapLevelFramework.dll
 B:\rimworld-code\_SourceCode\Develop\多层\【CA】地图多层框架 Map Level Framework\Source\MapLevelFramework\obj\Debug\net472\MapLevelFramework.pdb
+B:\rimworld-code\_SourceCode\Develop\多层\【CA】地图多层框架 Map Level Framework\Source\MapLevelFramework\obj\Debug\net472\MapLevelFramework.sourcelink.json

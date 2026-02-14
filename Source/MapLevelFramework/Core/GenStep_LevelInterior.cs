@@ -31,6 +31,7 @@ namespace MapLevelFramework
             TerrainDef floorTerrain = DefDatabase<TerrainDef>.GetNamedSilentFail(floorDefName)
                 ?? TerrainDefOf.WoodPlankFloor;
             TerrainDef openAir = DefDatabase<TerrainDef>.GetNamedSilentFail("MLF_OpenAir");
+            TerrainDef levelBase = DefDatabase<TerrainDef>.GetNamedSilentFail("MLF_LevelBase");
 
             Map hostMap = lmp.sourceMap;
             CellRect area = lmp.area;
@@ -56,10 +57,11 @@ namespace MapLevelFramework
                 if (hasRoof)
                 {
                     terrainGrid.SetTerrain(cell, floorTerrain);
-                    if (underGrid != null && openAir != null)
+                    // 底层设为 LevelBase（支持 Heavy affordance），而非 OpenAir
+                    if (underGrid != null && levelBase != null)
                     {
                         int index = map.cellIndices.CellToIndex(cell);
-                        underGrid[index] = openAir;
+                        underGrid[index] = levelBase;
                     }
                 }
                 // else: 已经是 OpenAir

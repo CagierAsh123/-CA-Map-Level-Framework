@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using RimWorld.Planet;
 using Verse;
 
@@ -136,6 +137,23 @@ namespace MapLevelFramework
             Scribe_Defs.Look(ref levelDef, "levelDef");
             Scribe_References.Look(ref mapParent, "mapParent");
             // hostMap 由 LevelManager 在加载后重新设置
+
+            // usableCells 序列化
+            if (Scribe.mode == LoadSaveMode.Saving)
+            {
+                var cellList = usableCells != null ? new List<IntVec3>(usableCells) : null;
+                Scribe_Collections.Look(ref cellList, "usableCells", LookMode.Value);
+            }
+            else
+            {
+                List<IntVec3> cellList = null;
+                Scribe_Collections.Look(ref cellList, "usableCells", LookMode.Value);
+                if (cellList != null)
+                {
+                    usableCells = new HashSet<IntVec3>(cellList);
+                    RebuildActiveSections();
+                }
+            }
         }
     }
 }

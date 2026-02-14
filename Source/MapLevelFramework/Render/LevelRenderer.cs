@@ -26,8 +26,27 @@ namespace MapLevelFramework.Render
         // 层级内容的 Y 偏移，确保渲染在主地图地形之上
         private const float YOffset = 0.5f;
 
+        // render queue 提升量：确保子地图地形材质在基地图地形之后绘制。
+        // RimWorld 地形 shader 通常 ZWrite Off（边缘混合需要），
+        // 导致 render queue 高的材质覆盖低的，无视深度。
+        private const int RenderQueueElevation = 500;
+
+        // 材质副本缓存：原始材质 → 提升 render queue 后的副本
+        private static Dictionary<Material, Material> elevatedMaterials = new Dictionary<Material, Material>();
+
+        // 需要跳过绘制的材质（MLF_OpenAir 等虚空地形，不应覆盖基地图）
+        private static HashSet<Material> skipMaterials;
+
         // 跟踪哪些子地图已完成首次全量重建
         private static HashSet<int> initializedMaps = new HashSet<int>();
+
+        /// <summary>
+        /// 清除指定地图的初始化缓存，下一帧会触发 RegenerateEverythingNow。
+        /// </summary>
+        public static void ClearInitializedMap(int mapId)
+        {
+            initializedMaps.Remove(mapId);
+        }
 
         static LevelRenderer()
         {
@@ -41,8 +60,13 @@ namespace MapLevelFramework.Render
 
         /// <summary>
         /// 更新子地图的 section mesh。
-        /// 调用 MapMeshDrawerUpdate_First 处理全局脏标记，
-        /// 然后手动更新所有活跃 section（确保不遗漏视野外的 section）。
+        ///
+        /// 关键问题：Game.UpdatePlay 对所有地图调用 MapUpdate → MapMeshDrawerUpdate_First，
+        /// 其中 TryUpdate(viewRect) 会清零 dirtyFlags。如果 section 不在 viewRect 内，
+        /// layer.Dirty 被设为 true 但不会 Regenerate。而我们的 DrawLevelMapMesh 不走
+        /// DrawSection（它会检查 anyLayerDirty 并补充重生成），所以必须手动处理。
+        ///
+        /// 方案：先处理残留的 dirtyFlags（如果有），再检查每个 layer.Dirty 并重生成。
         /// </summary>
         public static void UpdateLevelMapSections(Map levelMap, LevelData level)
         {
@@ -60,32 +84,91 @@ namespace MapLevelFramework.Render
                 return;
             }
 
-            // 让子地图的 MapDrawer 处理全局脏标记和 section 更新
-            levelMap.mapDrawer.MapMeshDrawerUpdate_First();
-
-            // 补充：确保所有活跃 section 都被更新（MapMeshDrawerUpdate_First 可能跳过视野外的）
+            int lenX = sections.GetLength(0);
+            int lenZ = sections.GetLength(1);
             CellRect fullRect = new CellRect(0, 0, levelMap.Size.x, levelMap.Size.z);
-            for (int x = 0; x < sections.GetLength(0); x++)
+
+            for (int x = 0; x < lenX; x++)
             {
-                for (int z = 0; z < sections.GetLength(1); z++)
+                for (int z = 0; z < lenZ; z++)
                 {
                     Section section = sections[x, z];
-                    if (section == null) continue;
-                    if (!level.IsSectionActive(x, z)) continue;
-                    section.TryUpdate(fullRect);
+                    if (section == null || !level.IsSectionActive(x, z)) continue;
+
+                    // 1. 如果还有未处理的 dirtyFlags（理论上 Game.MapUpdate 已处理，但以防万一）
+                    if (section.dirtyFlags != 0UL)
+                    {
+                        section.TryUpdate(fullRect);
+                    }
+
+                    // 2. 补充重生成：Game.MapUpdate 的 TryUpdate(viewRect) 可能只标记了
+                    //    layer.Dirty 而没有 Regenerate（section 不在相机视野内时）。
+                    //    我们的 DrawLevelMapMesh 不走 DrawSection，所以必须在这里处理。
+                    List<SectionLayer> layers = layersField?.GetValue(section) as List<SectionLayer>;
+                    if (layers != null)
+                    {
+                        bool anyRegenerated = false;
+                        for (int i = 0; i < layers.Count; i++)
+                        {
+                            if (layers[i].Dirty)
+                            {
+                                try { layers[i].Regenerate(); }
+                                catch (Exception) { }
+                                layers[i].Dirty = false;
+                                anyRegenerated = true;
+                            }
+                        }
+                        if (anyRegenerated)
+                        {
+                            for (int i = 0; i < layers.Count; i++)
+                            {
+                                layers[i].RefreshSubMeshBounds();
+                            }
+                        }
+                    }
                 }
             }
         }
 
         /// <summary>
+        /// 初始化需要跳过的材质集合（延迟初始化，等 DefDatabase 就绪）。
+        /// </summary>
+        private static void EnsureSkipMaterialsInit()
+        {
+            if (skipMaterials != null) return;
+            skipMaterials = new HashSet<Material>();
+            TerrainDef openAir = DefDatabase<TerrainDef>.GetNamedSilentFail("MLF_OpenAir");
+            if (openAir?.DrawMatSingle != null) skipMaterials.Add(openAir.DrawMatSingle);
+        }
+
+        /// <summary>
+        /// 获取提升 render queue 的材质副本。
+        /// RimWorld 地形 shader 通常 ZWrite Off，render queue 决定绘制顺序。
+        /// 子地图材质需要更高的 queue 才能覆盖基地图地形。
+        /// </summary>
+        private static Material GetElevatedMaterial(Material original)
+        {
+            if (original == null) return null;
+            if (!elevatedMaterials.TryGetValue(original, out Material elevated))
+            {
+                elevated = new Material(original);
+                elevated.renderQueue = original.renderQueue + RenderQueueElevation;
+                elevatedMaterials[original] = elevated;
+            }
+            return elevated;
+        }
+
+        /// <summary>
         /// 渲染子地图的静态 mesh。
         /// 只绘制包含 usableCell 的 section，精确避免间隙区域的 OpenAir 覆盖基地图。
+        /// 使用提升 render queue 的材质副本，确保子地图地形覆盖基地图地形。
         /// </summary>
         public static void DrawLevelMapMesh(Map levelMap, LevelData level)
         {
             if (levelMap?.mapDrawer == null) return;
             if (sectionsField == null || layersField == null) return;
 
+            EnsureSkipMaterialsInit();
             Vector3 drawOffset = new Vector3(0f, YOffset, 0f);
 
             Section[,] sections = sectionsField.GetValue(levelMap.mapDrawer) as Section[,];
@@ -115,10 +198,14 @@ namespace MapLevelFramework.Render
                             if (subMesh.mesh == null || subMesh.material == null ||
                                 subMesh.mesh.vertexCount <= 0) continue;
 
+                            // 跳过 MLF_OpenAir 等虚空地形材质，不覆盖基地图
+                            if (skipMaterials != null && skipMaterials.Contains(subMesh.material))
+                                continue;
+
                             Graphics.DrawMesh(
                                 subMesh.mesh,
                                 Matrix4x4.TRS(drawOffset, Quaternion.identity, Vector3.one),
-                                subMesh.material,
+                                GetElevatedMaterial(subMesh.material),
                                 0
                             );
                         }

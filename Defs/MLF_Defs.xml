@@ -34,6 +34,27 @@
     </affordances>
   </TerrainDef>
 
+  <!-- 楼层基底地形 - 可用区域的底层，支持所有地板建造 -->
+  <TerrainDef>
+    <defName>MLF_LevelBase</defName>
+    <label>楼层基底</label>
+    <description>楼层的结构基底，可在上面铺设任意地板。</description>
+    <texturePath>Terrain/Surfaces/GenericFloorTile</texturePath>
+    <edgeType>Hard</edgeType>
+    <renderPrecedence>200</renderPrecedence>
+    <passability>Standable</passability>
+    <layerable>false</layerable>
+    <scatterType>None</scatterType>
+    <fertility>0</fertility>
+    <color>(0.45, 0.45, 0.45)</color>
+    <affordances>
+      <li>Light</li>
+      <li>Medium</li>
+      <li>Heavy</li>
+      <li>SmoothableStone</li>
+    </affordances>
+  </TerrainDef>
+
   <!-- GenStep 定义 -->
   <GenStepDef>
     <defName>MLF_LevelInterior</defName>
@@ -63,6 +84,15 @@
     <neverMultiSelect>true</neverMultiSelect>
     <saved>true</saved>
   </WorldObjectDef>
+
+  <!-- ========== Job ========== -->
+
+  <JobDef>
+    <defName>MLF_UseStairs</defName>
+    <driverClass>MapLevelFramework.JobDriver_UseStairs</driverClass>
+    <reportString>使用楼梯。</reportString>
+    <allowOpportunisticPrefix>false</allowOpportunisticPrefix>
+  </JobDef>
 
   <!-- ========== 建筑 ========== -->
 
