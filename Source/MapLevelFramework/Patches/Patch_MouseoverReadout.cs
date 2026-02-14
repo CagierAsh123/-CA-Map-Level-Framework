@@ -1,17 +1,13 @@
 using HarmonyLib;
+using UnityEngine;
 using Verse;
 
 namespace MapLevelFramework.Patches
 {
     /// <summary>
     /// MouseoverReadout.MouseoverReadoutOnGUI 补丁 - 聚焦层级时，
-    /// 临时切换 currentMapIndex 到子地图，使底部信息栏显示子地图信息。
-    ///
-    /// MouseoverReadoutOnGUI 内部大量使用 Find.CurrentMap 和 UI.MouseCell()。
-    /// UI.MouseCell() 已被 Patch_UI_MouseCell 转换到子地图坐标，
-    /// 但 Find.CurrentMap 仍指向主地图，导致查询错误的地形/物体。
-    ///
-    /// 使用 Finalizer 确保即使发生异常也能恢复。
+    /// 仅当鼠标在层级区域内时，临时切换 currentMapIndex 到子地图。
+    /// 同尺寸子地图方案：坐标一致，只需切换地图。
     /// </summary>
     [HarmonyPatch(typeof(MouseoverReadout), "MouseoverReadoutOnGUI")]
     public static class Patch_MouseoverReadout_OnGUI
@@ -31,7 +27,9 @@ namespace MapLevelFramework.Patches
             var level = mgr.GetLevel(mgr.FocusedElevation);
             if (level?.LevelMap == null) return;
 
-            // 临时切换到子地图（直接设 currentMapIndex，绕过 Notify_SwitchedMap）
+            IntVec3 cell = IntVec3Utility.ToIntVec3(UI.MouseMapPosition());
+            if (!level.ContainsBaseMapCell(cell)) return;
+
             int subMapIndex = Find.Maps.IndexOf(level.LevelMap);
             if (subMapIndex >= 0)
             {

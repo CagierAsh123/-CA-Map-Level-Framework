@@ -4,8 +4,8 @@
   <!-- 层级地图专用 Biome（无动物/植物/天气） -->
   <BiomeDef>
     <defName>MLF_LevelBiome</defName>
-    <label>level map biome</label>
-    <description>An interior biome for level maps.</description>
+    <label>层级地图生态</label>
+    <description>层级地图专用的室内生态环境。</description>
     <generatesNaturally>false</generatesNaturally>
     <animalDensity>0</animalDensity>
     <plantDensity>0</plantDensity>
@@ -15,6 +15,24 @@
       <Clear>1</Clear>
     </baseWeatherCommonalities>
   </BiomeDef>
+
+  <!-- 无地板地形（露天/空气） - 上层没有地板的格子 -->
+  <TerrainDef>
+    <defName>MLF_OpenAir</defName>
+    <label>露天</label>
+    <description>这里没有地板——下方是露天空间。</description>
+    <texturePath>Terrain/Surfaces/GenericFloorTile</texturePath>
+    <edgeType>Hard</edgeType>
+    <renderPrecedence>1</renderPrecedence>
+    <passability>Impassable</passability>
+    <layerable>false</layerable>
+    <scatterType>None</scatterType>
+    <fertility>0</fertility>
+    <color>(0.15, 0.15, 0.15)</color>
+    <affordances>
+      <li>Light</li>
+    </affordances>
+  </TerrainDef>
 
   <!-- GenStep 定义 -->
   <GenStepDef>
@@ -38,12 +56,47 @@
   <!-- 层级子地图的 WorldObjectDef -->
   <WorldObjectDef>
     <defName>MLF_LevelMap</defName>
-    <label>level map</label>
+    <label>层级地图</label>
     <worldObjectClass>MapLevelFramework.LevelMapParent</worldObjectClass>
     <mapGenerator>MLF_LevelMapGenerator</mapGenerator>
     <selectable>false</selectable>
     <neverMultiSelect>true</neverMultiSelect>
     <saved>true</saved>
   </WorldObjectDef>
+
+  <!-- ========== 建筑 ========== -->
+
+  <!-- 楼梯 - 连接地面层和二楼 -->
+  <ThingDef ParentName="BuildingBase">
+    <defName>MLF_Stairs</defName>
+    <label>楼梯</label>
+    <description>连接地面层和上层的楼梯。在有屋顶的房间内建造，即可创建二楼。</description>
+    <thingClass>MapLevelFramework.Building_Stairs</thingClass>
+    <graphicData>
+      <texPath>楼梯</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <drawSize>(1,1)</drawSize>
+    </graphicData>
+    <size>(1,1)</size>
+    <rotatable>false</rotatable>
+    <altitudeLayer>Building</altitudeLayer>
+    <passability>Standable</passability>
+    <pathCost>0</pathCost>
+    <blockWind>false</blockWind>
+    <castEdgeShadows>false</castEdgeShadows>
+    <fillPercent>0.15</fillPercent>
+    <statBases>
+      <MaxHitPoints>200</MaxHitPoints>
+      <WorkToBuild>1000</WorkToBuild>
+      <Flammability>0.5</Flammability>
+    </statBases>
+    <costList>
+      <WoodLog>30</WoodLog>
+    </costList>
+    <designationCategory>Structure</designationCategory>
+    <building>
+      <isInert>true</isInert>
+    </building>
+  </ThingDef>
 
 </Defs>

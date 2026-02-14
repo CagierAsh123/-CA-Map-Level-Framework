@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
 using RimWorld.Planet;
+using UnityEngine;
 using Verse;
 
 namespace MapLevelFramework
@@ -110,8 +111,8 @@ namespace MapLevelFramework
                 hostMap = map
             };
 
-            // 确定子地图尺寸
-            IntVec3 size = mapSize ?? new IntVec3(area.Width, 1, area.Height);
+            // 子地图与基地图同尺寸，坐标系完全一致，无需任何坐标转换
+            IntVec3 size = map.Size;
 
             // 生成子地图
             try
@@ -271,7 +272,7 @@ namespace MapLevelFramework
 
         /// <summary>
         /// 获取当前应该用于交互的 Map。
-        /// 如果有聚焦的层级，返回该层级的 Map；否则返回 Find.CurrentMap。
+        /// 仅当鼠标在层级区域内时返回子地图，否则返回主地图。
         /// </summary>
         public static Map CurrentInteractionMap
         {
@@ -281,8 +282,18 @@ namespace MapLevelFramework
                 if (baseMap == null) return null;
 
                 var mgr = GetManager(baseMap);
-                if (mgr != null && mgr.IsFocusingLevel)
-                    return mgr.FocusedMap;
+                if (mgr == null || !mgr.IsFocusingLevel) return baseMap;
+
+                var level = mgr.GetLevel(mgr.FocusedElevation);
+                if (level?.LevelMap == null) return baseMap;
+
+                try
+                {
+                    IntVec3 baseCell = IntVec3Utility.ToIntVec3(UI.MouseMapPosition());
+                    if (level.ContainsBaseMapCell(baseCell))
+                        return level.LevelMap;
+                }
+                catch { }
 
                 return baseMap;
             }
@@ -336,6 +347,7 @@ namespace MapLevelFramework
             mapParent.hostManager = this;
             mapParent.levelDef = data.levelDef;
             mapParent.elevation = data.elevation;
+            mapParent.area = data.area;
             mapParent.Tile = 0;
             mapParent.sourceMap = map;
 

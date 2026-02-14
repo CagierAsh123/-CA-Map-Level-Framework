@@ -41,11 +41,9 @@ namespace MapLevelFramework.Render
 
         /// <summary>
         /// 更新子地图的 section mesh。
-        /// 原版 MapMeshDrawerUpdate_First 用摄像机 ViewRect 做裁剪，
-        /// 但子地图的本地坐标和摄像机视口不重叠，导致 dirty section 永远不会重建。
-        /// 这里手动用覆盖整个子地图的 rect 来触发更新。
+        /// 只更新包含 usableCell 的 section。
         /// </summary>
-        public static void UpdateLevelMapSections(Map levelMap)
+        public static void UpdateLevelMapSections(Map levelMap, LevelData level)
         {
             if (levelMap?.mapDrawer == null) return;
 
@@ -54,7 +52,6 @@ namespace MapLevelFramework.Render
 
             int mapId = levelMap.uniqueID;
 
-            // 首次聚焦时全量重建
             if (!initializedMaps.Contains(mapId))
             {
                 levelMap.mapDrawer.RegenerateEverythingNow();
@@ -62,7 +59,6 @@ namespace MapLevelFramework.Render
                 return;
             }
 
-            // 后续帧：用覆盖整个子地图的 rect 更新 dirty section
             CellRect fullRect = new CellRect(0, 0, levelMap.Size.x, levelMap.Size.z);
             for (int x = 0; x < sections.GetLength(0); x++)
             {
@@ -70,20 +66,22 @@ namespace MapLevelFramework.Render
                 {
                     Section section = sections[x, z];
                     if (section == null) continue;
+                    if (!level.IsSectionActive(x, z)) continue;
                     section.TryUpdate(fullRect);
                 }
             }
         }
 
         /// <summary>
-        /// 渲染子地图的静态 mesh（地形、建筑等 SectionLayer）。
+        /// 渲染子地图的静态 mesh。
+        /// 只绘制包含 usableCell 的 section，精确避免间隙区域的 OpenAir 覆盖基地图。
         /// </summary>
-        public static void DrawLevelMapMesh(Map levelMap, Vector3 drawOffset)
+        public static void DrawLevelMapMesh(Map levelMap, LevelData level)
         {
             if (levelMap?.mapDrawer == null) return;
             if (sectionsField == null || layersField == null) return;
 
-            drawOffset.y += YOffset;
+            Vector3 drawOffset = new Vector3(0f, YOffset, 0f);
 
             Section[,] sections = sectionsField.GetValue(levelMap.mapDrawer) as Section[,];
             if (sections == null) return;
@@ -94,6 +92,7 @@ namespace MapLevelFramework.Render
                 {
                     Section section = sections[x, z];
                     if (section == null) continue;
+                    if (!level.IsSectionActive(x, z)) continue;
 
                     List<SectionLayer> layers = layersField.GetValue(section) as List<SectionLayer>;
                     if (layers == null) continue;
@@ -124,50 +123,35 @@ namespace MapLevelFramework.Render
         }
 
         /// <summary>
-        /// 渲染子地图的动态 Thing（Pawn、物品等）。
-        /// 参照原版 DynamicDrawManager.DrawDynamicThings 的三阶段流程。
+        /// 渲染子地图的动态 Thing。
+        /// 只绘制 usableCells 内的 Thing。
         /// </summary>
         public static void DrawLevelDynamicThings(Map levelMap, LevelData level)
         {
             if (levelMap?.dynamicDrawManager == null) return;
 
-            Vector3 offset = LevelCoordUtility.GetDrawOffset(level);
-            offset.y += YOffset;
-
             IReadOnlyList<Thing> drawThings = levelMap.dynamicDrawManager.DrawThings;
             int count = drawThings.Count;
             if (count == 0) return;
 
-            // Phase 1: EnsureInitialized
-            for (int i = 0; i < count; i++)
-            {
-                try
-                {
-                    drawThings[i].DynamicDrawPhase(DrawPhase.EnsureInitialized);
-                }
-                catch (Exception) { }
-            }
+            var usable = level.usableCells;
 
-            // Phase 2: ParallelPreDraw (单线程执行，避免跨地图线程问题)
-            for (int i = 0; i < count; i++)
-            {
-                try
-                {
-                    drawThings[i].DynamicDrawPhase(DrawPhase.ParallelPreDraw);
-                }
-                catch (Exception) { }
-            }
-
-            // Phase 3: Draw + Shadows
             for (int i = 0; i < count; i++)
             {
                 Thing thing = drawThings[i];
                 try
                 {
-                    Vector3 drawLoc = thing.DrawPos + offset;
+                    if (thing == null || thing.Destroyed) continue;
+                    if (usable != null && !usable.Contains(thing.Position)) continue;
+                    if (usable == null && !level.area.Contains(thing.Position)) continue;
+
+                    thing.DynamicDrawPhase(DrawPhase.EnsureInitialized);
+                    thing.DynamicDrawPhase(DrawPhase.ParallelPreDraw);
+
+                    Vector3 drawLoc = thing.DrawPos;
+                    drawLoc.y += YOffset;
                     thing.DynamicDrawPhaseAt(DrawPhase.Draw, drawLoc, false);
 
-                    // Pawn 阴影
                     Pawn pawn = thing as Pawn;
                     if (pawn != null)
                     {
@@ -181,7 +165,7 @@ namespace MapLevelFramework.Render
         /// <summary>
         /// 渲染子地图的覆盖层：designations、overlays、flecks 等。
         /// </summary>
-        public static void DrawLevelOverlays(Map levelMap, LevelData level)
+        public static void DrawLevelOverlays(Map levelMap)
         {
             if (levelMap == null) return;
 

@@ -52,11 +52,11 @@ namespace MapLevelFramework.Patches
             Map subMap = level.LevelMap;
 
             // dragBox 的 LeftX/RightX/BotZ/TopZ 是主地图世界坐标
-            // 转换为子地图 CellRect
-            int minX = Mathf.FloorToInt(dragBox.LeftX) - level.area.minX;
-            int maxX = Mathf.FloorToInt(dragBox.RightX) - level.area.minX;
-            int minZ = Mathf.FloorToInt(dragBox.BotZ) - level.area.minZ;
-            int maxZ = Mathf.FloorToInt(dragBox.TopZ) - level.area.minZ;
+            // 同尺寸子地图方案：坐标一致，直接使用
+            int minX = Mathf.FloorToInt(dragBox.LeftX);
+            int maxX = Mathf.FloorToInt(dragBox.RightX);
+            int minZ = Mathf.FloorToInt(dragBox.BotZ);
+            int maxZ = Mathf.FloorToInt(dragBox.TopZ);
 
             // 收集子地图中可选的物体
             var things = new HashSet<Thing>();

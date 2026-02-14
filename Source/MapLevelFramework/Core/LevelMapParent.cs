@@ -27,6 +27,11 @@ namespace MapLevelFramework
         /// </summary>
         public int elevation;
 
+        /// <summary>
+        /// 该层级在主地图上覆盖的区域（冗余存储，GenStep 生成时 LevelData 尚未入字典）。
+        /// </summary>
+        public CellRect area;
+
 
 
         public override Material Material
@@ -52,6 +57,7 @@ namespace MapLevelFramework
             // hostManager is restored via LevelData -> mapParent linkage after load
             Scribe_Defs.Look(ref levelDef, "levelDef");
             Scribe_Values.Look(ref elevation, "elevation", 0);
+            Scribe_Values.Look(ref area, "area");
         }
     }
 }

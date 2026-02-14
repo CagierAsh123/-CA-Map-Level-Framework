@@ -39,7 +39,7 @@ namespace MapLevelFramework
         /// <summary>
         /// 该层级的默认地形 Def 名称。
         /// </summary>
-        public string defaultTerrain = "Concrete";
+        public string defaultTerrain = "WoodPlankFloor";
 
         /// <summary>
         /// 该层级的标签，用于 API 查询过滤。

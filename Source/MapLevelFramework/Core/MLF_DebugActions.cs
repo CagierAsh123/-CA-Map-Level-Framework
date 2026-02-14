@@ -25,6 +25,16 @@ namespace MapLevelFramework
             CreateTestLevel(-1, "B1 Test");
         }
 
+        [DebugAction("Map Level Framework", "Focus 1F",
+            actionType = DebugActionType.Action,
+            allowedGameStates = AllowedGameStates.PlayingOnMap)]
+        public static void Focus1F()
+        {
+            var mgr = LevelManager.GetManager(Find.CurrentMap);
+            if (mgr == null) return;
+            mgr.FocusLevel(1);
+        }
+
         [DebugAction("Map Level Framework", "Focus Ground (0)",
             actionType = DebugActionType.Action,
             allowedGameStates = AllowedGameStates.PlayingOnMap)]

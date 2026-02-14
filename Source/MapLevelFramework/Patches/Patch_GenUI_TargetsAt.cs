@@ -8,8 +8,7 @@ namespace MapLevelFramework.Patches
 {
     /// <summary>
     /// GenUI.TargetsAt 补丁 - 聚焦层级时，从子地图获取点击目标。
-    /// 
-    /// 参照 VMF 的 Patch_GenUI_TargetsAt。
+    /// 同尺寸子地图方案：坐标一致，无需转换。
     /// </summary>
     [HarmonyPatch(typeof(GenUI), "TargetsAt")]
     public static class Patch_GenUI_TargetsAt
@@ -27,21 +26,13 @@ namespace MapLevelFramework.Patches
             var level = mgr.GetLevel(mgr.FocusedElevation);
             if (level?.LevelMap == null) return true;
 
-            // 检查点击位置是否在 area 内
-            IntVec3 baseCell = IntVec3Utility.ToIntVec3(clickPos);
-            if (!level.ContainsBaseMapCell(baseCell)) return true;
+            IntVec3 cell = IntVec3Utility.ToIntVec3(clickPos);
+            if (!level.ContainsBaseMapCell(cell)) return true;
+            if (!cell.InBounds(level.LevelMap)) return true;
 
-            // 转换坐标到子地图
-            Vector3 levelPos = clickPos.ToLevelCoord(level);
-            IntVec3 levelCell = IntVec3Utility.ToIntVec3(levelPos);
-
-            if (!levelCell.InBounds(level.LevelMap)) return true;
-
-            // 从子地图获取目标
             var results = new List<LocalTargetInfo>();
 
-            // 获取该格子的 Things
-            foreach (Thing thing in level.LevelMap.thingGrid.ThingsAt(levelCell))
+            foreach (Thing thing in level.LevelMap.thingGrid.ThingsAt(cell))
             {
                 if (clickParams.CanTarget(thing, source))
                 {
@@ -49,12 +40,11 @@ namespace MapLevelFramework.Patches
                 }
             }
 
-            // 如果不是仅 Things，也返回格子本身
             if (!thingsOnly && results.Count == 0)
             {
-                if (levelCell.InBounds(level.LevelMap) && levelCell.Walkable(level.LevelMap))
+                if (cell.Walkable(level.LevelMap))
                 {
-                    results.Add(levelCell);
+                    results.Add(cell);
                 }
             }
 

@@ -8,11 +8,7 @@ namespace MapLevelFramework.Patches
 {
     /// <summary>
     /// FloatMenuMakerMap.GetOptions 补丁 - 聚焦层级时，重定向右键菜单到子地图。
-    ///
-    /// GetOptions 内部使用 Find.CurrentMap 和 clickPos。
-    /// 聚焦层级时需要：
-    /// 1. 将 clickPos 转换到子地图坐标
-    /// 2. 临时切换 currentMapIndex 到子地图
+    /// 同尺寸子地图方案：坐标一致，只需切换 currentMapIndex。
     /// </summary>
     [HarmonyPatch(typeof(FloatMenuMakerMap), "GetOptions",
         new[] { typeof(List<Pawn>), typeof(Vector3), typeof(FloatMenuContext) },
@@ -21,7 +17,7 @@ namespace MapLevelFramework.Patches
     {
         private static sbyte savedMapIndex = -1;
 
-        public static void Prefix(ref Vector3 clickPos)
+        public static void Prefix(Vector3 clickPos)
         {
             savedMapIndex = -1;
 
@@ -34,13 +30,10 @@ namespace MapLevelFramework.Patches
             var level = mgr.GetLevel(mgr.FocusedElevation);
             if (level?.LevelMap == null) return;
 
-            IntVec3 baseCell = IntVec3Utility.ToIntVec3(clickPos);
-            if (!level.ContainsBaseMapCell(baseCell)) return;
+            IntVec3 cell = IntVec3Utility.ToIntVec3(clickPos);
+            if (!level.ContainsBaseMapCell(cell)) return;
 
-            // 转换坐标到子地图
-            clickPos = clickPos.ToLevelCoord(level);
-
-            // 临时切换到子地图（直接设 currentMapIndex，绕过 Notify_SwitchedMap）
+            // 临时切换到子地图（坐标一致，无需转换 clickPos）
             int subMapIndex = Find.Maps.IndexOf(level.LevelMap);
             if (subMapIndex >= 0)
             {

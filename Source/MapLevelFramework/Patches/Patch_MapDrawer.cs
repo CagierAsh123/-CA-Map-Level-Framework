@@ -21,18 +21,16 @@ namespace MapLevelFramework.Patches
             if (level?.LevelMap == null) return;
 
             // 子地图的 MapDrawer 不在主循环中更新，手动触发 section 重建
-            Render.LevelRenderer.UpdateLevelMapSections(level.LevelMap);
+            Render.LevelRenderer.UpdateLevelMapSections(level.LevelMap, level);
 
-            var offset = LevelCoordUtility.GetDrawOffset(level);
+            // 叠加渲染子地图的静态 mesh（只绘制 activeSections 内的 section）
+            Render.LevelRenderer.DrawLevelMapMesh(level.LevelMap, level);
 
-            // 叠加渲染子地图的静态 mesh（Y 偏移确保覆盖主地图地形）
-            Render.LevelRenderer.DrawLevelMapMesh(level.LevelMap, offset);
-
-            // 叠加渲染子地图的动态 Thing
+            // 叠加渲染子地图的动态 Thing（只绘制 usableCells 内的）
             Render.LevelRenderer.DrawLevelDynamicThings(level.LevelMap, level);
 
             // 叠加渲染子地图的覆盖层（designations、overlays、flecks 等）
-            Render.LevelRenderer.DrawLevelOverlays(level.LevelMap, level);
+            Render.LevelRenderer.DrawLevelOverlays(level.LevelMap);
         }
     }
 }

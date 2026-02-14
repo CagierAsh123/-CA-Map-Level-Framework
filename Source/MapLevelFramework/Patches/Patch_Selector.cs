@@ -9,8 +9,7 @@ namespace MapLevelFramework.Patches
 {
     /// <summary>
     /// Selector.SelectableObjectsUnderMouse 补丁 - 聚焦层级时，从子地图获取可选物体。
-    ///
-    /// 参照 VMF 的 Patch_Selector_SelectableObjectsUnderMouse。
+    /// 同尺寸子地图方案：坐标一致，无需转换。
     /// </summary>
     [HarmonyPatch(typeof(Selector), "SelectableObjectsUnderMouse")]
     public static class Patch_Selector_SelectableObjectsUnderMouse
@@ -27,30 +26,24 @@ namespace MapLevelFramework.Patches
             if (level?.LevelMap == null) return true;
 
             Vector3 mousePos = UI.MouseMapPosition();
-            IntVec3 baseCell = IntVec3Utility.ToIntVec3(mousePos);
+            IntVec3 cell = IntVec3Utility.ToIntVec3(mousePos);
 
-            if (!level.ContainsBaseMapCell(baseCell)) return true;
+            if (!level.ContainsBaseMapCell(cell)) return true;
+            if (!cell.InBounds(level.LevelMap)) return true;
 
-            // 转换到子地图坐标
-            IntVec3 levelCell = baseCell.ToLevelCoord(level);
-            if (!levelCell.InBounds(level.LevelMap)) return true;
-
-            // 收集子地图上的可选物体
+            // 收集子地图上的可选物体（坐标一致，直接查询）
             var objects = new List<object>();
 
-            // Pawns（按距离排序）
-            Vector3 levelMousePos = mousePos.ToLevelCoord(level);
             foreach (Pawn pawn in level.LevelMap.mapPawns.AllPawnsSpawned)
             {
-                float dist = (pawn.DrawPos - levelMousePos).MagnitudeHorizontal();
+                float dist = (pawn.DrawPos - mousePos).MagnitudeHorizontal();
                 if (dist < 0.4f)
                 {
                     objects.Add(pawn);
                 }
             }
 
-            // Things at cell
-            foreach (Thing thing in level.LevelMap.thingGrid.ThingsAt(levelCell))
+            foreach (Thing thing in level.LevelMap.thingGrid.ThingsAt(cell))
             {
                 if (!objects.Contains(thing))
                 {
@@ -58,8 +51,6 @@ namespace MapLevelFramework.Patches
                 }
             }
 
-            // 鼠标在层级区域内时，始终返回我们的结果（即使为空），
-            // 防止 fallthrough 到原版逻辑在主地图搜索（坐标已被转换，会搜错位置）
             __result = objects;
             return false;
         }

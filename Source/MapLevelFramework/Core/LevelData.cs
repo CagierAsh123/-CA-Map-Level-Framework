@@ -58,9 +58,57 @@ namespace MapLevelFramework
 
         /// <summary>
         /// 不规则区域的可用格子集合（子地图坐标）。
-        /// 如果为 null，则整个子地图都可用。
+        /// 如果为 null，则 area 内全部可用。
         /// </summary>
         public System.Collections.Generic.HashSet<IntVec3> usableCells;
+
+        /// <summary>
+        /// 缓存：包含 usableCell 的 section 索引集合。
+        /// section 大小 17x17，索引 = (cell.x / 17, cell.z / 17)。
+        /// 在 usableCells 变化时调用 RebuildActiveSections() 刷新。
+        /// </summary>
+        private System.Collections.Generic.HashSet<ulong> activeSections;
+
+        /// <summary>
+        /// 重建活跃 section 缓存。usableCells 变化后必须调用。
+        /// </summary>
+        public void RebuildActiveSections()
+        {
+            activeSections = new System.Collections.Generic.HashSet<ulong>();
+            var cells = usableCells;
+            if (cells != null)
+            {
+                foreach (IntVec3 cell in cells)
+                {
+                    activeSections.Add(SectionKey(cell.x / 17, cell.z / 17));
+                }
+            }
+            else
+            {
+                // 没有 usableCells 时，用 area 内所有 section
+                for (int x = area.minX / 17; x <= area.maxX / 17; x++)
+                {
+                    for (int z = area.minZ / 17; z <= area.maxZ / 17; z++)
+                    {
+                        activeSections.Add(SectionKey(x, z));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 检查指定 section 索引是否包含可用格子。
+        /// </summary>
+        public bool IsSectionActive(int secX, int secZ)
+        {
+            if (activeSections == null) RebuildActiveSections();
+            return activeSections.Contains(SectionKey(secX, secZ));
+        }
+
+        private static ulong SectionKey(int x, int z)
+        {
+            return ((ulong)(uint)x << 32) | (uint)z;
+        }
 
         /// <summary>
         /// 检查子地图坐标是否在可用区域内。
@@ -76,6 +124,7 @@ namespace MapLevelFramework
         /// </summary>
         public bool ContainsBaseMapCell(IntVec3 baseCell)
         {
+            if (usableCells != null) return usableCells.Contains(baseCell);
             return area.Contains(baseCell);
         }
 
