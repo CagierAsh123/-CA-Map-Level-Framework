@@ -194,6 +194,26 @@ namespace MapLevelFramework.Render
             catch (Exception) { }
         }
 
+        // ---- 边界高亮 ----
+        private static List<IntVec3> edgeCellsCache;
+        private static int lastUsableCellsCount = -1;
+
+        /// <summary>
+        /// 绘制楼层边缘高亮边框。
+        /// </summary>
+        public static void DrawLevelBoundaryOverlay(LevelData level, Map baseMap)
+        {
+            var usable = level.usableCells;
+            if (usable == null || usable.Count == 0) return;
+
+            if (edgeCellsCache == null || lastUsableCellsCount != usable.Count)
+            {
+                edgeCellsCache = new List<IntVec3>(usable);
+                lastUsableCellsCount = usable.Count;
+            }
+            GenDraw.DrawFieldEdges(edgeCellsCache, new Color(0.2f, 0.8f, 1f, 0.6f));
+        }
+
         /// <summary>
         /// 判断是否应该跳过某个 SectionLayer。
         /// </summary>

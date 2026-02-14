@@ -31,6 +31,9 @@ namespace MapLevelFramework.Patches
 
             // 叠加渲染子地图的覆盖层（designations、overlays、flecks 等）
             Render.LevelRenderer.DrawLevelOverlays(level.LevelMap);
+
+            // 非楼层区域红色遮罩 + 楼层边缘高亮
+            Render.LevelRenderer.DrawLevelBoundaryOverlay(level, baseMap);
         }
     }
 }
