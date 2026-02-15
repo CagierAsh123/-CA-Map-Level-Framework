@@ -325,6 +325,8 @@ namespace MapLevelFramework
 
         /// <summary>
         /// 移除一个层级及其子地图。
+        /// 级联销毁：该层上的楼梯连接的其他层级，如果不再有任何楼梯可达，也会被销毁。
+        /// 例：拆掉 4F 的所有楼梯 → 4F 销毁 → 5F 不再可达 → 5F 销毁 → ... → 10F 销毁。
         /// </summary>
         public void RemoveLevel(int elevation)
         {
@@ -334,25 +336,98 @@ namespace MapLevelFramework
             if (focusedElevation == elevation)
                 FocusLevel(0);
 
-            // 清理子地图
+            // 销毁前：收集该层上所有非自动楼梯的目标 elevation（级联候选）
+            var cascadeTargets = new List<int>();
             if (data.LevelMap != null)
             {
-                LongEventHandler.ExecuteWhenFinished(() =>
+                foreach (Thing t in data.LevelMap.listerThings.AllThings)
                 {
-                    if (data.mapParent != null)
-                    {
-                        data.mapParent.sourceMap = null;
-                        Find.World.pocketMaps.Remove(data.mapParent);
-                    }
-                    if (Find.Maps.Contains(data.LevelMap))
-                    {
-                        Current.Game.DeinitAndRemoveMap(data.LevelMap, false);
-                    }
-                });
+                    if (t is Building_Stairs s && s.Spawned && s.targetElevation != elevation)
+                        cascadeTargets.Add(s.targetElevation);
+                }
+
+                // 转移所有 pawn 回基地图
+                EvacuateLevelPawns(data.LevelMap);
             }
 
+            // 销毁子地图
+            DestroyLevelMap(data);
             levels.Remove(elevation);
             Log.Message($"[MapLevelFramework] Removed level elevation={elevation}");
+
+            // 级联：检查被连接的层级是否还有其他楼梯可达
+            foreach (int targetElev in cascadeTargets)
+            {
+                if (!levels.ContainsKey(targetElev)) continue;
+                if (!HasAnyStairsConnectingTo(targetElev))
+                {
+                    RemoveLevel(targetElev); // 递归销毁
+                }
+            }
+        }
+
+        /// <summary>
+        /// 检查是否有任何地图上的楼梯连接到指定 elevation。
+        /// 扫描基地图和所有现存子地图。
+        /// </summary>
+        private bool HasAnyStairsConnectingTo(int elevation)
+        {
+            // 检查基地图
+            if (HasStairsToElevation(map, elevation)) return true;
+
+            // 检查所有子地图
+            foreach (var level in levels.Values)
+            {
+                if (level.LevelMap != null && HasStairsToElevation(level.LevelMap, elevation))
+                    return true;
+            }
+            return false;
+        }
+
+        private static bool HasStairsToElevation(Map m, int elevation)
+        {
+            var allThings = m.listerThings.AllThings;
+            for (int i = 0; i < allThings.Count; i++)
+            {
+                if (allThings[i] is Building_Stairs s && s.Spawned && s.targetElevation == elevation)
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 将子地图上所有 pawn 转移回基地图。
+        /// </summary>
+        private void EvacuateLevelPawns(Map levelMap)
+        {
+            if (levelMap == null) return;
+            var pawns = levelMap.mapPawns.AllPawnsSpawned.ToList();
+            foreach (Pawn pawn in pawns)
+            {
+                if (!pawn.Spawned) continue;
+                IntVec3 dest = pawn.Position.InBounds(map) ? pawn.Position : map.Center;
+                StairTransferUtility.TransferPawn(pawn, map, dest);
+            }
+            if (pawns.Count > 0)
+                Log.Message($"[MLF] Evacuated {pawns.Count} pawns from level map.");
+        }
+
+        private void DestroyLevelMap(LevelData data)
+        {
+            if (data.LevelMap == null) return;
+            Map levelMap = data.LevelMap;
+            LongEventHandler.ExecuteWhenFinished(() =>
+            {
+                if (data.mapParent != null)
+                {
+                    data.mapParent.sourceMap = null;
+                    Find.World.pocketMaps.Remove(data.mapParent);
+                }
+                if (Find.Maps.Contains(levelMap))
+                {
+                    Current.Game.DeinitAndRemoveMap(levelMap, false);
+                }
+            });
         }
 
         // ========== 静态查询 ==========

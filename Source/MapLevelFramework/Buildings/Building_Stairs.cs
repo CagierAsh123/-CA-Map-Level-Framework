@@ -351,6 +351,49 @@ namespace MapLevelFramework
             return new CellRect(minX, minZ, maxX - minX + 1, maxZ - minZ + 1);
         }
 
+        // ========== 销毁 ==========
+
+        public override void DeSpawn(DestroyMode mode)
+        {
+            Map stairMap = this.Map;
+            int targetElev = this.targetElevation;
+            bool wasAutoSpawned = this.autoSpawned;
+
+            base.DeSpawn(mode);
+
+            // 自动生成的楼梯（子地图侧）不触发层级销毁
+            if (wasAutoSpawned) return;
+
+            // 检查同地图上是否还有其他楼梯连接到同一层级
+            if (HasOtherStairsToElevation(stairMap, targetElev))
+                return;
+
+            // 这是最后一个楼梯 → 销毁层级（含级联 + pawn 转移）
+            LevelManager mgr;
+            if (LevelManager.IsLevelMap(stairMap, out var parentMgr, out _))
+                mgr = parentMgr;
+            else
+                mgr = LevelManager.GetManager(stairMap);
+
+            mgr?.RemoveLevel(targetElev);
+        }
+
+        /// <summary>
+        /// 检查地图上是否还有其他楼梯连接到指定 elevation。
+        /// </summary>
+        private static bool HasOtherStairsToElevation(Map map, int targetElevation)
+        {
+            if (map == null) return false;
+            var allThings = map.listerThings.AllThings;
+            for (int i = 0; i < allThings.Count; i++)
+            {
+                if (allThings[i] is Building_Stairs s && s.Spawned
+                    && !s.autoSpawned && s.targetElevation == targetElevation)
+                    return true;
+            }
+            return false;
+        }
+
         public override void ExposeData()
         {
             base.ExposeData();
