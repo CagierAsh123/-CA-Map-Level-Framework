@@ -59,10 +59,10 @@ namespace MapLevelFramework
             if (dirtFloor != null)
                 levelMap.terrainGrid.SetTerrain(minedPos, dirtFloor);
 
-            // 3. 在新暴露的邻居生成岩石
-            for (int i = 0; i < 4; i++)
+            // 3. 在新暴露的邻居生成岩石（8方向，含斜对角）
+            for (int i = 0; i < 8; i++)
             {
-                IntVec3 neighbor = minedPos + GenAdj.CardinalDirections[i];
+                IntVec3 neighbor = minedPos + GenAdj.AdjacentCells[i];
                 if (!neighbor.InBounds(levelMap)) continue;
                 if (levelData.usableCells.Contains(neighbor)) continue;
 

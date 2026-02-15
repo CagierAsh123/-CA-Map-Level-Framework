@@ -5,16 +5,15 @@ using Verse;
 namespace MapLevelFramework.Patches
 {
     /// <summary>
-    /// Mineable.Destroy 补丁 - 在地下层子地图上挖掘岩石后触发边界扩展。
-    /// 注意：Mineable 不重写 Destroy，实际补丁目标是 Thing.Destroy。
-    /// 使用 Thing __instance + 类型检查避免非 Mineable 实例的转换异常。
+    /// Thing.Destroy 补丁 - 在地下层子地图上挖掘岩石后触发边界扩展。
+    /// 直接补丁 Thing.Destroy（Mineable 不重写 Destroy，用 typeof(Mineable) 可能无法解析）。
     /// </summary>
-    [HarmonyPatch(typeof(Mineable), nameof(Mineable.Destroy))]
+    [HarmonyPatch(typeof(Thing), nameof(Thing.Destroy))]
     public static class Patch_Mineable_Destroy
     {
         public static void Prefix(Thing __instance, out (Map map, IntVec3 pos, bool valid) __state)
         {
-            if (__instance is Mineable)
+            if (__instance is Mineable && __instance.Spawned)
                 __state = (__instance.Map, __instance.Position, true);
             else
                 __state = (null, IntVec3.Invalid, false);
@@ -28,6 +27,7 @@ namespace MapLevelFramework.Patches
             if (LevelManager.IsLevelMap(__state.map, out _, out var levelData)
                 && levelData != null && levelData.isUnderground)
             {
+                Log.Message($"[MLF] Rock mined at {__state.pos} on underground level {levelData.elevation}");
                 RockFrontierUtility.OnRockMined(__state.map, __state.pos, levelData);
             }
         }
