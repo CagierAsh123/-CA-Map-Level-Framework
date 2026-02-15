@@ -27,8 +27,7 @@ namespace MapLevelFramework.Patches
 
             __result = CrossLevelJobUtility.TryCrossLevelScan(pawn, () =>
             {
-                Job job = (Job)method.Invoke(__instance, new object[] { pawn });
-                return job != null;
+                return (Job)method.Invoke(__instance, new object[] { pawn });
             });
         }
     }
@@ -47,8 +46,7 @@ namespace MapLevelFramework.Patches
 
             __result = CrossLevelJobUtility.TryCrossLevelScan(pawn, () =>
             {
-                Job job = (Job)method.Invoke(__instance, new object[] { pawn });
-                return job != null;
+                return (Job)method.Invoke(__instance, new object[] { pawn });
             });
         }
     }
@@ -67,8 +65,7 @@ namespace MapLevelFramework.Patches
 
             __result = CrossLevelJobUtility.TryCrossLevelScan(pawn, () =>
             {
-                Job job = (Job)method.Invoke(__instance, new object[] { pawn });
-                return job != null;
+                return (Job)method.Invoke(__instance, new object[] { pawn });
             });
         }
     }
@@ -89,8 +86,7 @@ namespace MapLevelFramework.Patches
 
             __result = CrossLevelJobUtility.TryCrossLevelScan(pawn, () =>
             {
-                Job job = (Job)method.Invoke(__instance, new object[] { pawn });
-                return job != null;
+                return (Job)method.Invoke(__instance, new object[] { pawn });
             });
         }
     }
@@ -109,8 +105,7 @@ namespace MapLevelFramework.Patches
 
             __result = CrossLevelJobUtility.TryCrossLevelScan(pawn, () =>
             {
-                Job job = (Job)method.Invoke(__instance, new object[] { pawn });
-                return job != null;
+                return (Job)method.Invoke(__instance, new object[] { pawn });
             });
         }
     }
@@ -129,8 +124,7 @@ namespace MapLevelFramework.Patches
 
             __result = CrossLevelJobUtility.TryCrossLevelScan(pawn, () =>
             {
-                Job job = (Job)method.Invoke(__instance, new object[] { pawn });
-                return job != null;
+                return (Job)method.Invoke(__instance, new object[] { pawn });
             });
         }
     }
@@ -149,8 +143,7 @@ namespace MapLevelFramework.Patches
 
             __result = CrossLevelJobUtility.TryCrossLevelScan(pawn, () =>
             {
-                Job job = (Job)method.Invoke(__instance, new object[] { pawn });
-                return job != null;
+                return (Job)method.Invoke(__instance, new object[] { pawn });
             });
         }
     }

@@ -140,6 +140,24 @@
     <allowOpportunisticPrefix>false</allowOpportunisticPrefix>
   </JobDef>
 
+  <JobDef>
+    <defName>MLF_HaulAcrossLevel</defName>
+    <driverClass>MapLevelFramework.JobDriver_HaulAcrossLevel</driverClass>
+    <reportString>搬运物品到其他楼层。</reportString>
+    <allowOpportunisticPrefix>false</allowOpportunisticPrefix>
+  </JobDef>
+
+  <!-- 跨层搬运 WorkGiver -->
+  <WorkGiverDef>
+    <defName>MLF_HaulAcrossLevel</defName>
+    <label>跨层搬运</label>
+    <giverClass>MapLevelFramework.WorkGiver_HaulAcrossLevel</giverClass>
+    <workType>Hauling</workType>
+    <priorityInType>70</priorityInType>
+    <verb>搬运到其他楼层</verb>
+    <gerund>搬运物品到其他楼层</gerund>
+  </WorkGiverDef>
+
   <!-- ========== 建筑 ========== -->
 
   <!-- 楼梯（上楼） -->

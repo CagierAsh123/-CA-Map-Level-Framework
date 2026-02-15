@@ -25,6 +25,9 @@ namespace MapLevelFramework
         // 每个 pawn 的上次重定向 tick（key = pawn.thingIDNumber）
         private static readonly Dictionary<int, int> lastRedirectTick = new Dictionary<int, int>();
 
+        // 延迟 job 存储：pawn 到达楼梯后恢复在目标地图找到的 job
+        private static readonly Dictionary<int, Job> deferredJobs = new Dictionary<int, Job>();
+
         // 反射字段：Thing.mapIndexOrState / Thing.positionInt
         private static readonly FieldInfo mapIndexField =
             typeof(Thing).GetField("mapIndexOrState",
@@ -34,13 +37,28 @@ namespace MapLevelFramework
                 BindingFlags.Instance | BindingFlags.NonPublic);
 
         /// <summary>
+        /// 取出并移除 pawn 的延迟 job（到达楼梯转移后恢复用）。
+        /// </summary>
+        public static bool TryPopDeferredJob(Pawn pawn, out Job job)
+        {
+            if (pawn != null && deferredJobs.TryGetValue(pawn.thingIDNumber, out job))
+            {
+                deferredJobs.Remove(pawn.thingIDNumber);
+                return job != null;
+            }
+            job = null;
+            return false;
+        }
+
+        /// <summary>
         /// 通用跨层扫描。遍历其他层级地图，临时传送 pawn 后调用 tryFindJob。
-        /// 如果在某层找到 job，返回一个 MLF_UseStairs job 让 pawn 走到楼梯。
+        /// 如果在某层找到 job，将其存入 deferredJobs，返回一个 MLF_UseStairs job 让 pawn 走到楼梯。
+        /// pawn 到达楼梯转移后，由 JobDriver_UseStairs 恢复延迟的 job。
         /// </summary>
         /// <param name="pawn">要扫描的 pawn</param>
-        /// <param name="tryFindJob">在目标地图上尝试找 job 的委托，返回 true 表示找到</param>
+        /// <param name="tryFindJob">在目标地图上尝试找 job 的委托，返回找到的 Job 或 null</param>
         /// <returns>MLF_UseStairs job，或 null</returns>
-        public static Job TryCrossLevelScan(Pawn pawn, Func<bool> tryFindJob)
+        public static Job TryCrossLevelScan(Pawn pawn, Func<Job> tryFindJob)
         {
             if (Scanning) return null;
             if (pawn?.Map == null || !pawn.Spawned) return null;
@@ -117,11 +135,13 @@ namespace MapLevelFramework
 
                     try
                     {
-                        if (tryFindJob())
+                        Job foundJob = tryFindJob();
+                        if (foundJob != null)
                         {
-                            // 找到了！恢复 pawn 位置，记录冷却，返回楼梯 job
+                            // 找到了！恢复 pawn 位置，存储延迟 job，记录冷却，返回楼梯 job
                             mapIndexField.SetValue(pawn, origMapIndex);
                             positionField.SetValue(pawn, origPos);
+                            deferredJobs[pawnId] = foundJob;
                             lastRedirectTick[pawnId] = now;
                             return JobMaker.MakeJob(MLF_JobDefOf.MLF_UseStairs, stairs);
                         }

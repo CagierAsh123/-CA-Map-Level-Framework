@@ -25,7 +25,7 @@ namespace MapLevelFramework.Patches
             Job stairJob = CrossLevelJobUtility.TryCrossLevelScan(pawn, () =>
             {
                 ThinkResult result = __instance.TryIssueJobPackage(pawn, jobParams);
-                return result != ThinkResult.NoJob;
+                return result != ThinkResult.NoJob ? result.Job : null;
             });
 
             if (stairJob != null)
