@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Patch>
+  <!-- 袭击者进攻：在 AssaultColony 的 ThinkTree 中注入跨层进攻 -->
+  <Operation Class="PatchOperationInsert">
+    <xpath>Defs/DutyDef[defName = "AssaultColony"]/thinkNode[@Class="ThinkNode_Priority"]/subNodes/li[@Class="JobGiver_AITrashBuildingsDistant"]</xpath>
+    <order>Append</order>
+    <value>
+      <li Class="MapLevelFramework.JobGiver_AssaultAcrossLevel"/>
+    </value>
+  </Operation>
+
+  <!-- 破墙者：在 Breaching 中注入 -->
+  <Operation Class="PatchOperationInsert">
+    <xpath>Defs/DutyDef[defName = "Breaching"]/thinkNode[@Class="ThinkNode_Priority"]/subNodes/li[@Class="JobGiver_WanderNearBreacher"]</xpath>
+    <order>Prepend</order>
+    <value>
+      <li Class="MapLevelFramework.JobGiver_AssaultAcrossLevel"/>
+    </value>
+  </Operation>
+</Patch>

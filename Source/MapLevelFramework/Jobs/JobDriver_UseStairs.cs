@@ -13,8 +13,8 @@ namespace MapLevelFramework
 
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
-            // 楼梯不需要独占预约，多个 pawn 可以同时使用
-            return pawn.Reserve(job.targetA, job, 100, 1, null, errorOnFailed);
+            // 楼梯不需要预约，多个 pawn 可以同时使用
+            return true;
         }
 
         protected override IEnumerable<Toil> MakeNewToils()
@@ -55,7 +55,7 @@ namespace MapLevelFramework
         {
             if (job == null) return false;
 
-            // 检查 thing 目标是否仍然 spawned 且在正确的地图上
+            // 检查 thing 目标是否仍然 spawned、在正确的地图上、且可预约
             for (int i = 0; i < 3; i++)
             {
                 LocalTargetInfo target = i switch
@@ -67,6 +67,9 @@ namespace MapLevelFramework
                 if (target.HasThing && target.Thing != null)
                 {
                     if (!target.Thing.Spawned || target.Thing.Map != destMap)
+                        return false;
+                    // 检查是否已被其他 pawn 预约（避免多人抢同一物品）
+                    if (!pawn.CanReserve(target.Thing))
                         return false;
                 }
             }

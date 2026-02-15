@@ -17,8 +17,8 @@ namespace MapLevelFramework
 
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
-            return pawn.Reserve(job.targetA, job, 1, -1, null, errorOnFailed)
-                && pawn.Reserve(job.targetB, job, 100, 1, null, errorOnFailed);
+            // 只预约物品，楼梯不需要预约
+            return pawn.Reserve(job.targetA, job, 1, -1, null, errorOnFailed);
         }
 
         protected override IEnumerable<Toil> MakeNewToils()

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using RimWorld;
@@ -85,6 +86,9 @@ namespace MapLevelFramework.Patches
                     {
                         // 屋顶拆了 → 上层变为 OpenAir
                         grid.SetTerrain(levelCell, OpenAir);
+
+                        // 上层该位置的东西掉下来
+                        DropThingsFromLevel(level.LevelMap, levelCell, hostMap);
                     }
 
                     // 标记 section 为脏以刷新渲染
@@ -109,6 +113,59 @@ namespace MapLevelFramework.Patches
             {
                 underGrid[map.cellIndices.CellToIndex(cell)] = terrain;
             }
+        }
+
+        // ========== 坠落系统 ==========
+
+        private const float PawnFallDamageMin = 10f;
+        private const float PawnFallDamageMax = 35f;
+        private const float ItemDamagePercentMin = 0.25f;
+        private const float ItemDamagePercentMax = 0.75f;
+
+        /// <summary>
+        /// 上层地板消失时，该格子上的东西掉到下层。
+        /// pawn 受钝伤，物品损失 HP。楼梯不掉落。
+        /// </summary>
+        private static void DropThingsFromLevel(Map upperMap, IntVec3 cell, Map lowerMap)
+        {
+            if (!cell.InBounds(upperMap) || !cell.InBounds(lowerMap)) return;
+
+            List<Thing> things = upperMap.thingGrid.ThingsListAt(cell);
+            // 倒序遍历，因为 DeSpawn 会修改列表
+            for (int i = things.Count - 1; i >= 0; i--)
+            {
+                Thing thing = things[i];
+                if (!ShouldFall(thing)) continue;
+
+                thing.DeSpawn(DestroyMode.Vanish);
+                GenSpawn.Spawn(thing, cell, lowerMap, thing.Rotation, WipeMode.Vanish);
+
+                // 物品受损
+                if (thing.def.useHitPoints)
+                {
+                    float dmgPct = Rand.Range(ItemDamagePercentMin, ItemDamagePercentMax);
+                    thing.HitPoints = (int)((1f - dmgPct) * thing.HitPoints);
+                    if (thing.HitPoints <= 0)
+                        thing.HitPoints = 1;
+                }
+
+                // Pawn 受钝伤
+                if (thing is Pawn pawn && !pawn.Dead)
+                {
+                    float dmg = Rand.Range(PawnFallDamageMin, PawnFallDamageMax);
+                    pawn.TakeDamage(new DamageInfo(DamageDefOf.Blunt, dmg, 0f, -1f, null, null, null, DamageInfo.SourceCategory.Collapse));
+                }
+            }
+        }
+
+        private static bool ShouldFall(Thing thing)
+        {
+            if (thing == null || !thing.Spawned) return false;
+            if (thing is Building_Stairs) return false; // 楼梯不掉
+            var cat = thing.def.category;
+            return cat == ThingCategory.Pawn
+                || cat == ThingCategory.Item
+                || cat == ThingCategory.Building;
         }
 
         /// <summary>

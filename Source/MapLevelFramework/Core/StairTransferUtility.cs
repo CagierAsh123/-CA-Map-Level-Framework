@@ -26,6 +26,13 @@ namespace MapLevelFramework
             // 记录朝向
             Rot4 rotation = pawn.Rotation;
 
+            // 保存携带的物品（DeSpawn 会调用 jobs.StopAll → 导致携带物品被丢弃）
+            Thing carried = pawn.carryTracker?.CarriedThing;
+            if (carried != null)
+            {
+                pawn.carryTracker.innerContainer.Remove(carried);
+            }
+
             // DeSpawn
             if (pawn.Spawned)
                 pawn.DeSpawn(DestroyMode.Vanish);
@@ -35,6 +42,12 @@ namespace MapLevelFramework
 
             // 恢复朝向
             pawn.Rotation = rotation;
+
+            // 恢复携带的物品
+            if (carried != null && !carried.Destroyed)
+            {
+                pawn.carryTracker.innerContainer.TryAdd(carried);
+            }
 
             Log.Message($"[MLF] Transferred {pawn.LabelShort} to map {destMap.uniqueID} at {destPos}");
         }

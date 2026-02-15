@@ -147,6 +147,45 @@
     <allowOpportunisticPrefix>false</allowOpportunisticPrefix>
   </JobDef>
 
+  <JobDef>
+    <defName>MLF_JumpDown</defName>
+    <driverClass>MapLevelFramework.JobDriver_JumpDown</driverClass>
+    <reportString>跳下楼。</reportString>
+    <allowOpportunisticPrefix>false</allowOpportunisticPrefix>
+    <suspendable>false</suspendable>
+  </JobDef>
+
+  <!-- ========== 精神崩溃：跳楼 ========== -->
+
+  <MentalStateDef>
+    <defName>MLF_JumpOff</defName>
+    <label>试图跳楼</label>
+    <stateClass>MapLevelFramework.MentalState_JumpOff</stateClass>
+    <workerClass>MapLevelFramework.MentalStateWorker_JumpOff</workerClass>
+    <category>Misc</category>
+    <colonistsOnly>true</colonistsOnly>
+    <nameColor>(0.9, 0.3, 0.3)</nameColor>
+    <minTicksBeforeRecovery>500</minTicksBeforeRecovery>
+    <maxTicksBeforeRecovery>5000</maxTicksBeforeRecovery>
+    <recoveryMtbDays>0.05</recoveryMtbDays>
+    <recoverFromSleep>true</recoverFromSleep>
+    <recoverFromDowned>true</recoverFromDowned>
+    <moodRecoveryThought>Catharsis</moodRecoveryThought>
+    <blockNormalThoughts>true</blockNormalThoughts>
+    <beginLetterLabel>试图跳楼</beginLetterLabel>
+    <beginLetter>{0} 精神崩溃，正冲向楼层边缘试图跳下去！</beginLetter>
+    <beginLetterDef>ThreatBig</beginLetterDef>
+    <recoveryMessage>{0} 不再试图跳楼了。</recoveryMessage>
+    <baseInspectLine>精神状态：试图跳楼</baseInspectLine>
+  </MentalStateDef>
+
+  <MentalBreakDef>
+    <defName>MLF_JumpOff</defName>
+    <mentalState>MLF_JumpOff</mentalState>
+    <baseCommonality>0.15</baseCommonality>
+    <intensity>Extreme</intensity>
+  </MentalBreakDef>
+
   <!-- 跨层搬运 WorkGiver -->
   <WorkGiverDef>
     <defName>MLF_HaulAcrossLevel</defName>

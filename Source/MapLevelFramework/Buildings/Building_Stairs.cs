@@ -38,6 +38,7 @@ namespace MapLevelFramework
 
             if (respawningAfterLoad) return;
             if (autoSpawned) return;
+            if (Patch_GravshipLaunch.suppressStairsLevelOps) return;
 
             bool goesDown = GoesDown;
 
@@ -360,6 +361,9 @@ namespace MapLevelFramework
             bool wasAutoSpawned = this.autoSpawned;
 
             base.DeSpawn(mode);
+
+            // 逆重飞船起飞期间不触发层级销毁（数据已单独捕获）
+            if (Patch_GravshipLaunch.suppressStairsLevelOps) return;
 
             // 自动生成的楼梯（子地图侧）不触发层级销毁
             if (wasAutoSpawned) return;
