@@ -78,7 +78,7 @@ namespace MapLevelFramework.Patches
             if (filter.hostMap != layerMap) return zone;
 
             IntVec3 cell = new IntVec3(x, 0, z);
-            if (filter.ContainsBaseMapCell(cell))
+            if (LevelManager.IsInActiveRenderArea(cell))
                 return null;
 
             return zone;

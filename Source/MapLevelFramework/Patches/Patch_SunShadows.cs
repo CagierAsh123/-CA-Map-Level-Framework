@@ -37,7 +37,7 @@ namespace MapLevelFramework.Patches
             var section = GetSection(__instance);
             if (section == null) return true;
             if (filter.hostMap != section.map) return true;
-            if (!section.CellRect.Overlaps(filter.area)) return true;
+            if (!LevelManager.OverlapsActiveRenderArea(section.CellRect)) return true;
 
             if (!loggedOnce)
             {
@@ -45,13 +45,12 @@ namespace MapLevelFramework.Patches
                 loggedOnce = true;
             }
 
-            RegenerateFiltered(__instance, section, filter);
+            RegenerateFiltered(__instance, section);
             return false;
         }
 
         /// <summary>
-        /// DrawLayer 前缀 - 如果 section 与层级区域重叠，直接跳过绘制。
-        /// 这是一个保险措施：即使 Regenerate 没被触发，也能阻止阴影显示。
+        /// DrawLayer 前缀 - 如果 section 与任何层级区域重叠，直接跳过绘制。
         /// </summary>
         public static bool DrawLayerPrefix(SectionLayer __instance)
         {
@@ -62,10 +61,10 @@ namespace MapLevelFramework.Patches
             if (section == null) return true;
             if (filter.hostMap != section.map) return true;
 
-            return !section.CellRect.Overlaps(filter.area);
+            return !LevelManager.OverlapsActiveRenderArea(section.CellRect);
         }
 
-        private static void RegenerateFiltered(SectionLayer layer, Section section, LevelData filter)
+        private static void RegenerateFiltered(SectionLayer layer, Section section)
         {
             Map map = section.map;
             if (!MatBases.SunShadow.shader.isSupported) return;
@@ -87,7 +86,7 @@ namespace MapLevelFramework.Patches
             {
                 for (int j = cellRect.minZ; j <= cellRect.maxZ; j++)
                 {
-                    if (filter.area.Contains(new IntVec3(i, 0, j))) continue;
+                    if (LevelManager.IsInActiveRenderArea(new IntVec3(i, 0, j))) continue;
 
                     Building building = innerArray[cellIndices.CellToIndex(i, j)];
                     if (building == null || building.def.staticSunShadowHeight <= 0f)

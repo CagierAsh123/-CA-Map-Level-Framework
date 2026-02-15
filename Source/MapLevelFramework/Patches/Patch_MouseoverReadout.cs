@@ -24,13 +24,11 @@ namespace MapLevelFramework.Patches
             var mgr = LevelManager.GetManager(baseMap);
             if (mgr == null || !mgr.IsFocusingLevel) return;
 
-            var level = mgr.GetLevel(mgr.FocusedElevation);
-            if (level?.LevelMap == null) return;
-
             IntVec3 cell = IntVec3Utility.ToIntVec3(UI.MouseMapPosition());
-            if (!level.ContainsBaseMapCell(cell)) return;
+            var topLevel = LevelManager.GetTopmostLevelAt(cell);
+            if (topLevel?.LevelMap == null) return;
 
-            int subMapIndex = Find.Maps.IndexOf(level.LevelMap);
+            int subMapIndex = Find.Maps.IndexOf(topLevel.LevelMap);
             if (subMapIndex >= 0)
             {
                 savedMapIndex = Current.Game.currentMapIndex;

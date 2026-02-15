@@ -51,14 +51,18 @@ namespace MapLevelFramework
             Map stairsMap = stairs.Map;
             if (stairsMap == null) return false;
 
-            // 找到管理这组层级的 LevelManager
-            LevelManager mgr = LevelManager.GetManager(stairsMap);
-            Map baseMap = stairsMap;
-
-            if (mgr == null && LevelManager.IsLevelMap(stairsMap, out var parentMgr, out _))
+            // 先检查是否在子地图上（子地图也有自动创建的空 LevelManager，必须先排除）
+            LevelManager mgr;
+            Map baseMap;
+            if (LevelManager.IsLevelMap(stairsMap, out var parentMgr, out _))
             {
                 mgr = parentMgr;
                 baseMap = parentMgr.map;
+            }
+            else
+            {
+                mgr = LevelManager.GetManager(stairsMap);
+                baseMap = stairsMap;
             }
 
             if (mgr == null) return false;

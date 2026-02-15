@@ -23,16 +23,21 @@ namespace MapLevelFramework.Render
         private static FieldInfo layersField;
         private static FieldInfo dirtyFlagsField;
 
-        // 层级内容的 Y 偏移，确保渲染在主地图地形之上
+        // 层级内容的基础 Y 偏移，确保渲染在主地图地形之上
         private const float YOffset = 0.5f;
 
-        // render queue 提升量：确保子地图地形材质在基地图地形之后绘制。
-        // RimWorld 地形 shader 通常 ZWrite Off（边缘混合需要），
-        // 导致 render queue 高的材质覆盖低的，无视深度。
+        // 每层额外的 Y 偏移，确保高层在深度缓冲中覆盖低层
+        private const float YOffsetPerLevel = 0.15f;
+
+        // render queue 基础提升量：确保子地图材质在基地图之后绘制
         private const int RenderQueueElevation = 500;
 
-        // 材质副本缓存：原始材质 → 提升 render queue 后的副本
-        private static Dictionary<Material, Material> elevatedMaterials = new Dictionary<Material, Material>();
+        // 每层额外的 render queue 提升量，需要足够大以覆盖不同材质的 queue 差异
+        // RimWorld 材质 queue 范围约 2000-3000，间距 2000 确保高层始终覆盖低层
+        private const int RenderQueuePerLevel = 2000;
+
+        // 材质副本缓存：(原始材质, 层级序号) → 提升 render queue 后的副本
+        private static Dictionary<(Material, int), Material> elevatedMaterials = new Dictionary<(Material, int), Material>();
 
         // 需要跳过绘制的材质（MLF_OpenAir 等虚空地形，不应覆盖基地图）
         private static HashSet<Material> skipMaterials;
@@ -143,33 +148,34 @@ namespace MapLevelFramework.Render
 
         /// <summary>
         /// 获取提升 render queue 的材质副本。
-        /// RimWorld 地形 shader 通常 ZWrite Off，render queue 决定绘制顺序。
-        /// 子地图材质需要更高的 queue 才能覆盖基地图地形。
+        /// 每个层级使用不同的 queue 偏移，确保高层覆盖低层。
         /// </summary>
-        private static Material GetElevatedMaterial(Material original)
+        private static Material GetElevatedMaterial(Material original, int levelIndex = 0)
         {
             if (original == null) return null;
-            if (!elevatedMaterials.TryGetValue(original, out Material elevated))
+            var key = (original, levelIndex);
+            if (!elevatedMaterials.TryGetValue(key, out Material elevated))
             {
                 elevated = new Material(original);
-                elevated.renderQueue = original.renderQueue + RenderQueueElevation;
-                elevatedMaterials[original] = elevated;
+                elevated.renderQueue = original.renderQueue + RenderQueueElevation + levelIndex * RenderQueuePerLevel;
+                elevatedMaterials[key] = elevated;
             }
             return elevated;
         }
 
         /// <summary>
         /// 渲染子地图的静态 mesh。
-        /// 只绘制包含 usableCell 的 section，精确避免间隙区域的 OpenAir 覆盖基地图。
-        /// 使用提升 render queue 的材质副本，确保子地图地形覆盖基地图地形。
+        /// levelIndex 用于 render queue 分层：高层级用更高的 queue 确保覆盖低层级。
+        /// excludeCells 非 null 时，被高层覆盖的 section 会跳过建筑图层（只保留地形）。
         /// </summary>
-        public static void DrawLevelMapMesh(Map levelMap, LevelData level)
+        public static void DrawLevelMapMesh(Map levelMap, LevelData level, int levelIndex = 0, HashSet<IntVec3> excludeCells = null)
         {
             if (levelMap?.mapDrawer == null) return;
             if (sectionsField == null || layersField == null) return;
 
             EnsureSkipMaterialsInit();
-            Vector3 drawOffset = new Vector3(0f, YOffset, 0f);
+            float yOff = YOffset + levelIndex * YOffsetPerLevel;
+            Vector3 drawOffset = new Vector3(0f, yOff, 0f);
 
             Section[,] sections = sectionsField.GetValue(levelMap.mapDrawer) as Section[,];
             if (sections == null) return;
@@ -182,6 +188,21 @@ namespace MapLevelFramework.Render
                     if (section == null) continue;
                     if (!level.IsSectionActive(x, z)) continue;
 
+                    // 判断该 section 是否被高层完全覆盖（四角都在 excludeCells 中）
+                    bool sectionOccluded = false;
+                    if (excludeCells != null)
+                    {
+                        int minX = x * 17, minZ = z * 17;
+                        int maxX = minX + 16, maxZ = minZ + 16;
+                        // 限制在地图范围内
+                        if (maxX >= levelMap.Size.x) maxX = levelMap.Size.x - 1;
+                        if (maxZ >= levelMap.Size.z) maxZ = levelMap.Size.z - 1;
+                        sectionOccluded = excludeCells.Contains(new IntVec3(minX, 0, minZ))
+                                       && excludeCells.Contains(new IntVec3(maxX, 0, minZ))
+                                       && excludeCells.Contains(new IntVec3(minX, 0, maxZ))
+                                       && excludeCells.Contains(new IntVec3(maxX, 0, maxZ));
+                    }
+
                     List<SectionLayer> layers = layersField.GetValue(section) as List<SectionLayer>;
                     if (layers == null) continue;
 
@@ -191,6 +212,8 @@ namespace MapLevelFramework.Render
 
                         string layerName = layer.GetType().Name;
                         if (ShouldSkipLayer(layerName)) continue;
+                        // 被高层覆盖的 section：跳过建筑图层，只保留地形
+                        if (sectionOccluded && IsThingLayer(layerName)) continue;
 
                         foreach (LayerSubMesh subMesh in layer.subMeshes)
                         {
@@ -205,7 +228,7 @@ namespace MapLevelFramework.Render
                             Graphics.DrawMesh(
                                 subMesh.mesh,
                                 Matrix4x4.TRS(drawOffset, Quaternion.identity, Vector3.one),
-                                GetElevatedMaterial(subMesh.material),
+                                GetElevatedMaterial(subMesh.material, levelIndex),
                                 0
                             );
                         }
@@ -216,9 +239,9 @@ namespace MapLevelFramework.Render
 
         /// <summary>
         /// 渲染子地图的动态 Thing。
-        /// 只绘制 usableCells 内的 Thing。
+        /// 只绘制 usableCells 内的 Thing，跳过被高层覆盖的格子。
         /// </summary>
-        public static void DrawLevelDynamicThings(Map levelMap, LevelData level)
+        public static void DrawLevelDynamicThings(Map levelMap, LevelData level, int levelIndex = 0, HashSet<IntVec3> excludeCells = null)
         {
             if (levelMap?.dynamicDrawManager == null) return;
 
@@ -227,6 +250,7 @@ namespace MapLevelFramework.Render
             if (count == 0) return;
 
             var usable = level.usableCells;
+            float yOff = YOffset + levelIndex * YOffsetPerLevel;
 
             for (int i = 0; i < count; i++)
             {
@@ -236,12 +260,14 @@ namespace MapLevelFramework.Render
                     if (thing == null || thing.Destroyed) continue;
                     if (usable != null && !usable.Contains(thing.Position)) continue;
                     if (usable == null && !level.area.Contains(thing.Position)) continue;
+                    // 跳过被高层覆盖的格子（中间层的 pawn/item 不应透过高层地板显示）
+                    if (excludeCells != null && excludeCells.Contains(thing.Position)) continue;
 
                     thing.DynamicDrawPhase(DrawPhase.EnsureInitialized);
                     thing.DynamicDrawPhase(DrawPhase.ParallelPreDraw);
 
                     Vector3 drawLoc = thing.DrawPos;
-                    drawLoc.y += YOffset;
+                    drawLoc.y += yOff;
                     thing.DynamicDrawPhaseAt(DrawPhase.Draw, drawLoc, false);
 
                     Pawn pawn = thing as Pawn;
@@ -317,6 +343,21 @@ namespace MapLevelFramework.Render
                 case "SectionLayer_Darkness":
                 case "SectionLayer_LightingOverlay":
                 case "SectionLayer_Snow":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// 判断是否为建筑/物体图层（被高层覆盖时应跳过）。
+        /// </summary>
+        private static bool IsThingLayer(string layerName)
+        {
+            switch (layerName)
+            {
+                case "SectionLayer_ThingsGeneral":
+                case "SectionLayer_BuildingsDamage":
                     return true;
                 default:
                     return false;

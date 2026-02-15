@@ -6,10 +6,8 @@ using Verse;
 namespace MapLevelFramework.Patches
 {
     /// <summary>
-    /// 屋顶覆盖层补丁 - 聚焦层级时，屋顶覆盖层显示子地图的屋顶数据。
-    ///
-    /// RoofGrid 实现 ICellBoolGiver，CellBoolDrawer 用 GetCellBool/GetCellExtraColor
-    /// 来决定哪些格子显示屋顶覆盖。聚焦层级时，层级区域内的格子应显示子地图的屋顶。
+    /// 屋顶覆盖层补丁 - 聚焦层级时，屋顶覆盖层显示最高覆盖层级的屋顶数据。
+    /// 聚焦 3F 时：3F 区域显示 3F 屋顶，2F 阳台区域显示 2F 屋顶。
     /// </summary>
     public static class Patch_RoofOverlay
     {
@@ -19,16 +17,16 @@ namespace MapLevelFramework.Patches
             public static void Postfix(int index, ref bool __result, Map ___map)
             {
                 var filter = LevelManager.ActiveRenderFilter;
-                if (filter?.LevelMap == null) return;
+                if (filter == null) return;
 
                 var mgr = LevelManager.GetManager(___map);
                 if (mgr == null || !mgr.IsFocusingLevel) return;
 
                 IntVec3 cell = ___map.cellIndices.IndexToCell(index);
-                if (!filter.ContainsBaseMapCell(cell)) return;
+                var topLevel = LevelManager.GetTopmostLevelAt(cell);
+                if (topLevel?.LevelMap == null) return;
 
-                // 用子地图的屋顶数据替换
-                __result = filter.LevelMap.roofGrid.Roofed(index);
+                __result = topLevel.LevelMap.roofGrid.Roofed(index);
             }
         }
 
@@ -38,15 +36,16 @@ namespace MapLevelFramework.Patches
             public static void Postfix(int index, ref Color __result, Map ___map)
             {
                 var filter = LevelManager.ActiveRenderFilter;
-                if (filter?.LevelMap == null) return;
+                if (filter == null) return;
 
                 var mgr = LevelManager.GetManager(___map);
                 if (mgr == null || !mgr.IsFocusingLevel) return;
 
                 IntVec3 cell = ___map.cellIndices.IndexToCell(index);
-                if (!filter.ContainsBaseMapCell(cell)) return;
+                var topLevel = LevelManager.GetTopmostLevelAt(cell);
+                if (topLevel?.LevelMap == null) return;
 
-                RoofDef roof = filter.LevelMap.roofGrid.RoofAt(index);
+                RoofDef roof = topLevel.LevelMap.roofGrid.RoofAt(index);
                 __result = (RoofDefOf.RoofRockThick != null && roof == RoofDefOf.RoofRockThick)
                     ? Color.gray
                     : Color.white;

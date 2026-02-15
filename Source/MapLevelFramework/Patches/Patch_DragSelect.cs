@@ -19,7 +19,7 @@ namespace MapLevelFramework.Patches
             var filter = LevelManager.ActiveRenderFilter;
             if (filter == null) return;
             if (filter.hostMap != t.Map) return;
-            if (filter.ContainsBaseMapCell(t.Position))
+            if (LevelManager.IsInActiveRenderArea(t.Position))
                 __result = false;
         }
     }

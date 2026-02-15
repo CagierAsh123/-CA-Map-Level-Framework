@@ -20,7 +20,8 @@ namespace MapLevelFramework.Patches
         private static int swapDepth = 0;
 
         /// <summary>
-        /// 聚焦层级且鼠标在层级区域内时，临时切换 Find.CurrentMap 到子地图。
+        /// 聚焦层级且鼠标在任何可见层级区域内时，临时切换 Find.CurrentMap 到对应子地图。
+        /// 优先使用最高层级（3F 区域用 3F，2F 阳台区域用 2F）。
         /// </summary>
         private static void SwapToLevelMap()
         {
@@ -34,13 +35,11 @@ namespace MapLevelFramework.Patches
             var mgr = LevelManager.GetManager(baseMap);
             if (mgr == null || !mgr.IsFocusingLevel) return;
 
-            var level = mgr.GetLevel(mgr.FocusedElevation);
-            if (level?.LevelMap == null) return;
-
             IntVec3 cell = UI.MouseCell();
-            if (!level.ContainsBaseMapCell(cell)) return;
+            var topLevel = LevelManager.GetTopmostLevelAt(cell);
+            if (topLevel?.LevelMap == null) return;
 
-            int subMapIndex = Find.Maps.IndexOf(level.LevelMap);
+            int subMapIndex = Find.Maps.IndexOf(topLevel.LevelMap);
             if (subMapIndex >= 0)
             {
                 savedMapIndex = Current.Game.currentMapIndex;

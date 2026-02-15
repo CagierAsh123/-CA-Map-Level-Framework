@@ -34,11 +34,18 @@ namespace MapLevelFramework
         // ========== 渲染过滤 ==========
 
         /// <summary>
-        /// 当前激活的渲染过滤层级。非 null 时，Thing.Print 和 Thing.DynamicDrawPhase
+        /// 当前激活的渲染过滤层级（最高层）。非 null 时，Thing.Print 和 Thing.DynamicDrawPhase
         /// 补丁会跳过该层级 area 内的主地图物体。
         /// 由 FocusLevel() 设置/清除。
         /// </summary>
         internal static LevelData ActiveRenderFilter;
+
+        /// <summary>
+        /// 所有需要渲染的层级（从低到高排列）。
+        /// 聚焦 3F 时包含 [2F, 3F]，聚焦 2F 时包含 [2F]。
+        /// 由 FocusLevel() 设置/清除。
+        /// </summary>
+        internal static List<LevelData> ActiveRenderLevels;
 
         // ========== 属性 ==========
 
@@ -168,8 +175,15 @@ namespace MapLevelFramework
             int old = focusedElevation;
             if (old == elevation) return; // 防止重复切换
 
-            // 切换前：如果之前有聚焦层级，标记旧 area 的 section 为脏（恢复建筑显示）
-            if (old != 0 && levels.TryGetValue(old, out var oldLevel))
+            // 切换前：标记所有之前渲染的层级 area 为脏（恢复建筑显示）
+            if (ActiveRenderLevels != null)
+            {
+                foreach (var lvl in ActiveRenderLevels)
+                {
+                    MarkAreaSectionsDirty(lvl.area);
+                }
+            }
+            else if (old != 0 && levels.TryGetValue(old, out var oldLevel))
             {
                 MarkAreaSectionsDirty(oldLevel.area);
             }
@@ -180,12 +194,27 @@ namespace MapLevelFramework
             if (elevation != 0 && levels.TryGetValue(elevation, out var newLevel))
             {
                 ActiveRenderFilter = newLevel;
-                // 标记新 area 的 section 为脏（隐藏建筑）
-                MarkAreaSectionsDirty(newLevel.area);
+                // 收集所有 <= 聚焦层的层级，按 elevation 升序
+                var renderLevels = new List<LevelData>();
+                foreach (int elev in AllElevations)
+                {
+                    if (elev <= elevation)
+                    {
+                        var lvl = GetLevel(elev);
+                        if (lvl != null) renderLevels.Add(lvl);
+                    }
+                }
+                ActiveRenderLevels = renderLevels;
+                // 标记所有中间层级 area 的 section 为脏（隐藏建筑）
+                foreach (var lvl in renderLevels)
+                {
+                    MarkAreaSectionsDirty(lvl.area);
+                }
             }
             else
             {
                 ActiveRenderFilter = null;
+                ActiveRenderLevels = null;
             }
 
             Log.Message($"[MapLevelFramework] Focus switched: {old} -> {elevation}");
@@ -295,6 +324,49 @@ namespace MapLevelFramework
             }
         }
 
+        /// <summary>
+        /// 检查基地图坐标是否在任何活跃渲染层级的区域内。
+        /// 用于替代 ActiveRenderFilter.ContainsBaseMapCell，支持多层遮挡。
+        /// </summary>
+        public static bool IsInActiveRenderArea(IntVec3 baseCell)
+        {
+            var levels = ActiveRenderLevels;
+            if (levels == null) return false;
+            for (int i = 0; i < levels.Count; i++)
+            {
+                if (levels[i].ContainsBaseMapCell(baseCell)) return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 获取覆盖指定基地图坐标的最高层级（用于屋顶等需要取最高层数据的场景）。
+        /// </summary>
+        public static LevelData GetTopmostLevelAt(IntVec3 baseCell)
+        {
+            var levels = ActiveRenderLevels;
+            if (levels == null) return null;
+            for (int i = levels.Count - 1; i >= 0; i--)
+            {
+                if (levels[i].ContainsBaseMapCell(baseCell)) return levels[i];
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 检查指定 CellRect 是否与任何活跃渲染层级的区域重叠。
+        /// </summary>
+        public static bool OverlapsActiveRenderArea(CellRect rect)
+        {
+            var levels = ActiveRenderLevels;
+            if (levels == null) return false;
+            for (int i = 0; i < levels.Count; i++)
+            {
+                if (rect.Overlaps(levels[i].area)) return true;
+            }
+            return false;
+        }
+
         // ========== 生命周期 ==========
 
         public override void FinalizeInit()
@@ -317,7 +389,20 @@ namespace MapLevelFramework
             if (focusedElevation != 0 && levels.TryGetValue(focusedElevation, out var focusData))
             {
                 ActiveRenderFilter = focusData;
-                MarkAreaSectionsDirty(focusData.area);
+                var renderLevels = new List<LevelData>();
+                foreach (int elev in AllElevations)
+                {
+                    if (elev <= focusedElevation)
+                    {
+                        var lvl = GetLevel(elev);
+                        if (lvl != null) renderLevels.Add(lvl);
+                    }
+                }
+                ActiveRenderLevels = renderLevels;
+                foreach (var lvl in renderLevels)
+                {
+                    MarkAreaSectionsDirty(lvl.area);
+                }
             }
         }
 

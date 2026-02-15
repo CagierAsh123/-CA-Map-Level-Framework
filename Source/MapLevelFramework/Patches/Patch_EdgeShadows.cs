@@ -26,22 +26,22 @@ namespace MapLevelFramework.Patches
             if (filter == null) return true;
             if (___section == null) return true;
             if (filter.hostMap != ___section.map) return true;
-            if (!___section.CellRect.Overlaps(filter.area)) return true;
+            if (!LevelManager.OverlapsActiveRenderArea(___section.CellRect)) return true;
 
-            RegenerateFiltered(__instance, ___section, filter);
+            RegenerateFiltered(__instance, ___section);
             return false;
         }
 
         private static bool HasEdgeShadow(int x, int z, Building[] innerArray,
-            CellIndices cellIndices, Map map, CellRect filterArea)
+            CellIndices cellIndices, Map map)
         {
             if (x < 0 || z < 0 || x >= map.Size.x || z >= map.Size.z) return false;
-            if (filterArea.Contains(new IntVec3(x, 0, z))) return false;
+            if (LevelManager.IsInActiveRenderArea(new IntVec3(x, 0, z))) return false;
             var thing = innerArray[cellIndices.CellToIndex(x, z)];
             return thing != null && thing.def.castEdgeShadows;
         }
 
-        private static void RegenerateFiltered(SectionLayer layer, Section section, LevelData filter)
+        private static void RegenerateFiltered(SectionLayer layer, Section section)
         {
             Map map = section.map;
             Building[] innerArray = map.edificeGrid.InnerArray;
@@ -59,13 +59,12 @@ namespace MapLevelFramework.Patches
             bool[] card = new bool[4];
             bool[] diagOnly = new bool[4];
             CellIndices ci = map.cellIndices;
-            CellRect fa = filter.area;
 
             for (int i = cellRect.minX; i <= cellRect.maxX; i++)
             {
                 for (int j = cellRect.minZ; j <= cellRect.maxZ; j++)
                 {
-                    if (HasEdgeShadow(i, j, innerArray, ci, map, fa))
+                    if (HasEdgeShadow(i, j, innerArray, ci, map))
                     {
                         // 建筑正下方：完整灰色四边形
                         sm.verts.Add(new Vector3(i, alt, j));
@@ -86,7 +85,7 @@ namespace MapLevelFramework.Patches
                     IntVec3[] cardDir = GenAdj.CardinalDirectionsAround;
                     for (int k = 0; k < 4; k++)
                     {
-                        if (HasEdgeShadow(i + cardDir[k].x, j + cardDir[k].z, innerArray, ci, map, fa))
+                        if (HasEdgeShadow(i + cardDir[k].x, j + cardDir[k].z, innerArray, ci, map))
                         {
                             card[k] = true;
                             corner[(k + 3) % 4] = true;
@@ -97,7 +96,7 @@ namespace MapLevelFramework.Patches
                     IntVec3[] diagDir = GenAdj.DiagonalDirectionsAround;
                     for (int l = 0; l < 4; l++)
                     {
-                        if (!corner[l] && HasEdgeShadow(i + diagDir[l].x, j + diagDir[l].z, innerArray, ci, map, fa))
+                        if (!corner[l] && HasEdgeShadow(i + diagDir[l].x, j + diagDir[l].z, innerArray, ci, map))
                         {
                             corner[l] = true;
                             diagOnly[l] = true;
