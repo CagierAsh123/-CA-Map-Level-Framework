@@ -31,6 +31,12 @@ namespace MapLevelFramework
         public LevelDef levelDef;
 
         /// <summary>
+        /// 是否为地下层。地下层使用不同的地图生成器，不共享天气/光照，
+        /// 聚焦时直接切换 CurrentMap 而非叠加渲染。
+        /// </summary>
+        public bool isUnderground;
+
+        /// <summary>
         /// 宿主主地图。
         /// </summary>
         public Map hostMap;
@@ -134,6 +140,7 @@ namespace MapLevelFramework
             Scribe_Values.Look(ref elevation, "elevation", 0);
             Scribe_Values.Look(ref area, "area");
             Scribe_Values.Look(ref includePawnsInBaseMap, "includePawnsInBaseMap", true);
+            Scribe_Values.Look(ref isUnderground, "isUnderground", false);
             Scribe_Defs.Look(ref levelDef, "levelDef");
             Scribe_References.Look(ref mapParent, "mapParent");
             // hostMap 由 LevelManager 在加载后重新设置

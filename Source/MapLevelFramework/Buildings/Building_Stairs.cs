@@ -6,21 +6,19 @@ using Verse.AI;
 namespace MapLevelFramework
 {
     /// <summary>
-    /// 楼梯建筑 - 放置后扫描周围有屋顶的连通区域，创建/更新上层。
-    /// 同时作为 pawn 上下楼的通道。
+    /// 楼梯建筑 - 放置后创建/更新目标层级。
+    /// 上楼梯：扫描屋顶连通区域创建上层。
+    /// 下楼梯：创建地下层（初始一格 + 边界岩石）。
     ///
     /// targetElevation 表示这个楼梯连接到的目标层级：
-    /// - 0 = 地面层（下楼）
-    /// - 1 = 2F（上楼到二楼）
-    /// - 2 = 3F（上楼到三楼）
-    /// - ...以此类推
+    /// - 正数 = 上层（1→2F, 2→3F）
+    /// - 0 = 地面层
+    /// - 负数 = 地下层（-1→B1, -2→B2）
     /// </summary>
     public class Building_Stairs : Building
     {
         /// <summary>
         /// 连接的目标 elevation。
-        /// 玩家在地面建造时默认 1（→2F），在 2F 建造时自动设为 2（→3F）。
-        /// 自动生成的下楼楼梯 targetElevation = 当前层 - 1。
         /// </summary>
         public int targetElevation = 1;
 
@@ -29,27 +27,53 @@ namespace MapLevelFramework
         /// </summary>
         private bool autoSpawned;
 
+        /// <summary>
+        /// 该楼梯 Def 是否标记为下楼方向。
+        /// </summary>
+        public bool GoesDown => def.GetModExtension<StairsExtension>()?.goesDown ?? false;
+
         public override void SpawnSetup(Map map, bool respawningAfterLoad)
         {
             base.SpawnSetup(map, respawningAfterLoad);
 
             if (respawningAfterLoad) return;
-            if (autoSpawned) return; // 自动生成的楼梯不触发层级创建
+            if (autoSpawned) return;
 
-            // 先检查是否在子地图上建造（子地图也有 LevelManager MapComponent，必须先排除）
+            bool goesDown = GoesDown;
+
+            // 先检查是否在子地图上建造
             if (LevelManager.IsLevelMap(map, out var parentMgr, out var levelData))
             {
-                // 在子地图上建造 → 自动设置 targetElevation 为当前层 + 1
-                targetElevation = levelData.elevation + 1;
-                CreateOrUpdateLevel(parentMgr, map);
+                // 在子地图上建造
+                if (goesDown)
+                    targetElevation = levelData.elevation - 1; // 继续往下
+                else
+                    targetElevation = levelData.elevation + 1; // 继续往上
+
+                // targetElevation == 0 表示连接回地面层，不需要创建层级
+                if (targetElevation == 0)
+                    return;
+
+                if (goesDown)
+                    CreateUndergroundLevel(parentMgr);
+                else
+                    CreateOrUpdateLevel(parentMgr, map);
                 return;
             }
 
-            // 在基地图上建造 → 创建上层
+            // 在基地图上建造
             var mgr = LevelManager.GetManager(map);
             if (mgr != null)
             {
-                CreateOrUpdateLevel(mgr, map);
+                if (goesDown)
+                {
+                    targetElevation = -1; // 基地图 → B1
+                    CreateUndergroundLevel(mgr);
+                }
+                else
+                {
+                    CreateOrUpdateLevel(mgr, map);
+                }
             }
         }
 
@@ -87,7 +111,56 @@ namespace MapLevelFramework
             return 0; // 地面
         }
 
-        // ========== 层级创建 ==========
+        // ========== 地下层级创建 ==========
+
+        /// <summary>
+        /// 创建地下层级。不扫描屋顶，直接创建地下地图，初始可用区域为楼梯一格。
+        /// </summary>
+        public void CreateUndergroundLevel(LevelManager mgr)
+        {
+            // 楼梯位置作为初始区域（1格）
+            CellRect bounds = new CellRect(Position.x, Position.z, 1, 1);
+            var initialCells = new HashSet<IntVec3> { Position };
+
+            var existing = mgr.GetLevel(targetElevation);
+            if (existing != null)
+            {
+                // 地下层已存在：加入新的楼梯入口
+                if (existing.usableCells == null)
+                    existing.usableCells = new HashSet<IntVec3>();
+                existing.usableCells.Add(Position);
+                existing.area = RecalcBounds(existing.usableCells);
+                existing.RebuildActiveSections();
+
+                // 在子地图铺地板 + 放楼梯 + 生成边界岩石
+                TerrainDef dirtFloor = DefDatabase<TerrainDef>.GetNamedSilentFail("MLF_DirtFloor");
+                if (dirtFloor != null && existing.LevelMap != null)
+                    existing.LevelMap.terrainGrid.SetTerrain(Position, dirtFloor);
+
+                SpawnStairsOnLevel(existing.LevelMap, Position);
+                RockFrontierUtility.SpawnInitialFrontier(existing.LevelMap, Position, existing);
+
+                Log.Message($"[MLF] Updated underground level {targetElevation}: added entrance at {Position}");
+            }
+            else
+            {
+                // 创建新地下层
+                var level = mgr.RegisterLevel(targetElevation, bounds, isUnderground: true);
+                if (level != null)
+                {
+                    level.usableCells = initialCells;
+                    level.RebuildActiveSections();
+
+                    // 在子地图放楼梯 + 生成边界岩石
+                    SpawnStairsOnLevel(level.LevelMap, Position);
+                    RockFrontierUtility.SpawnInitialFrontier(level.LevelMap, Position, level);
+
+                    Log.Message($"[MLF] Created underground level {targetElevation} at {Position}");
+                }
+            }
+        }
+
+        // ========== 上层层级创建 ==========
 
         /// <summary>
         /// 扫描有屋顶的连通区域，创建或更新层级。
@@ -154,6 +227,7 @@ namespace MapLevelFramework
 
         /// <summary>
         /// 在子地图的指定位置放置楼梯（如果该位置还没有楼梯）。
+        /// 自动生成的楼梯指向回来的方向。
         /// </summary>
         private void SpawnStairsOnLevel(Map levelMap, IntVec3 pos)
         {
@@ -166,9 +240,13 @@ namespace MapLevelFramework
                 if (things[i] is Building_Stairs) return;
             }
 
-            var stairs = (Building_Stairs)ThingMaker.MakeThing(this.def, this.Stuff);
+            // 自动生成的楼梯方向与当前楼梯相反
+            // 当前是下楼梯 → 子地图上生成上楼梯（回到上层）
+            // 当前是上楼梯 → 子地图上生成下楼梯（回到下层）... 不对，上楼梯的子地图楼梯也是回来
+            // 统一逻辑：自动生成的楼梯 targetElevation = 当前楼梯所在层
+            var stairsDef = this.def; // 使用相同的 def（视觉一致）
+            var stairs = (Building_Stairs)ThingMaker.MakeThing(stairsDef, this.Stuff);
             stairs.autoSpawned = true;
-            // 自动生成的楼梯指向回来的方向（当前楼梯所在层）
             stairs.targetElevation = GetCurrentElevation();
             GenSpawn.Spawn(stairs, pos, levelMap);
         }

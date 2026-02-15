@@ -106,8 +106,9 @@ namespace MapLevelFramework
         /// <param name="area">该层级在主地图上覆盖的区域</param>
         /// <param name="levelDef">层级定义（可选）</param>
         /// <param name="mapSize">子地图尺寸（可选，默认使用 area 的包围矩形）</param>
+        /// <param name="isUnderground">是否为地下层</param>
         /// <returns>层级数据</returns>
-        public LevelData RegisterLevel(int elevation, CellRect area, LevelDef levelDef = null, IntVec3? mapSize = null)
+        public LevelData RegisterLevel(int elevation, CellRect area, LevelDef levelDef = null, IntVec3? mapSize = null, bool isUnderground = false)
         {
             if (elevation == 0)
             {
@@ -136,7 +137,8 @@ namespace MapLevelFramework
                 elevation = elevation,
                 area = area,
                 levelDef = levelDef,
-                hostMap = map
+                hostMap = map,
+                isUnderground = isUnderground
             };
 
             // 子地图与基地图同尺寸，坐标系完全一致，无需任何坐标转换
@@ -183,6 +185,8 @@ namespace MapLevelFramework
 
         /// <summary>
         /// 切换聚焦到指定层级。0 = 回到地面。
+        /// 地下层（elevation &lt; 0）：直接切换 CurrentMap 到子地图，不走叠加渲染。
+        /// 上层（elevation &gt; 0）：保持基地图为 CurrentMap，叠加渲染子地图内容。
         /// </summary>
         public void FocusLevel(int elevation)
         {
@@ -201,7 +205,6 @@ namespace MapLevelFramework
                 foreach (var lvl in ActiveRenderLevels)
                 {
                     MarkAreaSectionsDirty(lvl.area);
-                    // 同时 dirty 子地图的 section（恢复被跳过的建筑）
                     MarkLevelMapSectionsDirty(lvl);
                 }
             }
@@ -213,7 +216,29 @@ namespace MapLevelFramework
 
             focusedElevation = elevation;
 
-            // 更新渲染过滤器
+            // 地下层：直接切换 CurrentMap，不需要叠加渲染
+            if (elevation < 0 && levels.TryGetValue(elevation, out var undergroundLevel) && undergroundLevel.isUnderground)
+            {
+                ActiveRenderFilter = null;
+                ActiveRenderLevels = null;
+
+                if (undergroundLevel.LevelMap != null)
+                {
+                    // 允许切换到子地图（Patch_Game_CurrentMap 会检查 isUnderground）
+                    Current.Game.CurrentMap = undergroundLevel.LevelMap;
+                }
+
+                Log.Message($"[MapLevelFramework] Focus switched to underground: {old} -> {elevation}");
+                return;
+            }
+
+            // 从地下层切回地面或上层：恢复 CurrentMap 为基地图
+            if (old < 0 && levels.TryGetValue(old, out var oldUnderground) && oldUnderground.isUnderground)
+            {
+                Current.Game.CurrentMap = map;
+            }
+
+            // 上层或地面：更新渲染过滤器
             if (elevation != 0 && levels.TryGetValue(elevation, out var newLevel))
             {
                 ActiveRenderFilter = newLevel;
@@ -221,18 +246,16 @@ namespace MapLevelFramework
                 var renderLevels = new List<LevelData>();
                 foreach (int elev in AllElevations)
                 {
-                    if (elev <= elevation)
+                    if (elev > 0 && elev <= elevation) // 只收集上层
                     {
                         var lvl = GetLevel(elev);
                         if (lvl != null) renderLevels.Add(lvl);
                     }
                 }
                 ActiveRenderLevels = renderLevels;
-                // 标记所有中间层级 area 的 section 为脏（隐藏建筑）
                 foreach (var lvl in renderLevels)
                 {
                     MarkAreaSectionsDirty(lvl.area);
-                    // 同时 dirty 子地图的 section（让 TakePrintFrom 补丁跳过被覆盖的建筑）
                     MarkLevelMapSectionsDirty(lvl);
                 }
             }
@@ -466,6 +489,22 @@ namespace MapLevelFramework
                 {
                     data.mapParent.hostManager = this;
                 }
+
+                // 确保地下层子地图有 UndergroundMapComponent
+                if (data.isUnderground && data.LevelMap != null)
+                {
+                    bool hasComp = false;
+                    foreach (var comp in data.LevelMap.components)
+                    {
+                        if (comp is UndergroundMapComponent) { hasComp = true; break; }
+                    }
+                    if (!hasComp)
+                    {
+                        var comp = new UndergroundMapComponent(data.LevelMap);
+                        data.LevelMap.components.Add(comp);
+                        comp.FinalizeInit();
+                    }
+                }
             }
 
             // 修复旧存档的 underGrid（确保可用区域的底层是 MLF_LevelBase）
@@ -474,21 +513,30 @@ namespace MapLevelFramework
             // 加载存档后恢复渲染过滤器
             if (focusedElevation != 0 && levels.TryGetValue(focusedElevation, out var focusData))
             {
-                ActiveRenderFilter = focusData;
-                var renderLevels = new List<LevelData>();
-                foreach (int elev in AllElevations)
+                if (focusData.isUnderground)
                 {
-                    if (elev <= focusedElevation)
-                    {
-                        var lvl = GetLevel(elev);
-                        if (lvl != null) renderLevels.Add(lvl);
-                    }
+                    // 地下层：不需要渲染过滤器，CurrentMap 已经是子地图
+                    ActiveRenderFilter = null;
+                    ActiveRenderLevels = null;
                 }
-                ActiveRenderLevels = renderLevels;
-                foreach (var lvl in renderLevels)
+                else
                 {
-                    MarkAreaSectionsDirty(lvl.area);
-                    MarkLevelMapSectionsDirty(lvl);
+                    ActiveRenderFilter = focusData;
+                    var renderLevels = new List<LevelData>();
+                    foreach (int elev in AllElevations)
+                    {
+                        if (elev > 0 && elev <= focusedElevation)
+                        {
+                            var lvl = GetLevel(elev);
+                            if (lvl != null) renderLevels.Add(lvl);
+                        }
+                    }
+                    ActiveRenderLevels = renderLevels;
+                    foreach (var lvl in renderLevels)
+                    {
+                        MarkAreaSectionsDirty(lvl.area);
+                        MarkLevelMapSectionsDirty(lvl);
+                    }
                 }
             }
         }
@@ -568,11 +616,14 @@ namespace MapLevelFramework
             mapParent.Tile = 0;
             mapParent.sourceMap = map;
 
-            // 直接赋值 mapGenerator（参照 VMF 的做法）
-            var genDef = DefDatabase<MapGeneratorDef>.GetNamedSilentFail("MLF_LevelMapGenerator");
+            // 根据是否地下层选择不同的 MapGenerator
+            string genDefName = data.isUnderground
+                ? "MLF_UndergroundMapGenerator"
+                : "MLF_LevelMapGenerator";
+            var genDef = DefDatabase<MapGeneratorDef>.GetNamedSilentFail(genDefName);
             if (genDef == null)
             {
-                Log.Error("[MapLevelFramework] MapGeneratorDef 'MLF_LevelMapGenerator' not found.");
+                Log.Error($"[MapLevelFramework] MapGeneratorDef '{genDefName}' not found.");
                 return null;
             }
             mapParent.mapGenerator = genDef;
@@ -587,10 +638,18 @@ namespace MapLevelFramework
             // 清除子地图迷雾（层级地图不需要战争迷雾）
             ClearFog(levelMap);
 
-            // 共享天气/光照（如果配置了）
-            if (data.levelDef == null || data.levelDef.shareWeather)
+            // 共享天气/光照（地下层不共享）
+            if (!data.isUnderground && (data.levelDef == null || data.levelDef.shareWeather))
             {
                 ShareEnvironment(levelMap, map);
+            }
+
+            // 地下层：添加 UndergroundMapComponent 用于绘制层级切换 UI
+            if (data.isUnderground)
+            {
+                var comp = new UndergroundMapComponent(levelMap);
+                levelMap.components.Add(comp);
+                comp.FinalizeInit();
             }
 
             return levelMap;

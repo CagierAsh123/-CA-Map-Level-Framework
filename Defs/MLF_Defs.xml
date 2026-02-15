@@ -87,6 +87,50 @@
     <saved>true</saved>
   </WorldObjectDef>
 
+  <!-- ========== 地下层 ========== -->
+
+  <!-- 地下泥地 - 挖掘岩石后露出的地面 -->
+  <TerrainDef>
+    <defName>MLF_DirtFloor</defName>
+    <label>泥地</label>
+    <description>挖掘岩石后露出的泥土地面。</description>
+    <texturePath>Terrain/Surfaces/RoughStone</texturePath>
+    <edgeType>Hard</edgeType>
+    <renderPrecedence>200</renderPrecedence>
+    <passability>Standable</passability>
+    <layerable>false</layerable>
+    <scatterType>Rocky</scatterType>
+    <fertility>0</fertility>
+    <color>(0.35, 0.30, 0.25)</color>
+    <affordances>
+      <li>Light</li>
+      <li>Medium</li>
+      <li>Heavy</li>
+      <li>Walkable</li>
+      <li>SmoothableStone</li>
+    </affordances>
+  </TerrainDef>
+
+  <!-- 地下层 GenStep -->
+  <GenStepDef>
+    <defName>MLF_UndergroundInterior</defName>
+    <order>10</order>
+    <genStep Class="MapLevelFramework.GenStep_UndergroundInterior"/>
+  </GenStepDef>
+
+  <!-- 地下层 MapGenerator -->
+  <MapGeneratorDef>
+    <defName>MLF_UndergroundMapGenerator</defName>
+    <defaultUnderGridTerrain>MLF_LevelBase</defaultUnderGridTerrain>
+    <pocketMapProperties>
+      <biome>MLF_LevelBiome</biome>
+      <temperature>15</temperature>
+    </pocketMapProperties>
+    <genSteps>
+      <li>MLF_UndergroundInterior</li>
+    </genSteps>
+  </MapGeneratorDef>
+
   <!-- ========== Job ========== -->
 
   <JobDef>
@@ -98,10 +142,10 @@
 
   <!-- ========== 建筑 ========== -->
 
-  <!-- 楼梯 - 连接地面层和二楼 -->
+  <!-- 楼梯（上楼） -->
   <ThingDef ParentName="BuildingBase">
     <defName>MLF_Stairs</defName>
-    <label>楼梯</label>
+    <label>楼梯（上）</label>
     <description>连接地面层和上层的楼梯。在有屋顶的房间内建造，即可创建二楼。</description>
     <thingClass>MapLevelFramework.Building_Stairs</thingClass>
     <graphicData>
@@ -129,6 +173,44 @@
     <building>
       <isInert>true</isInert>
     </building>
+  </ThingDef>
+
+  <!-- 楼梯（下楼） -->
+  <ThingDef ParentName="BuildingBase">
+    <defName>MLF_StairsDown</defName>
+    <label>楼梯（下）</label>
+    <description>通往地下层的楼梯。建造后即可开辟地下空间。</description>
+    <thingClass>MapLevelFramework.Building_Stairs</thingClass>
+    <graphicData>
+      <texPath>楼梯</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <drawSize>(1,1)</drawSize>
+    </graphicData>
+    <size>(1,1)</size>
+    <rotatable>false</rotatable>
+    <altitudeLayer>Building</altitudeLayer>
+    <passability>Standable</passability>
+    <pathCost>0</pathCost>
+    <blockWind>false</blockWind>
+    <castEdgeShadows>false</castEdgeShadows>
+    <fillPercent>0.15</fillPercent>
+    <statBases>
+      <MaxHitPoints>200</MaxHitPoints>
+      <WorkToBuild>1000</WorkToBuild>
+      <Flammability>0.5</Flammability>
+    </statBases>
+    <costList>
+      <WoodLog>30</WoodLog>
+    </costList>
+    <designationCategory>Structure</designationCategory>
+    <building>
+      <isInert>true</isInert>
+    </building>
+    <modExtensions>
+      <li Class="MapLevelFramework.StairsExtension">
+        <goesDown>true</goesDown>
+      </li>
+    </modExtensions>
   </ThingDef>
 
 </Defs>
