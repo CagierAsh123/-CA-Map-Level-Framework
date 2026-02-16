@@ -81,8 +81,9 @@ namespace MapLevelFramework.Patches
                     new CrossLevelJobUtility.FetchData
                     {
                         thingDef = cost.thingDef,
-                        frame = constructThing,
-                        returnElevation = currentElev
+                        target = constructThing,
+                        returnElevation = currentElev,
+                        needType = CrossLevelJobUtility.NeedType.Construction
                     });
 
                 // 创建 MLF_ReturnWithMaterial 作为延迟 job
@@ -174,6 +175,38 @@ namespace MapLevelFramework.Patches
                     return things[i];
             }
             return null;
+        }
+
+        /// <summary>
+        /// 快速检查：建造物是否需要材料且其他楼层有。
+        /// 用于扫描模式下判断"这里有建造工作"。
+        /// </summary>
+        private static bool AnyMaterialNeededFromOtherFloor(Pawn pawn, IConstructible c)
+        {
+            Map pawnMap = pawn.Map;
+            LevelManager mgr;
+            Map baseMap;
+            if (LevelManager.IsLevelMap(pawnMap, out var parentMgr, out _))
+            {
+                mgr = parentMgr;
+                baseMap = parentMgr.map;
+            }
+            else
+            {
+                mgr = LevelManager.GetManager(pawnMap);
+                baseMap = pawnMap;
+            }
+            if (mgr == null || mgr.LevelCount == 0) return false;
+
+            int currentElev = CrossLevelJobUtility.GetMapElevation(pawnMap, mgr, baseMap);
+
+            foreach (var cost in c.TotalMaterialCost())
+            {
+                if (c.ThingCountNeeded(cost.thingDef) <= 0) continue;
+                var result = FindMaterialOnOtherFloor(pawn, pawnMap, baseMap, mgr, currentElev, cost.thingDef);
+                if (result.map != null) return true;
+            }
+            return false;
         }
     }
 }

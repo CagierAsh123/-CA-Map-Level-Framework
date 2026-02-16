@@ -14,6 +14,7 @@ namespace MapLevelFramework.Patches
         public static void Prefix(ref Map value)
         {
             if (value == null) return;
+            if (LevelManager.SuppressAutoFocus) return;
 
             // 检查是否是层级子地图
             if (LevelManager.IsLevelMap(value, out var manager, out var levelData))

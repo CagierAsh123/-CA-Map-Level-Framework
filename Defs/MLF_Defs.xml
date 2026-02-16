@@ -41,7 +41,7 @@
     <description>楼层的结构基底，可在上面铺设任意地板。</description>
     <texturePath>Terrain/Surfaces/GenericFloorTile</texturePath>
     <edgeType>Hard</edgeType>
-    <renderPrecedence>500</renderPrecedence>
+    <renderPrecedence>399</renderPrecedence>
     <passability>Standable</passability>
     <layerable>false</layerable>
     <scatterType>None</scatterType>
@@ -96,7 +96,7 @@
     <description>挖掘岩石后露出的泥土地面。</description>
     <texturePath>Terrain/Surfaces/RoughStone</texturePath>
     <edgeType>Hard</edgeType>
-    <renderPrecedence>500</renderPrecedence>
+    <renderPrecedence>399</renderPrecedence>
     <passability>Standable</passability>
     <layerable>false</layerable>
     <scatterType>Rocky</scatterType>

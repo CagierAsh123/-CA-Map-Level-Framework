@@ -103,37 +103,42 @@ namespace MapLevelFramework
             if (!levelExists)
             {
                 // 创建层级按钮
+                var stairs = this;
+                var localMgr = mgr;
                 yield return new Command_Action
                 {
                     defaultLabel = "创建层级",
                     defaultDesc = $"创建 {GetElevationLabel(targetElevation)} 层级。",
-                    icon = ContentFinder<Texture2D>.Get("UI/Commands/AddLevel", false)
-                           ?? TexCommand.Install,
+                    icon = TexCommand.DesirePower,
                     action = delegate
                     {
-                        if (GoesDown)
-                            CreateUndergroundLevel(mgr);
+                        // 取消任何活跃的建造指示器，防止幽灵残留
+                        Find.DesignatorManager.Deselect();
+                        if (stairs.GoesDown)
+                            stairs.CreateUndergroundLevel(localMgr);
                         else
-                            CreateOrUpdateLevel(mgr, this.Map);
+                            stairs.CreateOrUpdateLevel(localMgr, stairs.Map);
                     }
                 };
             }
             else
             {
                 // 销毁层级按钮
+                var localMgr = mgr;
+                int localElev = targetElevation;
                 yield return new Command_Action
                 {
                     defaultLabel = "销毁层级",
                     defaultDesc = $"销毁 {GetElevationLabel(targetElevation)} 层级。该层上的所有物品和建筑将被移除，殖民者会被转移回地面。",
-                    icon = ContentFinder<Texture2D>.Get("UI/Commands/RemoveLevel", false)
-                           ?? TexCommand.RemoveRoutePlannerWaypoint,
+                    icon = TexCommand.ClearPrioritizedWork,
                     action = delegate
                     {
+                        Find.DesignatorManager.Deselect();
                         Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(
-                            $"确定要销毁 {GetElevationLabel(targetElevation)} 吗？\n该层上的所有建筑和物品将被移除。",
+                            $"确定要销毁 {GetElevationLabel(localElev)} 吗？\n该层上的所有建筑和物品将被移除。",
                             delegate
                             {
-                                mgr.RemoveLevel(targetElevation);
+                                localMgr.RemoveLevel(localElev);
                             },
                             destructive: true));
                     }
@@ -211,6 +216,9 @@ namespace MapLevelFramework
                 SpawnStairsOnLevel(existing.LevelMap, Position);
                 RockFrontierUtility.SpawnInitialFrontier(existing.LevelMap, Position, existing);
 
+                // 新入口格子标记为 Home（清洁等 WorkGiver 依赖）
+                LevelManager.ExpandHomeArea(existing.LevelMap, existing);
+
                 Log.Message($"[MLF] Updated underground level {targetElevation}: added entrance at {Position}");
             }
             else
@@ -276,6 +284,9 @@ namespace MapLevelFramework
 
                 // 在子地图同位置放置楼梯（如果还没有）
                 SpawnStairsOnLevel(existing.LevelMap, Position);
+
+                // 新增格子标记为 Home（清洁等 WorkGiver 依赖）
+                LevelManager.ExpandHomeArea(existing.LevelMap, existing);
 
                 Log.Message($"[MLF] Updated level {targetElevation}: total {existing.usableCells.Count} cells, bounds={existing.area}");
             }

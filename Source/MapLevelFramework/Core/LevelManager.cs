@@ -98,6 +98,11 @@ namespace MapLevelFramework
         /// </summary>
         public int LevelCount => levels.Count;
 
+        /// <summary>
+        /// 层级创建期间为 true，抑制 Patch_Game_CurrentMap 的自动聚焦。
+        /// </summary>
+        internal static bool SuppressAutoFocus;
+
         // ========== 构造 ==========
 
         public LevelManager(Map map) : base(map) { }
@@ -152,7 +157,9 @@ namespace MapLevelFramework
             // 生成子地图
             try
             {
+                SuppressAutoFocus = true;
                 var levelMap = GenerateLevelMap(data, size);
+                SuppressAutoFocus = false;
                 if (levelMap == null)
                 {
                     Log.Error($"[MLF] GenerateLevelMap returned null for elevation {elevation}.");
@@ -164,6 +171,7 @@ namespace MapLevelFramework
             }
             catch (Exception ex)
             {
+                SuppressAutoFocus = false;
                 Log.Error($"[MLF] Failed to generate level map for elevation {elevation}: {ex}");
                 return null;
             }
@@ -604,6 +612,12 @@ namespace MapLevelFramework
                 {
                     data.mapParent.Tile = correctTile;
                 }
+
+                // 修复旧存档 Home 区域（清洁等 WorkGiver 依赖）
+                if (data.LevelMap != null)
+                {
+                    ExpandHomeArea(data.LevelMap, data);
+                }
             }
 
             // 加载存档后恢复渲染过滤器
@@ -764,6 +778,9 @@ namespace MapLevelFramework
             // 清除子地图迷雾（层级地图不需要战争迷雾）
             ClearFog(levelMap);
 
+            // 初始化 Home 区域（清洁等 WorkGiver 依赖 Home 区域）
+            ExpandHomeArea(levelMap, data);
+
             // 共享天气/光照（地下层不共享）
             if (!data.isUnderground && (data.levelDef == null || data.levelDef.shareWeather))
             {
@@ -804,6 +821,34 @@ namespace MapLevelFramework
                 if (cell.InBounds(levelMap) && levelMap.fogGrid.IsFogged(cell))
                 {
                     levelMap.fogGrid.Unfog(cell);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 将层级地图的可用区域标记为 Home 区域。
+        /// 清洁、灭火等 WorkGiver 依赖 Home 区域才会工作。
+        /// </summary>
+        internal static void ExpandHomeArea(Map levelMap, LevelData data)
+        {
+            if (levelMap == null) return;
+            Area_Home home = levelMap.areaManager.Home;
+            if (home == null) return;
+
+            if (data.usableCells != null)
+            {
+                foreach (IntVec3 cell in data.usableCells)
+                {
+                    if (cell.InBounds(levelMap))
+                        home[cell] = true;
+                }
+            }
+            else
+            {
+                foreach (IntVec3 cell in data.area)
+                {
+                    if (cell.InBounds(levelMap))
+                        home[cell] = true;
                 }
             }
         }

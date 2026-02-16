@@ -100,7 +100,10 @@ namespace MapLevelFramework
         /// <returns>MLF_UseStairs job，或 null</returns>
         public static Job TryCrossLevelScan(Pawn pawn, Func<Job> tryFindJob)
         {
-            if (Scanning) return null;
+            if (Scanning)
+            {
+                return null;
+            }
             if (pawn?.Map == null || !pawn.Spawned) return null;
 
             // 冷却检查：防止反复跳层
@@ -108,7 +111,9 @@ namespace MapLevelFramework
             int pawnId = pawn.thingIDNumber;
             if (lastRedirectTick.TryGetValue(pawnId, out int lastTick)
                 && now - lastTick < RedirectCooldownTicks)
+            {
                 return null;
+            }
 
             Map pawnMap = pawn.Map;
             LevelManager mgr;
@@ -125,7 +130,10 @@ namespace MapLevelFramework
                 baseMap = pawnMap;
             }
 
-            if (mgr == null || mgr.LevelCount == 0) return null;
+            if (mgr == null || mgr.LevelCount == 0)
+            {
+                return null;
+            }
 
             int currentElev = GetMapElevation(pawnMap, mgr, baseMap);
 
@@ -139,7 +147,10 @@ namespace MapLevelFramework
                     otherMapsBuffer.Add((level.LevelMap, level.elevation));
             }
 
-            if (otherMapsBuffer.Count == 0) return null;
+            if (otherMapsBuffer.Count == 0)
+            {
+                return null;
+            }
 
             otherMapsBuffer.Sort((a, b) =>
                 Math.Abs(a.elevation - currentElev)
@@ -256,11 +267,18 @@ namespace MapLevelFramework
 
         // ========== 跨层取材料数据 ==========
 
+        public enum NeedType
+        {
+            Construction,   // 建造：送到蓝图/框架
+            Refuel,         // 加油：送到 CompRefuelable 建筑
+        }
+
         public struct FetchData
         {
             public ThingDef thingDef;
-            public Thing frame;
+            public Thing target;           // 目标（蓝图/框架/加油口等）
             public int returnElevation;
+            public NeedType needType;
         }
 
         private static readonly Dictionary<int, FetchData> fetchMaterialData = new Dictionary<int, FetchData>();

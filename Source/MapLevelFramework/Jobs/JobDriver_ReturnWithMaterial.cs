@@ -6,9 +6,9 @@ using Verse.AI;
 namespace MapLevelFramework
 {
     /// <summary>
-    /// 跨层取材料 JobDriver - pawn 已转移到材料所在楼层，
-    /// 拿起材料 → 走到返回楼梯 → 转移回原层 → 送到蓝图/框架。
-    /// 由 Patch_ConstructDeliverResources 创建，通过 MLF_UseStairs 延迟触发。
+    /// 通用跨层材料搬运 JobDriver：
+    /// 拿起材料 → 走到楼梯 → 转移到目标层 → 根据 NeedType 启动对应的原版交付 job。
+    /// 搬运阶段通用，交付阶段按类型分发。
     /// </summary>
     public class JobDriver_ReturnWithMaterial : JobDriver
     {
@@ -19,7 +19,6 @@ namespace MapLevelFramework
 
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
-            // 目标在 init toil 中动态设置，此处无需预约
             return true;
         }
 
@@ -36,13 +35,36 @@ namespace MapLevelFramework
                 }
 
                 // 在当前地图找材料
-                Thing material = GenClosest.ClosestThingReachable(
-                    pawn.Position, pawn.Map,
-                    ThingRequest.ForDef(fetchData.thingDef),
-                    PathEndMode.ClosestTouch,
-                    TraverseParms.For(pawn),
-                    9999f,
-                    t => !t.IsForbidden(pawn) && pawn.CanReserve(t));
+                Thing material;
+                if (fetchData.needType == CrossLevelJobUtility.NeedType.Refuel)
+                {
+                    // 加油：用燃料过滤器匹配
+                    CompRefuelable comp = fetchData.target?.TryGetComp<CompRefuelable>();
+                    if (comp == null)
+                    {
+                        EndJobWith(JobCondition.Incompletable);
+                        return;
+                    }
+                    ThingFilter filter = comp.Props.fuelFilter;
+                    material = GenClosest.ClosestThingReachable(
+                        pawn.Position, pawn.Map,
+                        filter.BestThingRequest,
+                        PathEndMode.ClosestTouch,
+                        TraverseParms.For(pawn),
+                        9999f,
+                        t => !t.IsForbidden(pawn) && pawn.CanReserve(t) && filter.Allows(t));
+                }
+                else
+                {
+                    // 建造等：按 thingDef 匹配
+                    material = GenClosest.ClosestThingReachable(
+                        pawn.Position, pawn.Map,
+                        ThingRequest.ForDef(fetchData.thingDef),
+                        PathEndMode.ClosestTouch,
+                        TraverseParms.For(pawn),
+                        9999f,
+                        t => !t.IsForbidden(pawn) && pawn.CanReserve(t));
+                }
 
                 if (material == null)
                 {
@@ -80,7 +102,7 @@ namespace MapLevelFramework
             // 4. 走到返回楼梯
             yield return Toils_Goto.GotoThing(TargetIndex.B, PathEndMode.OnCell);
 
-            // 5. 转移回原层并送到蓝图
+            // 5. 转移到目标层并启动交付 job
             Toil transfer = ToilMaker.MakeToil("MLF_TransferAndDeliver");
             transfer.initAction = delegate
             {
@@ -99,28 +121,61 @@ namespace MapLevelFramework
             Thing carried = pawn.carryTracker.CarriedThing;
             if (carried == null) return;
 
-            // 转移回原层
+            // 转移到目标层
             StairTransferUtility.TransferPawn(pawn, destMap, destPos);
 
             carried = pawn.carryTracker.CarriedThing;
             if (carried == null) return;
 
-            // 检查蓝图/框架是否还在
-            Thing frame = fetchData.frame;
-            if (frame != null && frame.Spawned && frame.Map == destMap
-                && pawn.CanReserve(frame))
+            Thing target = fetchData.target;
+
+            // 目标还在吗？
+            if (target == null || !target.Spawned || target.Map != destMap)
             {
-                Job haulJob = JobMaker.MakeJob(JobDefOf.HaulToContainer);
-                haulJob.targetA = carried;
-                haulJob.targetB = frame;
-                haulJob.count = carried.stackCount;
-                haulJob.haulMode = HaulMode.ToContainer;
-                pawn.jobs.StartJob(haulJob, JobCondition.None, null, false, true);
+                pawn.carryTracker.TryDropCarriedThing(pawn.Position, ThingPlaceMode.Near, out _);
                 return;
             }
 
-            // 蓝图已消失，放下材料
+            // 根据 NeedType 启动对应的原版交付 job
+            Job deliverJob = CreateDeliverJob(carried, target);
+            if (deliverJob != null)
+            {
+                pawn.jobs.StartJob(deliverJob, JobCondition.None, null, false, true);
+                return;
+            }
+
+            // 无法交付，放下材料
             pawn.carryTracker.TryDropCarriedThing(pawn.Position, ThingPlaceMode.Near, out _);
+        }
+
+        private Job CreateDeliverJob(Thing carried, Thing target)
+        {
+            switch (fetchData.needType)
+            {
+                case CrossLevelJobUtility.NeedType.Construction:
+                    if (!pawn.CanReserve(target)) return null;
+                    Job haulJob = JobMaker.MakeJob(JobDefOf.HaulToContainer);
+                    haulJob.targetA = carried;
+                    haulJob.targetB = target;
+                    haulJob.count = carried.stackCount;
+                    haulJob.haulMode = HaulMode.ToContainer;
+                    return haulJob;
+
+                case CrossLevelJobUtility.NeedType.Refuel:
+                    if (!pawn.CanReserve(target)) return null;
+                    // 先放下燃料，再启动原版 Refuel job
+                    pawn.carryTracker.TryDropCarriedThing(
+                        pawn.Position, ThingPlaceMode.Near, out Thing droppedFuel);
+                    if (droppedFuel != null)
+                    {
+                        Job refuelJob = JobMaker.MakeJob(JobDefOf.Refuel, target, droppedFuel);
+                        return refuelJob;
+                    }
+                    return null;
+
+                default:
+                    return null;
+            }
         }
     }
 }
