@@ -26,7 +26,7 @@ namespace MapLevelFramework
             // 手动 patch internal 类
             PatchInternalClasses();
 
-            Log.Message("[MapLevelFramework] Initialized.");
+            Log.Message("[MLF] Initialized.");
         }
 
         private void PatchInternalClasses()
@@ -37,7 +37,7 @@ namespace MapLevelFramework
                 var sunShadowType = AccessTools.TypeByName("Verse.SectionLayer_SunShadows");
                 if (sunShadowType == null)
                 {
-                    Log.Warning("[MapLevelFramework] SectionLayer_SunShadows type not found.");
+                    Log.Warning("[MLF] SectionLayer_SunShadows type not found.");
                     return;
                 }
 
@@ -48,7 +48,7 @@ namespace MapLevelFramework
                     HarmonyInstance.Patch(regenerate,
                         prefix: new HarmonyMethod(AccessTools.Method(
                             typeof(Patches.Patch_SunShadows), nameof(Patches.Patch_SunShadows.Prefix))));
-                    Log.Message("[MapLevelFramework] Patched SectionLayer_SunShadows.Regenerate OK.");
+                    Log.Message("[MLF] Patched SectionLayer_SunShadows.Regenerate OK.");
                 }
 
                 // Patch DrawLayer - 绘制时跳过与层级区域重叠的 section 的阴影
@@ -58,23 +58,23 @@ namespace MapLevelFramework
                     HarmonyInstance.Patch(drawLayer,
                         prefix: new HarmonyMethod(AccessTools.Method(
                             typeof(Patches.Patch_SunShadows), nameof(Patches.Patch_SunShadows.DrawLayerPrefix))));
-                    Log.Message("[MapLevelFramework] Patched SectionLayer_SunShadows.DrawLayer OK.");
+                    Log.Message("[MLF] Patched SectionLayer_SunShadows.DrawLayer OK.");
                 }
             }
             catch (System.Exception ex)
             {
-                Log.Error($"[MapLevelFramework] Failed to patch SunShadows: {ex}");
+                Log.Error($"[MLF] Failed to patch SunShadows: {ex}");
             }
 
             // SectionLayer_Zones 是 internal 类 - 聚焦层级时隐藏基地图 zone
             try
             {
                 Patches.Patch_ZoneLayer.Apply(HarmonyInstance);
-                Log.Message("[MapLevelFramework] Patched SectionLayer_Zones.Regenerate OK.");
+                Log.Message("[MLF] Patched SectionLayer_Zones.Regenerate OK.");
             }
             catch (System.Exception ex)
             {
-                Log.Error($"[MapLevelFramework] Failed to patch ZoneLayer: {ex}");
+                Log.Error($"[MLF] Failed to patch ZoneLayer: {ex}");
             }
         }
     }

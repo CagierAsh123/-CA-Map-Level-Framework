@@ -60,7 +60,7 @@ namespace MapLevelFramework.Patches
                 baseMap = map;
             }
 
-            if (mgr == null || !mgr.AllLevels.Any()) return null;
+            if (mgr == null || mgr.LevelCount == 0) return null;
 
             var result = new List<Pawn>();
 

@@ -32,6 +32,14 @@ namespace MapLevelFramework
         /// </summary>
         public CellRect area;
 
+        /// <summary>
+        /// 缓存的 LevelData 引用，避免 GetLevelForMap 的 LINQ 查找。
+        /// 由 LevelManager 在创建/加载时设置。
+        /// </summary>
+        public LevelData levelData;
+
+
+
 
 
         public override Material Material

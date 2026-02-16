@@ -56,7 +56,7 @@ namespace MapLevelFramework.Patches
                         continue;
 
                     var mgr = LevelManager.GetManager(map);
-                    if (mgr == null || !mgr.AllLevels.Any())
+                    if (mgr == null || mgr.LevelCount == 0)
                         continue; // 没有子地图，让原版处理
 
                     // 聚合所有层级的食物和人口
@@ -82,7 +82,7 @@ namespace MapLevelFramework.Patches
                         continue;
 
                     var mgr = LevelManager.GetManager(map);
-                    if (mgr != null && mgr.AllLevels.Any())
+                    if (mgr != null && mgr.LevelCount > 0)
                         continue; // 已经在上面处理过
 
                     if (map.resourceCounter.TotalHumanEdibleNutrition

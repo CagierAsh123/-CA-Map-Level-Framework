@@ -222,16 +222,9 @@ namespace MapLevelFramework.Patches
     [HarmonyPatch(typeof(RoofGrid), "SetRoof")]
     public static class Patch_RoofGrid_SetRoof
     {
-        private static readonly FieldInfo roofMapField =
-            typeof(RoofGrid).GetField("map", BindingFlags.Instance | BindingFlags.NonPublic);
-
-        public static void Postfix(RoofGrid __instance, IntVec3 c, RoofDef def)
+        public static void Postfix(Map ___map, IntVec3 c, RoofDef def)
         {
-            Map map = roofMapField?.GetValue(__instance) as Map;
-            if (map != null)
-            {
-                RoofFloorSync.OnRoofChanged(map, c, def);
-            }
+            RoofFloorSync.OnRoofChanged(___map, c, def);
         }
     }
 
@@ -241,16 +234,9 @@ namespace MapLevelFramework.Patches
     [HarmonyPatch(typeof(TerrainGrid), "SetTerrain")]
     public static class Patch_TerrainGrid_SetTerrain
     {
-        private static readonly FieldInfo terrainMapField =
-            typeof(TerrainGrid).GetField("map", BindingFlags.Instance | BindingFlags.NonPublic);
-
-        public static void Postfix(TerrainGrid __instance, IntVec3 c, TerrainDef newTerr)
+        public static void Postfix(Map ___map, IntVec3 c, TerrainDef newTerr)
         {
-            Map map = terrainMapField?.GetValue(__instance) as Map;
-            if (map != null)
-            {
-                RoofFloorSync.OnFloorChanged(map, c, newTerr);
-            }
+            RoofFloorSync.OnFloorChanged(___map, c, newTerr);
         }
     }
 
@@ -260,17 +246,10 @@ namespace MapLevelFramework.Patches
     [HarmonyPatch(typeof(TerrainGrid), "RemoveTopLayer")]
     public static class Patch_TerrainGrid_RemoveTopLayer
     {
-        private static readonly FieldInfo terrainMapField =
-            typeof(TerrainGrid).GetField("map", BindingFlags.Instance | BindingFlags.NonPublic);
-
-        public static void Postfix(TerrainGrid __instance, IntVec3 c)
+        public static void Postfix(TerrainGrid __instance, Map ___map, IntVec3 c)
         {
-            Map map = terrainMapField?.GetValue(__instance) as Map;
-            if (map != null)
-            {
-                TerrainDef current = __instance.TerrainAt(c);
-                RoofFloorSync.OnFloorChanged(map, c, current);
-            }
+            TerrainDef current = __instance.TerrainAt(c);
+            RoofFloorSync.OnFloorChanged(___map, c, current);
         }
     }
 }

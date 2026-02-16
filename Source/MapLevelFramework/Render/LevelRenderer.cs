@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
+using HarmonyLib;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -18,12 +18,27 @@ namespace MapLevelFramework.Render
     /// </summary>
     public static class LevelRenderer
     {
-        // 反射缓存
-        private static FieldInfo sectionsField;
-        private static FieldInfo layersField;
-        private static FieldInfo dirtyFlagsField;
+        // 编译后的字段访问器（替代 FieldInfo 反射）
+        private static readonly AccessTools.FieldRef<MapDrawer, Section[,]> sectionsRef =
+            AccessTools.FieldRefAccess<MapDrawer, Section[,]>("sections");
+        private static readonly AccessTools.FieldRef<Section, List<SectionLayer>> layersRef =
+            AccessTools.FieldRefAccess<Section, List<SectionLayer>>("layers");
 
-        // 层级内容的基础 Y 偏移，确保渲染在主地图地形之上
+        // 需要跳过的 SectionLayer 类型（替代 GetType().Name 字符串比较）
+        private static readonly HashSet<Type> skipLayerTypes = new HashSet<Type>
+        {
+            typeof(SectionLayer_FogOfWar),
+            typeof(SectionLayer_Snow),
+        };
+
+        static LevelRenderer()
+        {
+            // 尝试添加可能不存在的类型
+            var darkness = AccessTools.TypeByName("Verse.SectionLayer_Darkness");
+            if (darkness != null) skipLayerTypes.Add(darkness);
+            var lighting = AccessTools.TypeByName("Verse.SectionLayer_LightingOverlay");
+            if (lighting != null) skipLayerTypes.Add(lighting);
+        }
         private const float YOffset = 0.5f;
 
         // 每层额外的 Y 偏移，确保高层在深度缓冲中覆盖低层
@@ -31,8 +46,8 @@ namespace MapLevelFramework.Render
         private const float YOffsetPerLevel = 0.5f;
 
         // render queue 基础提升量：确保子地图材质在基地图之后绘制
-        // 保持较小值，避免超过 GUI overlay 的 queue（2900-3620）
-        private const int RenderQueueElevation = 100;
+        // 需要足够大以覆盖 renderPrecedence 差异（原版自然地形最高约 380）
+        private const int RenderQueueElevation = 500;
 
         // 每层额外的 render queue 提升量
         // 保持极小值，主要依靠 Y 偏移（深度缓冲）处理层间遮挡
@@ -57,16 +72,6 @@ namespace MapLevelFramework.Render
             initializedMaps.Remove(mapId);
         }
 
-        static LevelRenderer()
-        {
-            sectionsField = typeof(MapDrawer).GetField("sections",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            layersField = typeof(Section).GetField("layers",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            dirtyFlagsField = typeof(Section).GetField("dirtyFlags",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-        }
-
         /// <summary>
         /// 更新子地图的 section mesh。
         ///
@@ -81,7 +86,7 @@ namespace MapLevelFramework.Render
         {
             if (levelMap?.mapDrawer == null) return;
 
-            Section[,] sections = sectionsField?.GetValue(levelMap.mapDrawer) as Section[,];
+            Section[,] sections = sectionsRef(levelMap.mapDrawer);
             if (sections == null) return;
 
             int mapId = levelMap.uniqueID;
@@ -113,7 +118,7 @@ namespace MapLevelFramework.Render
                     // 2. 补充重生成：Game.MapUpdate 的 TryUpdate(viewRect) 可能只标记了
                     //    layer.Dirty 而没有 Regenerate（section 不在相机视野内时）。
                     //    我们的 DrawLevelMapMesh 不走 DrawSection，所以必须在这里处理。
-                    List<SectionLayer> layers = layersField?.GetValue(section) as List<SectionLayer>;
+                    List<SectionLayer> layers = layersRef(section);
                     if (layers != null)
                     {
                         bool anyRegenerated = false;
@@ -176,13 +181,13 @@ namespace MapLevelFramework.Render
         public static void DrawLevelMapMesh(Map levelMap, LevelData level, int levelIndex = 0)
         {
             if (levelMap?.mapDrawer == null) return;
-            if (sectionsField == null || layersField == null) return;
+            if (sectionsRef == null || layersRef == null) return;
 
             EnsureSkipMaterialsInit();
             float yOff = YOffset + levelIndex * YOffsetPerLevel;
             Vector3 drawOffset = new Vector3(0f, yOff, 0f);
 
-            Section[,] sections = sectionsField.GetValue(levelMap.mapDrawer) as Section[,];
+            Section[,] sections = sectionsRef(levelMap.mapDrawer);
             if (sections == null) return;
 
             for (int x = 0; x < sections.GetLength(0); x++)
@@ -193,15 +198,14 @@ namespace MapLevelFramework.Render
                     if (section == null) continue;
                     if (!level.IsSectionActive(x, z)) continue;
 
-                    List<SectionLayer> layers = layersField.GetValue(section) as List<SectionLayer>;
+                    List<SectionLayer> layers = layersRef(section);
                     if (layers == null) continue;
 
                     foreach (SectionLayer layer in layers)
                     {
                         if (layer == null) continue;
 
-                        string layerName = layer.GetType().Name;
-                        if (ShouldSkipLayer(layerName)) continue;
+                        if (skipLayerTypes.Contains(layer.GetType())) continue;
 
                         foreach (LayerSubMesh subMesh in layer.subMeshes)
                         {
@@ -318,23 +322,6 @@ namespace MapLevelFramework.Render
                 lastUsableCellsCount = usable.Count;
             }
             GenDraw.DrawFieldEdges(edgeCellsCache, new Color(0.2f, 0.8f, 1f, 0.6f));
-        }
-
-        /// <summary>
-        /// 判断是否应该跳过某个 SectionLayer。
-        /// </summary>
-        private static bool ShouldSkipLayer(string layerName)
-        {
-            switch (layerName)
-            {
-                case "SectionLayer_FogOfWar":
-                case "SectionLayer_Darkness":
-                case "SectionLayer_LightingOverlay":
-                case "SectionLayer_Snow":
-                    return true;
-                default:
-                    return false;
-            }
         }
     }
 }

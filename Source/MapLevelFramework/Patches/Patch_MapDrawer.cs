@@ -11,9 +11,13 @@ namespace MapLevelFramework.Patches
     [HarmonyPatch(typeof(MapDrawer), "DrawMapMesh")]
     public static class Patch_MapDrawer_DrawMapMesh
     {
+        // 缓存的字段访问器（替代每帧 Traverse.Create 分配）
+        private static readonly AccessTools.FieldRef<MapDrawer, Map> mapRef =
+            AccessTools.FieldRefAccess<MapDrawer, Map>("map");
+
         public static void Postfix(MapDrawer __instance)
         {
-            Map baseMap = Traverse.Create(__instance).Field("map").GetValue<Map>();
+            Map baseMap = mapRef(__instance);
             if (baseMap == null) return;
 
             var mgr = LevelManager.GetManager(baseMap);
@@ -28,21 +32,9 @@ namespace MapLevelFramework.Patches
                 var level = renderLevels[i];
                 if (level?.LevelMap == null) continue;
 
-                // 计算被高层覆盖的格子（中间层的动态物体不应透过高层地板显示）
-                HashSet<IntVec3> excludeCells = null;
-                if (i < renderLevels.Count - 1)
-                {
-                    excludeCells = new HashSet<IntVec3>();
-                    for (int j = i + 1; j < renderLevels.Count; j++)
-                    {
-                        var higher = renderLevels[j];
-                        if (higher.usableCells != null)
-                            excludeCells.UnionWith(higher.usableCells);
-                        else
-                            foreach (IntVec3 c in higher.area)
-                                excludeCells.Add(c);
-                    }
-                }
+                // 使用缓存的 excludeCells（中间层的动态物体不应透过高层地板显示）
+                HashSet<IntVec3> excludeCells = (i < renderLevels.Count - 1)
+                    ? level.CachedExcludeCells : null;
 
                 Render.LevelRenderer.UpdateLevelMapSections(level.LevelMap, level);
                 Render.LevelRenderer.DrawLevelMapMesh(level.LevelMap, level, i);

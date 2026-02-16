@@ -50,7 +50,7 @@ namespace MapLevelFramework.Patches
             public static void Postfix(Map __instance, ref IEnumerable<Pawn> __result)
             {
                 var mgr = LevelManager.GetManager(__instance);
-                if (mgr == null || !mgr.AllLevels.Any()) return;
+                if (mgr == null || mgr.LevelCount == 0) return;
 
                 // 只在基地图上聚合（避免重复计算）
                 if (LevelManager.IsLevelMap(__instance, out _, out _)) return;

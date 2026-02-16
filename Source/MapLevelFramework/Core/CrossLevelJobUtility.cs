@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+using System.Runtime.CompilerServices;
+using HarmonyLib;
+using RimWorld;
 using Verse;
 using Verse.AI;
 
@@ -22,19 +23,58 @@ namespace MapLevelFramework
         /// </summary>
         public const int RedirectCooldownTicks = 250;
 
+        /// <summary>
+        /// 跨层取材料专用冷却（tick）。比普通重定向更长，给 pawn 喘息时间。
+        /// 750 ticks ≈ 12 秒游戏时间。
+        /// </summary>
+        public const int FetchMaterialCooldownTicks = 750;
+
         // 每个 pawn 的上次重定向 tick（key = pawn.thingIDNumber）
         private static readonly Dictionary<int, int> lastRedirectTick = new Dictionary<int, int>();
 
         // 延迟 job 存储：pawn 到达楼梯后恢复在目标地图找到的 job
         private static readonly Dictionary<int, Job> deferredJobs = new Dictionary<int, Job>();
 
-        // 反射字段：Thing.mapIndexOrState / Thing.positionInt
-        private static readonly FieldInfo mapIndexField =
-            typeof(Thing).GetField("mapIndexOrState",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-        private static readonly FieldInfo positionField =
-            typeof(Thing).GetField("positionInt",
-                BindingFlags.Instance | BindingFlags.NonPublic);
+        // 编译后的字段访问器（替代 FieldInfo 反射，无装箱）
+        private static readonly AccessTools.FieldRef<Thing, sbyte> mapIndexRef =
+            AccessTools.FieldRefAccess<Thing, sbyte>("mapIndexOrState");
+        private static readonly AccessTools.FieldRef<Thing, IntVec3> positionRef =
+            AccessTools.FieldRefAccess<Thing, IntVec3>("positionInt");
+
+        // 复用的 list（避免每次 TryCrossLevelScan 分配）
+        private static readonly List<(Map map, int elevation)> otherMapsBuffer
+            = new List<(Map, int)>();
+
+        /// <summary>
+        /// 存储 pawn 的延迟 job（外部调用，如跨层取材料）。
+        /// </summary>
+        public static void StoreDeferredJob(Pawn pawn, Job job)
+        {
+            if (pawn != null && job != null)
+                deferredJobs[pawn.thingIDNumber] = job;
+        }
+
+        /// <summary>
+        /// 检查 pawn 是否在冷却中（指定冷却时长）。
+        /// </summary>
+        public static bool IsOnCooldown(Pawn pawn, int cooldownTicks = RedirectCooldownTicks)
+        {
+            if (pawn == null) return false;
+            int now = GenTicks.TicksGame;
+            if (lastRedirectTick.TryGetValue(pawn.thingIDNumber, out int lastTick)
+                && now - lastTick < cooldownTicks)
+                return true;
+            return false;
+        }
+
+        /// <summary>
+        /// 记录 pawn 的重定向时间戳。
+        /// </summary>
+        public static void RecordRedirect(Pawn pawn)
+        {
+            if (pawn != null)
+                lastRedirectTick[pawn.thingIDNumber] = GenTicks.TicksGame;
+        }
 
         /// <summary>
         /// 取出并移除 pawn 的延迟 job（到达楼梯转移后恢复用）。
@@ -85,35 +125,37 @@ namespace MapLevelFramework
                 baseMap = pawnMap;
             }
 
-            if (mgr == null || !mgr.AllLevels.Any()) return null;
+            if (mgr == null || mgr.LevelCount == 0) return null;
 
             int currentElev = GetMapElevation(pawnMap, mgr, baseMap);
 
-            // 收集其他层级地图，按距离当前层远近排序
-            var otherMaps = new List<(Map map, int elevation)>();
+            // 收集其他层级地图，按距离当前层远近排序（复用 buffer）
+            otherMapsBuffer.Clear();
             if (pawnMap != baseMap)
-                otherMaps.Add((baseMap, 0));
+                otherMapsBuffer.Add((baseMap, 0));
             foreach (var level in mgr.AllLevels)
             {
                 if (level.LevelMap != null && level.LevelMap != pawnMap)
-                    otherMaps.Add((level.LevelMap, level.elevation));
+                    otherMapsBuffer.Add((level.LevelMap, level.elevation));
             }
 
-            if (otherMaps.Count == 0) return null;
+            if (otherMapsBuffer.Count == 0) return null;
 
-            otherMaps.Sort((a, b) =>
+            otherMapsBuffer.Sort((a, b) =>
                 Math.Abs(a.elevation - currentElev)
                     .CompareTo(Math.Abs(b.elevation - currentElev)));
 
-            // 保存 pawn 原始状态
-            sbyte origMapIndex = (sbyte)mapIndexField.GetValue(pawn);
-            IntVec3 origPos = (IntVec3)positionField.GetValue(pawn);
+            // 保存 pawn 原始状态（无装箱）
+            sbyte origMapIndex = mapIndexRef(pawn);
+            IntVec3 origPos = positionRef(pawn);
 
             Scanning = true;
             try
             {
-                foreach (var (otherMap, targetElev) in otherMaps)
+                for (int i = 0; i < otherMapsBuffer.Count; i++)
                 {
+                    var (otherMap, targetElev) = otherMapsBuffer[i];
+
                     // 一次走一层
                     int nextElev = targetElev > currentElev
                         ? currentElev + 1
@@ -129,9 +171,9 @@ namespace MapLevelFramework
                     sbyte destMapIndex = (sbyte)Find.Maps.IndexOf(otherMap);
                     if (destMapIndex < 0) continue;
 
-                    // 临时传送 pawn 到目标地图
-                    mapIndexField.SetValue(pawn, destMapIndex);
-                    positionField.SetValue(pawn, stairPos);
+                    // 临时传送 pawn 到目标地图（无装箱）
+                    mapIndexRef(pawn) = destMapIndex;
+                    positionRef(pawn) = stairPos;
 
                     try
                     {
@@ -139,8 +181,8 @@ namespace MapLevelFramework
                         if (foundJob != null)
                         {
                             // 找到了！恢复 pawn 位置，存储延迟 job，记录冷却，返回楼梯 job
-                            mapIndexField.SetValue(pawn, origMapIndex);
-                            positionField.SetValue(pawn, origPos);
+                            mapIndexRef(pawn) = origMapIndex;
+                            positionRef(pawn) = origPos;
                             deferredJobs[pawnId] = foundJob;
                             lastRedirectTick[pawnId] = now;
                             return JobMaker.MakeJob(MLF_JobDefOf.MLF_UseStairs, stairs);
@@ -154,8 +196,8 @@ namespace MapLevelFramework
             }
             finally
             {
-                mapIndexField.SetValue(pawn, origMapIndex);
-                positionField.SetValue(pawn, origPos);
+                mapIndexRef(pawn) = origMapIndex;
+                positionRef(pawn) = origPos;
                 Scanning = false;
             }
 
@@ -178,25 +220,65 @@ namespace MapLevelFramework
         /// </summary>
         public static Building_Stairs FindStairsToElevation(Pawn pawn, Map map, int targetElevation)
         {
+            var stairs = StairsCache.GetStairs(map, targetElevation);
+            if (stairs == null || stairs.Count == 0) return null;
+
             Building_Stairs best = null;
             float bestDist = float.MaxValue;
 
-            // 搜索所有 Building_Stairs（不限定 defName，兼容上楼梯和下楼梯）
-            var allThings = map.listerThings.AllThings;
-            for (int i = 0; i < allThings.Count; i++)
+            for (int i = 0; i < stairs.Count; i++)
             {
-                if (allThings[i] is Building_Stairs stairs && stairs.Spawned
-                    && stairs.targetElevation == targetElevation)
+                var s = stairs[i];
+                if (!s.Spawned) continue;
+                float dist = s.Position.DistanceToSquared(pawn.Position);
+                if (dist < bestDist)
                 {
-                    float dist = stairs.Position.DistanceToSquared(pawn.Position);
-                    if (dist < bestDist && pawn.CanReach(stairs, PathEndMode.OnCell, Danger.Some))
-                    {
-                        best = stairs;
-                        bestDist = dist;
-                    }
+                    best = s;
+                    bestDist = dist;
                 }
             }
-            return best;
+
+            // 只对最近的检查可达性
+            if (best != null && pawn.CanReach(best, PathEndMode.OnCell, Danger.Some))
+                return best;
+
+            // 最近的不可达，遍历其余
+            for (int i = 0; i < stairs.Count; i++)
+            {
+                var s = stairs[i];
+                if (s == best || !s.Spawned) continue;
+                if (pawn.CanReach(s, PathEndMode.OnCell, Danger.Some))
+                    return s;
+            }
+
+            return null;
+        }
+
+        // ========== 跨层取材料数据 ==========
+
+        public struct FetchData
+        {
+            public ThingDef thingDef;
+            public Thing frame;
+            public int returnElevation;
+        }
+
+        private static readonly Dictionary<int, FetchData> fetchMaterialData = new Dictionary<int, FetchData>();
+
+        public static void StoreFetchData(int pawnId, FetchData data)
+        {
+            fetchMaterialData[pawnId] = data;
+        }
+
+        public static bool TryPopFetchData(int pawnId, out FetchData data)
+        {
+            if (fetchMaterialData.TryGetValue(pawnId, out data))
+            {
+                fetchMaterialData.Remove(pawnId);
+                return true;
+            }
+            data = default;
+            return false;
         }
     }
 }

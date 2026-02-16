@@ -35,7 +35,7 @@ namespace MapLevelFramework
             else
                 mgr = LevelManager.GetManager(map);
 
-            return mgr == null || !mgr.AllLevels.Any();
+            return mgr == null || mgr.LevelCount == 0;
         }
 
         public override Job JobOnThing(Pawn pawn, Thing t, bool forced = false)

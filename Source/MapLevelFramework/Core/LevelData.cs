@@ -64,6 +64,12 @@ namespace MapLevelFramework
         }
 
         /// <summary>
+        /// 缓存：被更高层覆盖的格子集合（渲染时用于排除中间层的动态物体）。
+        /// 由 LevelManager.FocusLevel 在切换层级时重建。
+        /// </summary>
+        public HashSet<IntVec3> CachedExcludeCells;
+
+        /// <summary>
         /// 不规则区域的可用格子集合（子地图坐标）。
         /// 如果为 null，则 area 内全部可用。
         /// </summary>

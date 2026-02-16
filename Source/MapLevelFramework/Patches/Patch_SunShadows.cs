@@ -21,7 +21,7 @@ namespace MapLevelFramework.Patches
             sectionField = typeof(SectionLayer).GetField("section",
                 BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
             if (sectionField == null)
-                Log.Error("[MapLevelFramework] Failed to find SectionLayer.section field!");
+                Log.Error("[MLF] Failed to find SectionLayer.section field!");
         }
 
         private static Section GetSection(SectionLayer layer)
@@ -41,7 +41,7 @@ namespace MapLevelFramework.Patches
 
             if (!loggedOnce)
             {
-                Log.Message("[MapLevelFramework] SunShadows Prefix intercepted regeneration.");
+                Log.Message("[MLF] SunShadows Prefix intercepted regeneration.");
                 loggedOnce = true;
             }
 

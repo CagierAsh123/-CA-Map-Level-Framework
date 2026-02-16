@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Verse;
 using Verse.AI;
@@ -35,10 +36,24 @@ namespace MapLevelFramework
                     // 恢复跨层扫描时找到的 job
                     if (CrossLevelJobUtility.TryPopDeferredJob(pawn, out Job deferredJob))
                     {
-                        // 验证 job 目标仍然有效
+                        bool started = false;
                         if (ValidateDeferredJob(deferredJob, destMap))
                         {
-                            pawn.jobs.StartJob(deferredJob, JobCondition.None, null, false, true);
+                            try
+                            {
+                                pawn.jobs.StartJob(deferredJob, JobCondition.None, null, false, true);
+                                started = true;
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Warning($"[MLF] 延迟 job 启动失败: {ex.Message}");
+                            }
+                        }
+
+                        // 延迟 job 失败 → 走楼梯回原来的楼层
+                        if (!started)
+                        {
+                            TryReturnToOrigin(pawn, Stairs);
                         }
                     }
                 }
@@ -74,6 +89,49 @@ namespace MapLevelFramework
                 }
             }
             return true;
+        }
+
+        /// <summary>
+        /// 延迟 job 失败时，找到回去的楼梯让 pawn 走回原来的楼层。
+        /// 楼梯是双向的：用来的那个楼梯反向走就能回去。
+        /// </summary>
+        private void TryReturnToOrigin(Pawn p, Building_Stairs arrivedFrom)
+        {
+            // arrivedFrom 是出发层的楼梯，对应的目标层楼梯就在 pawn 当前位置附近
+            // 找当前地图上同位置/最近的楼梯走回去
+            Map currentMap = p.Map;
+            if (currentMap == null) return;
+
+            var allStairs = currentMap.listerBuildings.AllBuildingsColonistOfClass<Building_Stairs>();
+            Building_Stairs best = null;
+            float bestDist = float.MaxValue;
+            foreach (var s in allStairs)
+            {
+                if (!s.Spawned) continue;
+                // 楼梯必须通往来的方向（即 arrivedFrom 所在的地图）
+                if (!StairTransferUtility.TryGetTransferTarget(s, out Map targetMap, out _)) continue;
+                if (targetMap != arrivedFrom.Map) continue;
+
+                float dist = s.Position.DistanceToSquared(p.Position);
+                if (dist < bestDist)
+                {
+                    best = s;
+                    bestDist = dist;
+                }
+            }
+
+            if (best != null)
+            {
+                try
+                {
+                    Job returnJob = JobMaker.MakeJob(MLF_JobDefOf.MLF_UseStairs, best);
+                    p.jobs.StartJob(returnJob, JobCondition.None, null, false, true);
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning($"[MLF] 返回原楼层失败: {ex.Message}");
+                }
+            }
         }
     }
 }

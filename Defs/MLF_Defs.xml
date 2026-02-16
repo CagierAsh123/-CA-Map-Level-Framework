@@ -41,7 +41,7 @@
     <description>楼层的结构基底，可在上面铺设任意地板。</description>
     <texturePath>Terrain/Surfaces/GenericFloorTile</texturePath>
     <edgeType>Hard</edgeType>
-    <renderPrecedence>200</renderPrecedence>
+    <renderPrecedence>500</renderPrecedence>
     <passability>Standable</passability>
     <layerable>false</layerable>
     <scatterType>None</scatterType>
@@ -96,7 +96,7 @@
     <description>挖掘岩石后露出的泥土地面。</description>
     <texturePath>Terrain/Surfaces/RoughStone</texturePath>
     <edgeType>Hard</edgeType>
-    <renderPrecedence>200</renderPrecedence>
+    <renderPrecedence>500</renderPrecedence>
     <passability>Standable</passability>
     <layerable>false</layerable>
     <scatterType>Rocky</scatterType>
@@ -144,6 +144,13 @@
     <defName>MLF_HaulAcrossLevel</defName>
     <driverClass>MapLevelFramework.JobDriver_HaulAcrossLevel</driverClass>
     <reportString>搬运物品到其他楼层。</reportString>
+    <allowOpportunisticPrefix>false</allowOpportunisticPrefix>
+  </JobDef>
+
+  <JobDef>
+    <defName>MLF_ReturnWithMaterial</defName>
+    <driverClass>MapLevelFramework.JobDriver_ReturnWithMaterial</driverClass>
+    <reportString>跨层取材料。</reportString>
     <allowOpportunisticPrefix>false</allowOpportunisticPrefix>
   </JobDef>
 

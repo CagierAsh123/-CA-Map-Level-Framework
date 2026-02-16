@@ -93,6 +93,11 @@ namespace MapLevelFramework
         /// </summary>
         public IEnumerable<LevelData> AllLevels => levels.Values;
 
+        /// <summary>
+        /// 层级数量（不含地面层）。用于替代 AllLevels.Any() 避免枚举器分配。
+        /// </summary>
+        public int LevelCount => levels.Count;
+
         // ========== 构造 ==========
 
         public LevelManager(Map map) : base(map) { }
@@ -112,7 +117,7 @@ namespace MapLevelFramework
         {
             if (elevation == 0)
             {
-                Log.Error("[MapLevelFramework] Cannot register elevation 0 (reserved for ground level).");
+                Log.Error("[MLF] Cannot register elevation 0 (reserved for ground level).");
                 return null;
             }
 
@@ -121,14 +126,14 @@ namespace MapLevelFramework
                 Messages.Message(
                     $"[MLF] 最大 {MaxTotalFloors} 层，不服找泰南，再往上就突破天道了",
                     MessageTypeDefOf.RejectInput, false);
-                Log.Warning($"[MapLevelFramework] Cannot register elevation {elevation}: " +
+                Log.Warning($"[MLF] Cannot register elevation {elevation}: " +
                             $"max {MaxTotalFloors} floors reached (rendering depth limit).");
                 return null;
             }
 
             if (levels.TryGetValue(elevation, out var existing))
             {
-                Log.Warning($"[MapLevelFramework] Elevation {elevation} already registered, returning existing.");
+                Log.Warning($"[MLF] Elevation {elevation} already registered, returning existing.");
                 return existing;
             }
 
@@ -150,16 +155,16 @@ namespace MapLevelFramework
                 var levelMap = GenerateLevelMap(data, size);
                 if (levelMap == null)
                 {
-                    Log.Error($"[MapLevelFramework] GenerateLevelMap returned null for elevation {elevation}.");
+                    Log.Error($"[MLF] GenerateLevelMap returned null for elevation {elevation}.");
                     return null;
                 }
                 levels[elevation] = data;
-                Log.Message($"[MapLevelFramework] Registered level elevation={elevation}, " +
+                Log.Message($"[MLF] Registered level elevation={elevation}, " +
                             $"area={area}, mapSize={size}, tag={levelDef?.levelTag ?? "none"}");
             }
             catch (Exception ex)
             {
-                Log.Error($"[MapLevelFramework] Failed to generate level map for elevation {elevation}: {ex}");
+                Log.Error($"[MLF] Failed to generate level map for elevation {elevation}: {ex}");
                 return null;
             }
 
@@ -180,7 +185,17 @@ namespace MapLevelFramework
         /// </summary>
         public LevelData GetLevelForMap(Map levelMap)
         {
-            return levels.Values.FirstOrDefault(d => d.LevelMap == levelMap);
+            // 快速路径：直接从 LevelMapParent 获取
+            if (levelMap?.Parent is LevelMapParent lmp && lmp.levelData != null)
+                return lmp.levelData;
+
+            // 回退：遍历查找（兼容旧存档加载阶段）
+            foreach (var data in levels.Values)
+            {
+                if (data.LevelMap == levelMap)
+                    return data;
+            }
+            return null;
         }
 
         /// <summary>
@@ -192,7 +207,7 @@ namespace MapLevelFramework
         {
             if (elevation != 0 && !levels.ContainsKey(elevation))
             {
-                Log.Warning($"[MapLevelFramework] Elevation {elevation} not registered.");
+                Log.Warning($"[MLF] Elevation {elevation} not registered.");
                 return;
             }
 
@@ -228,7 +243,7 @@ namespace MapLevelFramework
                     Current.Game.CurrentMap = undergroundLevel.LevelMap;
                 }
 
-                Log.Message($"[MapLevelFramework] Focus switched to underground: {old} -> {elevation}");
+                Log.Message($"[MLF] Focus switched to underground: {old} -> {elevation}");
                 return;
             }
 
@@ -253,6 +268,7 @@ namespace MapLevelFramework
                     }
                 }
                 ActiveRenderLevels = renderLevels;
+                RebuildExcludeCellsCache(renderLevels);
                 foreach (var lvl in renderLevels)
                 {
                     MarkAreaSectionsDirty(lvl.area);
@@ -265,7 +281,7 @@ namespace MapLevelFramework
                 ActiveRenderLevels = null;
             }
 
-            Log.Message($"[MapLevelFramework] Focus switched: {old} -> {elevation}");
+            Log.Message($"[MLF] Focus switched: {old} -> {elevation}");
 
             // 标记屋顶覆盖层为脏，让 GetCellBool 补丁生效
             map.roofGrid.Drawer.SetDirty();
@@ -353,7 +369,7 @@ namespace MapLevelFramework
             // 销毁子地图
             DestroyLevelMap(data);
             levels.Remove(elevation);
-            Log.Message($"[MapLevelFramework] Removed level elevation={elevation}");
+            Log.Message($"[MLF] Removed level elevation={elevation}");
 
             // 级联：检查被连接的层级是否还有其他楼梯可达
             foreach (int targetElev in cascadeTargets)
@@ -386,13 +402,7 @@ namespace MapLevelFramework
 
         private static bool HasStairsToElevation(Map m, int elevation)
         {
-            var allThings = m.listerThings.AllThings;
-            for (int i = 0; i < allThings.Count; i++)
-            {
-                if (allThings[i] is Building_Stairs s && s.Spawned && s.targetElevation == elevation)
-                    return true;
-            }
-            return false;
+            return StairsCache.HasStairs(m, elevation);
         }
 
         /// <summary>
@@ -451,7 +461,7 @@ namespace MapLevelFramework
             if (map?.Parent is LevelMapParent lmp && lmp.hostManager != null)
             {
                 manager = lmp.hostManager;
-                levelData = manager.GetLevelForMap(map);
+                levelData = lmp.levelData;
                 return levelData != null;
             }
             return false;
@@ -563,6 +573,7 @@ namespace MapLevelFramework
                 if (data.mapParent != null)
                 {
                     data.mapParent.hostManager = this;
+                    data.mapParent.levelData = data;
                 }
 
                 // 确保地下层子地图有 UndergroundMapComponent
@@ -584,6 +595,16 @@ namespace MapLevelFramework
 
             // 修复旧存档的 underGrid（确保可用区域的底层是 MLF_LevelBase）
             RepairUnderGrid();
+
+            // 修复旧存档层级地图 Tile（旧版设为 0，导致本地时间不一致）
+            int correctTile = map.Tile;
+            foreach (var data in levels.Values)
+            {
+                if (data.mapParent != null && data.mapParent.Tile != correctTile)
+                {
+                    data.mapParent.Tile = correctTile;
+                }
+            }
 
             // 加载存档后恢复渲染过滤器
             if (focusedElevation != 0 && levels.TryGetValue(focusedElevation, out var focusData))
@@ -631,6 +652,35 @@ namespace MapLevelFramework
         /// 修复旧存档中 underGrid 未正确设置为 MLF_LevelBase 的问题。
         /// 在 FinalizeInit 中调用，确保所有层级子地图的可用区域底层正确。
         /// </summary>
+        /// <summary>
+        /// 重建渲染层级的 excludeCells 缓存。每个中间层缓存被更高层覆盖的格子。
+        /// </summary>
+        private static void RebuildExcludeCellsCache(List<LevelData> renderLevels)
+        {
+            if (renderLevels == null) return;
+            for (int i = 0; i < renderLevels.Count; i++)
+            {
+                if (i < renderLevels.Count - 1)
+                {
+                    var exclude = new System.Collections.Generic.HashSet<IntVec3>();
+                    for (int j = i + 1; j < renderLevels.Count; j++)
+                    {
+                        var higher = renderLevels[j];
+                        if (higher.usableCells != null)
+                            exclude.UnionWith(higher.usableCells);
+                        else
+                            foreach (IntVec3 c in higher.area)
+                                exclude.Add(c);
+                    }
+                    renderLevels[i].CachedExcludeCells = exclude;
+                }
+                else
+                {
+                    renderLevels[i].CachedExcludeCells = null;
+                }
+            }
+        }
+
         private void RepairUnderGrid()
         {
             TerrainDef levelBase = DefDatabase<TerrainDef>.GetNamedSilentFail("MLF_LevelBase");
@@ -679,7 +729,7 @@ namespace MapLevelFramework
             var parentDef = DefDatabase<WorldObjectDef>.GetNamedSilentFail("MLF_LevelMap");
             if (parentDef == null)
             {
-                Log.Error("[MapLevelFramework] WorldObjectDef 'MLF_LevelMap' not found. Using fallback.");
+                Log.Error("[MLF] WorldObjectDef 'MLF_LevelMap' not found. Using fallback.");
                 parentDef = WorldObjectDefOf.PocketMap;
             }
 
@@ -688,7 +738,8 @@ namespace MapLevelFramework
             mapParent.levelDef = data.levelDef;
             mapParent.elevation = data.elevation;
             mapParent.area = data.area;
-            mapParent.Tile = 0;
+            mapParent.levelData = data;
+            mapParent.Tile = map.Tile;
             mapParent.sourceMap = map;
 
             // 根据是否地下层选择不同的 MapGenerator
@@ -698,7 +749,7 @@ namespace MapLevelFramework
             var genDef = DefDatabase<MapGeneratorDef>.GetNamedSilentFail(genDefName);
             if (genDef == null)
             {
-                Log.Error($"[MapLevelFramework] MapGeneratorDef '{genDefName}' not found.");
+                Log.Error($"[MLF] MapGeneratorDef '{genDefName}' not found.");
                 return null;
             }
             mapParent.mapGenerator = genDef;
@@ -741,7 +792,7 @@ namespace MapLevelFramework
             }
             catch (Exception ex)
             {
-                Log.Warning($"[MapLevelFramework] Failed to share environment: {ex.Message}");
+                Log.Warning($"[MLF] Failed to share environment: {ex.Message}");
             }
         }
 

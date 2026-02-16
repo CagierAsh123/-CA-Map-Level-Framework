@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using RimWorld;
+using UnityEngine;
 using Verse;
 using Verse.AI;
 
@@ -35,6 +36,9 @@ namespace MapLevelFramework
         public override void SpawnSetup(Map map, bool respawningAfterLoad)
         {
             base.SpawnSetup(map, respawningAfterLoad);
+
+            // 注册到楼梯缓存（包括 respawningAfterLoad 和 autoSpawned）
+            StairsCache.Register(this);
 
             if (respawningAfterLoad) return;
             if (autoSpawned) return;
@@ -76,6 +80,72 @@ namespace MapLevelFramework
                     CreateOrUpdateLevel(mgr, map);
                 }
             }
+        }
+
+        // ========== Gizmo 按钮 ==========
+
+        public override IEnumerable<Gizmo> GetGizmos()
+        {
+            foreach (var g in base.GetGizmos())
+                yield return g;
+
+            // 获取 LevelManager
+            LevelManager mgr;
+            if (LevelManager.IsLevelMap(this.Map, out var parentMgr, out _))
+                mgr = parentMgr;
+            else
+                mgr = LevelManager.GetManager(this.Map);
+
+            if (mgr == null) yield break;
+
+            bool levelExists = mgr.GetLevel(targetElevation) != null;
+
+            if (!levelExists)
+            {
+                // 创建层级按钮
+                yield return new Command_Action
+                {
+                    defaultLabel = "创建层级",
+                    defaultDesc = $"创建 {GetElevationLabel(targetElevation)} 层级。",
+                    icon = ContentFinder<Texture2D>.Get("UI/Commands/AddLevel", false)
+                           ?? TexCommand.Install,
+                    action = delegate
+                    {
+                        if (GoesDown)
+                            CreateUndergroundLevel(mgr);
+                        else
+                            CreateOrUpdateLevel(mgr, this.Map);
+                    }
+                };
+            }
+            else
+            {
+                // 销毁层级按钮
+                yield return new Command_Action
+                {
+                    defaultLabel = "销毁层级",
+                    defaultDesc = $"销毁 {GetElevationLabel(targetElevation)} 层级。该层上的所有物品和建筑将被移除，殖民者会被转移回地面。",
+                    icon = ContentFinder<Texture2D>.Get("UI/Commands/RemoveLevel", false)
+                           ?? TexCommand.RemoveRoutePlannerWaypoint,
+                    action = delegate
+                    {
+                        Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(
+                            $"确定要销毁 {GetElevationLabel(targetElevation)} 吗？\n该层上的所有建筑和物品将被移除。",
+                            delegate
+                            {
+                                mgr.RemoveLevel(targetElevation);
+                            },
+                            destructive: true));
+                    }
+                };
+            }
+        }
+
+        private static string GetElevationLabel(int elevation)
+        {
+            if (elevation > 0) return $"{elevation + 1}F";
+            if (elevation < 0) return $"B{-elevation}";
+            return "地面";
         }
 
         // ========== 右键菜单 ==========
@@ -360,6 +430,9 @@ namespace MapLevelFramework
             int targetElev = this.targetElevation;
             bool wasAutoSpawned = this.autoSpawned;
 
+            // 从缓存移除（必须在 base.DeSpawn 之前，因为之后 Map 为 null）
+            StairsCache.Deregister(this, stairMap);
+
             base.DeSpawn(mode);
 
             // 逆重飞船起飞期间不触发层级销毁（数据已单独捕获）
@@ -388,11 +461,11 @@ namespace MapLevelFramework
         private static bool HasOtherStairsToElevation(Map map, int targetElevation)
         {
             if (map == null) return false;
-            var allThings = map.listerThings.AllThings;
-            for (int i = 0; i < allThings.Count; i++)
+            var list = StairsCache.GetStairs(map, targetElevation);
+            if (list == null) return false;
+            for (int i = 0; i < list.Count; i++)
             {
-                if (allThings[i] is Building_Stairs s && s.Spawned
-                    && !s.autoSpawned && s.targetElevation == targetElevation)
+                if (!list[i].autoSpawned)
                     return true;
             }
             return false;

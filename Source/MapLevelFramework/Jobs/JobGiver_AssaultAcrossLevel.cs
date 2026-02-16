@@ -32,7 +32,7 @@ namespace MapLevelFramework
                 baseMap = pawnMap;
             }
 
-            if (mgr == null || !mgr.AllLevels.Any()) return null;
+            if (mgr == null || mgr.LevelCount == 0) return null;
 
             // 先检查当前地图是否有可攻击目标（有的话不跨层）
             if (HasHostileTargets(pawn, pawnMap)) return null;

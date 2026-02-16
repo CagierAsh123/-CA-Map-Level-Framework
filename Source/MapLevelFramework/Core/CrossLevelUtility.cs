@@ -50,7 +50,7 @@ namespace MapLevelFramework
             if (map == null) return false;
             if (LevelManager.IsLevelMap(map, out _, out _)) return true;
             var mgr = LevelManager.GetManager(map);
-            return mgr != null && mgr.AllLevels.Any();
+            return mgr != null && mgr.LevelCount > 0;
         }
     }
 }

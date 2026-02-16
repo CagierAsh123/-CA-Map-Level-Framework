@@ -39,7 +39,7 @@ namespace MapLevelFramework
                 baseMap = pawnMap;
             }
 
-            if (mgr == null || !mgr.AllLevels.Any()) return false;
+            if (mgr == null || mgr.LevelCount == 0) return false;
 
             StoragePriority currentPriority = StoreUtility.CurrentStoragePriorityOf(thing);
             int currentElev = CrossLevelJobUtility.GetMapElevation(pawnMap, mgr, baseMap);

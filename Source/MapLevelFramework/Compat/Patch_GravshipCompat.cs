@@ -28,7 +28,7 @@ namespace MapLevelFramework
             if (map == null) return;
 
             LevelManager mgr = LevelManager.GetManager(map);
-            if (mgr == null || !mgr.AllLevels.Any()) return;
+            if (mgr == null || mgr.LevelCount == 0) return;
 
             HashSet<IntVec3> substructure = engine.ValidSubstructure;
             if (substructure == null || substructure.Count == 0) return;
