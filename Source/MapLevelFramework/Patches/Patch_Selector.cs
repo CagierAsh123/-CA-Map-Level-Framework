@@ -24,18 +24,17 @@ namespace MapLevelFramework.Patches
             var mgr = LevelManager.GetManager(baseMap);
             if (mgr == null || !mgr.IsFocusingLevel) return true;
 
+            // 只允许选择当前聚焦层的物体
+            Map focusedMap = mgr.FocusedMap;
+            if (focusedMap == null || focusedMap == baseMap) return true;
+
             Vector3 mousePos = UI.MouseMapPosition();
             IntVec3 cell = IntVec3Utility.ToIntVec3(mousePos);
+            if (!cell.InBounds(focusedMap)) return true;
 
-            // 查询鼠标位置的最高可见层级
-            var level = LevelManager.GetTopmostLevelAt(cell);
-            if (level?.LevelMap == null) return true;
-            if (!cell.InBounds(level.LevelMap)) return true;
-
-            // 收集子地图上的可选物体（坐标一致，直接查询）
             var objects = new List<object>();
 
-            foreach (Pawn pawn in level.LevelMap.mapPawns.AllPawnsSpawned)
+            foreach (Pawn pawn in focusedMap.mapPawns.AllPawnsSpawned)
             {
                 float dist = (pawn.DrawPos - mousePos).MagnitudeHorizontal();
                 if (dist < 0.4f)
@@ -44,7 +43,7 @@ namespace MapLevelFramework.Patches
                 }
             }
 
-            foreach (Thing thing in level.LevelMap.thingGrid.ThingsAt(cell))
+            foreach (Thing thing in focusedMap.thingGrid.ThingsAt(cell))
             {
                 if (!objects.Contains(thing))
                 {
@@ -52,8 +51,7 @@ namespace MapLevelFramework.Patches
                 }
             }
 
-            // Zone
-            Zone zone = level.LevelMap.zoneManager.ZoneAt(cell);
+            Zone zone = focusedMap.zoneManager.ZoneAt(cell);
             if (zone != null)
             {
                 objects.Add(zone);

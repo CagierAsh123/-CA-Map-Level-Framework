@@ -117,6 +117,28 @@ namespace MapLevelFramework.Patches
                     Job job = TryFetchForRefuel(pawn, pawnMap, otherMap, targetElev);
                     if (job != null) return job;
                 }
+
+                // 制作/烹饪等：工作台 bill 需要的原料
+                if (canHaul)
+                {
+                    Job job = TryFetchForBill(pawn, pawnMap, otherMap, targetElev);
+                    if (job != null) return job;
+                }
+            }
+
+            // ========== Phase 2: 反向取材 - 当前层有需求，其他层有材料 ==========
+            // (pawn 在需求层，需要去其他层取材料回来)
+            // 建造已由 Patch_ConstructDeliverResources 处理，这里只处理 Refuel 和 Bill
+
+            if (canHaul)
+            {
+                // 加油反向：当前层有需要加油的建筑，其他层有燃料
+                Job revRefuel = TryReverseFetchForRefuel(pawn, pawnMap, otherMaps, currentElev);
+                if (revRefuel != null) return revRefuel;
+
+                // Bill 反向：当前层有工作台需要原料，其他层有原料
+                Job revBill = TryReverseFetchForBill(pawn, pawnMap, otherMaps, currentElev);
+                if (revBill != null) return revBill;
             }
 
             return null;
@@ -198,6 +220,144 @@ namespace MapLevelFramework.Patches
             return null;
         }
 
+        // ========== 制作/烹饪 (DoBill) ==========
+
+        private static Job TryFetchForBill(Pawn pawn, Map pawnMap, Map targetMap, int targetElev)
+        {
+            foreach (Building_WorkTable bench in targetMap.listerBuildings
+                .AllBuildingsColonistOfClass<Building_WorkTable>())
+            {
+                if (bench.IsForbidden(pawn)) continue;
+                if (!bench.CurrentlyUsableForBills()) continue;
+
+                foreach (Bill bill in bench.BillStack)
+                {
+                    if (!bill.ShouldDoNow()) continue;
+                    if (bill is Bill_Medical) continue;
+
+                    RecipeDef recipe = bill.recipe;
+                    if (recipe.ingredients == null || recipe.ingredients.Count == 0) continue;
+
+                    // 找第一个本层有的原料
+                    for (int i = 0; i < recipe.ingredients.Count; i++)
+                    {
+                        IngredientCount ing = recipe.ingredients[i];
+                        Thing found = FindIngredientOnMap(pawn, pawnMap, ing, bill);
+                        if (found != null)
+                        {
+                            return MakeFetchJob(pawn, found.def, bench, targetElev,
+                                CrossLevelJobUtility.NeedType.Bill);
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        private static Thing FindIngredientOnMap(Pawn pawn, Map map, IngredientCount ing, Bill bill)
+        {
+            ThingFilter filter = ing.filter;
+            return GenClosest.ClosestThingReachable(
+                pawn.Position, map,
+                filter.BestThingRequest,
+                PathEndMode.ClosestTouch,
+                TraverseParms.For(pawn),
+                9999f,
+                t => !t.IsForbidden(pawn) && pawn.CanReserve(t)
+                     && filter.Allows(t) && bill.IsFixedOrAllowedIngredient(t));
+        }
+
+        // ========== 加油反向 ==========
+
+        private static Job TryReverseFetchForRefuel(Pawn pawn, Map pawnMap,
+            List<(Map map, int elevation)> otherMaps, int currentElev)
+        {
+            var refuelables = pawnMap.listerThings.ThingsInGroup(ThingRequestGroup.Refuelable);
+            for (int i = 0; i < refuelables.Count; i++)
+            {
+                Thing t = refuelables[i];
+                if (t.IsForbidden(pawn)) continue;
+                if (t.Faction != pawn.Faction) continue;
+
+                CompRefuelable comp = t.TryGetComp<CompRefuelable>();
+                if (comp == null || comp.IsFull) continue;
+                if (!comp.allowAutoRefuel || !comp.ShouldAutoRefuelNow) continue;
+
+                ThingFilter fuelFilter = comp.Props.fuelFilter;
+
+                // 本层有燃料就跳过，让原版处理
+                Thing localFuel = GenClosest.ClosestThingReachable(
+                    pawn.Position, pawnMap, fuelFilter.BestThingRequest,
+                    PathEndMode.ClosestTouch, TraverseParms.For(pawn), 9999f,
+                    f => !f.IsForbidden(pawn) && pawn.CanReserve(f) && fuelFilter.Allows(f));
+                if (localFuel != null) continue;
+
+                // 搜索其他层的燃料
+                foreach (var (otherMap, otherElev) in otherMaps)
+                {
+                    Thing remoteFuel = FindThingByFilter(otherMap, pawn, fuelFilter);
+                    if (remoteFuel == null) continue;
+
+                    int nextElev = otherElev > currentElev ? currentElev + 1 : currentElev - 1;
+                    Building_Stairs stairs = CrossLevelJobUtility.FindStairsToElevation(
+                        pawn, pawnMap, nextElev);
+                    if (stairs == null) continue;
+
+                    return MakeReverseFetchJob(pawn, remoteFuel.def, t, currentElev,
+                        CrossLevelJobUtility.NeedType.Refuel, stairs);
+                }
+            }
+            return null;
+        }
+
+        // ========== Bill 反向 ==========
+
+        private static Job TryReverseFetchForBill(Pawn pawn, Map pawnMap,
+            List<(Map map, int elevation)> otherMaps, int currentElev)
+        {
+            foreach (Building_WorkTable bench in pawnMap.listerBuildings
+                .AllBuildingsColonistOfClass<Building_WorkTable>())
+            {
+                if (bench.IsForbidden(pawn)) continue;
+                if (!bench.CurrentlyUsableForBills()) continue;
+
+                foreach (Bill bill in bench.BillStack)
+                {
+                    if (!bill.ShouldDoNow()) continue;
+                    if (bill is Bill_Medical) continue;
+
+                    RecipeDef recipe = bill.recipe;
+                    if (recipe.ingredients == null || recipe.ingredients.Count == 0) continue;
+
+                    for (int j = 0; j < recipe.ingredients.Count; j++)
+                    {
+                        IngredientCount ing = recipe.ingredients[j];
+
+                        // 本层有这个原料就跳过
+                        Thing localIng = FindIngredientOnMap(pawn, pawnMap, ing, bill);
+                        if (localIng != null) continue;
+
+                        // 搜索其他层
+                        foreach (var (otherMap, otherElev) in otherMaps)
+                        {
+                            Thing remoteIng = FindIngredientByFilter(otherMap, pawn, ing, bill);
+                            if (remoteIng == null) continue;
+
+                            int nextElev = otherElev > currentElev
+                                ? currentElev + 1 : currentElev - 1;
+                            Building_Stairs stairs = CrossLevelJobUtility.FindStairsToElevation(
+                                pawn, pawnMap, nextElev);
+                            if (stairs == null) continue;
+
+                            return MakeReverseFetchJob(pawn, remoteIng.def, bench, currentElev,
+                                CrossLevelJobUtility.NeedType.Bill, stairs);
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
         // ========== 通用工具 ==========
 
         private static Thing FindMaterialOnMap(Pawn pawn, Map map, ThingDef thingDef)
@@ -224,6 +384,65 @@ namespace MapLevelFramework.Patches
                 });
             CrossLevelJobUtility.RecordRedirect(pawn);
             return JobMaker.MakeJob(MLF_JobDefOf.MLF_ReturnWithMaterial);
+        }
+
+        /// <summary>
+        /// 反向取材 job：先走楼梯到材料层，再执行 MLF_ReturnWithMaterial 回来。
+        /// </summary>
+        private static Job MakeReverseFetchJob(Pawn pawn, ThingDef materialDef, Thing target,
+            int returnElev, CrossLevelJobUtility.NeedType needType, Building_Stairs stairs)
+        {
+            CrossLevelJobUtility.StoreFetchData(pawn.thingIDNumber,
+                new CrossLevelJobUtility.FetchData
+                {
+                    thingDef = materialDef,
+                    target = target,
+                    returnElevation = returnElev,
+                    needType = needType
+                });
+            CrossLevelJobUtility.RecordRedirect(pawn);
+            Job fetchJob = JobMaker.MakeJob(MLF_JobDefOf.MLF_ReturnWithMaterial);
+            CrossLevelJobUtility.StoreDeferredJob(pawn, fetchJob);
+            return JobMaker.MakeJob(MLF_JobDefOf.MLF_UseStairs, stairs);
+        }
+
+        /// <summary>
+        /// 在其他层地图上按 ThingFilter 查找物品（不检查可达性，到达后再检查）。
+        /// </summary>
+        private static Thing FindThingByFilter(Map map, Pawn pawn, ThingFilter filter)
+        {
+            foreach (ThingDef def in filter.AllowedThingDefs)
+            {
+                List<Thing> things = map.listerThings.ThingsOfDef(def);
+                for (int i = 0; i < things.Count; i++)
+                {
+                    Thing t = things[i];
+                    if (!t.IsForbidden(pawn) && t.stackCount > 0 && filter.Allows(t))
+                        return t;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 在其他层地图上按 Bill 原料需求查找物品（不检查可达性）。
+        /// </summary>
+        private static Thing FindIngredientByFilter(Map map, Pawn pawn,
+            IngredientCount ing, Bill bill)
+        {
+            ThingFilter filter = ing.filter;
+            foreach (ThingDef def in filter.AllowedThingDefs)
+            {
+                List<Thing> things = map.listerThings.ThingsOfDef(def);
+                for (int i = 0; i < things.Count; i++)
+                {
+                    Thing t = things[i];
+                    if (!t.IsForbidden(pawn) && t.stackCount > 0
+                        && filter.Allows(t) && bill.IsFixedOrAllowedIngredient(t))
+                        return t;
+                }
+            }
+            return null;
         }
     }
 }

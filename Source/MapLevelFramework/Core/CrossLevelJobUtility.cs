@@ -24,10 +24,10 @@ namespace MapLevelFramework
         public const int RedirectCooldownTicks = 250;
 
         /// <summary>
-        /// 跨层取材料专用冷却（tick）。比普通重定向更长，给 pawn 喘息时间。
-        /// 750 ticks ≈ 12 秒游戏时间。
+        /// 跨层取材料专用冷却（tick）。与普通重定向一致，避免 Bill 等送完材料后闲逛。
+        /// 250 ticks ≈ 4 秒游戏时间。
         /// </summary>
-        public const int FetchMaterialCooldownTicks = 750;
+        public const int FetchMaterialCooldownTicks = 250;
 
         // 每个 pawn 的上次重定向 tick（key = pawn.thingIDNumber）
         private static readonly Dictionary<int, int> lastRedirectTick = new Dictionary<int, int>();
@@ -271,6 +271,7 @@ namespace MapLevelFramework
         {
             Construction,   // 建造：送到蓝图/框架
             Refuel,         // 加油：送到 CompRefuelable 建筑
+            Bill,           // 制作/烹饪等：送原料到工作台附近
         }
 
         public struct FetchData

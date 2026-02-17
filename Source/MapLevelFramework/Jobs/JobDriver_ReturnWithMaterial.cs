@@ -151,8 +151,9 @@ namespace MapLevelFramework
                 return;
             }
 
-            // 无法交付，放下材料
-            pawn.carryTracker.TryDropCarriedThing(pawn.Position, ThingPlaceMode.Near, out _);
+            // 无法交付，放下材料（Bill/Refuel 可能已在 CreateDeliverJob 中放下）
+            if (pawn.carryTracker.CarriedThing != null)
+                pawn.carryTracker.TryDropCarriedThing(pawn.Position, ThingPlaceMode.Near, out _);
         }
 
         private Job CreateDeliverJob(Thing carried, Thing target)
@@ -180,6 +181,12 @@ namespace MapLevelFramework
                     }
                     return null;
 
+                case CrossLevelJobUtility.NeedType.Bill:
+                    // 放在工作台附近，让原版 DoBill 下一轮扫描处理
+                    pawn.carryTracker.TryDropCarriedThing(
+                        target.Position, ThingPlaceMode.Near, out _);
+                    return null;
+
                 default:
                     return null;
             }
@@ -202,6 +209,10 @@ namespace MapLevelFramework
                     CompRefuelable comp = target.TryGetComp<CompRefuelable>();
                     if (comp != null)
                         return comp.GetFuelCountToFullyRefuel();
+                    return -1;
+
+                case CrossLevelJobUtility.NeedType.Bill:
+                    // Bill 原料搬运：尽量多拿
                     return -1;
 
                 default:
