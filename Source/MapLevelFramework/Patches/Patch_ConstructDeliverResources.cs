@@ -21,10 +21,6 @@ namespace MapLevelFramework.Patches
             if (CrossLevelJobUtility.Scanning) return;
             if (pawn?.Map == null || !pawn.Spawned) return;
 
-            // 冷却检查：防止反复跑楼梯
-            if (CrossLevelJobUtility.IsOnCooldown(pawn, CrossLevelJobUtility.FetchMaterialCooldownTicks))
-                return;
-
             // 紧急需求检查：困了/饿了不跑楼梯
             if (HasUrgentNeed(pawn)) return;
 

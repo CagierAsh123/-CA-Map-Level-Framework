@@ -85,6 +85,13 @@ namespace MapLevelFramework
                 job.targetA = material;
                 job.targetB = returnStairs;
 
+                // 计算搬运数量
+                int needed = GetNeededCount();
+                int canCarry = pawn.carryTracker.MaxStackSpaceEver(material.def);
+                job.count = UnityEngine.Mathf.Min(needed > 0 ? needed : material.stackCount,
+                    canCarry, material.stackCount);
+                if (job.count <= 0) job.count = 1;
+
                 if (!pawn.Reserve(material, job, 1, -1, null, errorOnFailed: false))
                 {
                     EndJobWith(JobCondition.Incompletable);
@@ -175,6 +182,30 @@ namespace MapLevelFramework
 
                 default:
                     return null;
+            }
+        }
+
+        private int GetNeededCount()
+        {
+            Thing target = fetchData.target;
+            if (target == null) return -1;
+
+            switch (fetchData.needType)
+            {
+                case CrossLevelJobUtility.NeedType.Construction:
+                    IConstructible c = target as IConstructible;
+                    if (c != null && fetchData.thingDef != null)
+                        return c.ThingCountNeeded(fetchData.thingDef);
+                    return -1;
+
+                case CrossLevelJobUtility.NeedType.Refuel:
+                    CompRefuelable comp = target.TryGetComp<CompRefuelable>();
+                    if (comp != null)
+                        return comp.GetFuelCountToFullyRefuel();
+                    return -1;
+
+                default:
+                    return -1;
             }
         }
     }
