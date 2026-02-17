@@ -74,8 +74,36 @@ namespace MapLevelFramework.Patches
                 && pawn.workSettings.WorkIsActive(WorkTypeDefOf.Construction);
             bool canHaul = pawn.workSettings != null
                 && pawn.workSettings.WorkIsActive(WorkTypeDefOf.Hauling);
+            bool canDoctor = pawn.workSettings != null
+                && pawn.workSettings.WorkIsActive(WorkTypeDefOf.Doctor);
+            bool canWarden = pawn.workSettings != null
+                && pawn.workSettings.WorkIsActive(WorkTypeDefOf.Warden);
+            bool canHandling = pawn.workSettings != null
+                && pawn.workSettings.WorkIsActive(WorkTypeDefOf.Handling);
+            WorkTypeDef childcareDef = DefDatabase<WorkTypeDef>.GetNamedSilentFail("Childcare");
+            bool canChildcare = childcareDef != null && pawn.workSettings != null
+                && pawn.workSettings.WorkIsActive(childcareDef);
 
-            if (!canConstruct && !canHaul) return null;
+            if (!canConstruct && !canHaul && !canDoctor && !canWarden
+                && !canHandling && !canChildcare) return null;
+
+            // 按 pawn 工作优先级排序扫描类别（priority 1=最高, 4=最低）
+            // category: 0=Construction, 1=Hauling(Refuel+Bill), 2=Doctor(Medicine+PatientFeed+Hemogen),
+            //           3=Warden(WardFeed), 4=Handling(AnimalFeed), 5=Childcare(BabyFeed)
+            var workPriorities = new List<(int priority, int category)>(6);
+            if (canConstruct)
+                workPriorities.Add((pawn.workSettings.GetPriority(WorkTypeDefOf.Construction), 0));
+            if (canHaul)
+                workPriorities.Add((pawn.workSettings.GetPriority(WorkTypeDefOf.Hauling), 1));
+            if (canDoctor)
+                workPriorities.Add((pawn.workSettings.GetPriority(WorkTypeDefOf.Doctor), 2));
+            if (canWarden)
+                workPriorities.Add((pawn.workSettings.GetPriority(WorkTypeDefOf.Warden), 3));
+            if (canHandling)
+                workPriorities.Add((pawn.workSettings.GetPriority(WorkTypeDefOf.Handling), 4));
+            if (canChildcare)
+                workPriorities.Add((pawn.workSettings.GetPriority(childcareDef), 5));
+            workPriorities.Sort((a, b) => a.priority.CompareTo(b.priority));
 
             int currentElev = CrossLevelJobUtility.GetMapElevation(pawnMap, mgr, baseMap);
 
@@ -95,6 +123,7 @@ namespace MapLevelFramework.Patches
                 System.Math.Abs(a.elevation - currentElev)
                     .CompareTo(System.Math.Abs(b.elevation - currentElev)));
 
+            // ========== Phase 1: 其他层有需求，pawn 当前层（或第三层）有材料 ==========
             foreach (var (otherMap, targetElev) in otherMaps)
             {
                 // 确保有楼梯可以到达
@@ -104,47 +133,77 @@ namespace MapLevelFramework.Patches
                 if (CrossLevelJobUtility.FindStairsToElevation(pawn, pawnMap, nextElev) == null)
                     continue;
 
-                // 建造：蓝图和框架
-                if (canConstruct)
+                for (int wi = 0; wi < workPriorities.Count; wi++)
                 {
-                    Job job = TryFetchForConstruction(pawn, pawnMap, otherMap, targetElev,
-                        otherMaps, currentElev);
-                    if (job != null) return job;
-                }
-
-                // 加油：需要燃料的建筑
-                if (canHaul)
-                {
-                    Job job = TryFetchForRefuel(pawn, pawnMap, otherMap, targetElev,
-                        otherMaps, currentElev);
-                    if (job != null) return job;
-                }
-
-                // 制作/烹饪等：工作台 bill 需要的原料
-                if (canHaul)
-                {
-                    Job job = TryFetchForBill(pawn, pawnMap, otherMap, targetElev,
-                        otherMaps, currentElev);
+                    Job job = TryFetchByCategory(workPriorities[wi].category,
+                        pawn, pawnMap, otherMap, targetElev, otherMaps, currentElev);
                     if (job != null) return job;
                 }
             }
 
             // ========== Phase 2: 反向取材 - 当前层有需求，其他层有材料 ==========
             // (pawn 在需求层，需要去其他层取材料回来)
-            // 建造已由 Patch_ConstructDeliverResources 处理，这里只处理 Refuel 和 Bill
-
-            if (canHaul)
+            // 建造已由 Patch_ConstructDeliverResources 处理
+            for (int wi = 0; wi < workPriorities.Count; wi++)
             {
-                // 加油反向：当前层有需要加油的建筑，其他层有燃料
-                Job revRefuel = TryReverseFetchForRefuel(pawn, pawnMap, otherMaps, currentElev);
-                if (revRefuel != null) return revRefuel;
-
-                // Bill 反向：当前层有工作台需要原料，其他层有原料
-                Job revBill = TryReverseFetchForBill(pawn, pawnMap, otherMaps, currentElev);
-                if (revBill != null) return revBill;
+                Job revJob = TryReverseFetchByCategory(workPriorities[wi].category,
+                    pawn, pawnMap, otherMaps, currentElev);
+                if (revJob != null) return revJob;
             }
 
             return null;
+        }
+
+        // ========== 按类别分发 ==========
+
+        private static Job TryFetchByCategory(int category, Pawn pawn, Map pawnMap,
+            Map otherMap, int targetElev, List<(Map map, int elevation)> otherMaps, int currentElev)
+        {
+            switch (category)
+            {
+                case 0: // Construction
+                    return TryFetchForConstruction(pawn, pawnMap, otherMap, targetElev, otherMaps, currentElev);
+                case 1: // Hauling: Refuel + Bill
+                    Job r = TryFetchForRefuel(pawn, pawnMap, otherMap, targetElev, otherMaps, currentElev);
+                    return r ?? TryFetchForBill(pawn, pawnMap, otherMap, targetElev, otherMaps, currentElev);
+                case 2: // Doctor: Medicine + PatientFeed + Hemogen
+                    Job m = TryFetchForMedicine(pawn, pawnMap, otherMap, targetElev, otherMaps, currentElev);
+                    if (m != null) return m;
+                    Job p = TryFetchForPatientFeed(pawn, pawnMap, otherMap, targetElev, otherMaps, currentElev);
+                    return p ?? TryFetchForHemogen(pawn, pawnMap, otherMap, targetElev, otherMaps, currentElev);
+                case 3: // Warden
+                    return TryFetchForWardFeed(pawn, pawnMap, otherMap, targetElev, otherMaps, currentElev);
+                case 4: // Handling
+                    return TryFetchForAnimalFeed(pawn, pawnMap, otherMap, targetElev, otherMaps, currentElev);
+                case 5: // Childcare
+                    return TryFetchForBabyFeed(pawn, pawnMap, otherMap, targetElev, otherMaps, currentElev);
+                default:
+                    return null;
+            }
+        }
+
+        private static Job TryReverseFetchByCategory(int category, Pawn pawn, Map pawnMap,
+            List<(Map map, int elevation)> otherMaps, int currentElev)
+        {
+            switch (category)
+            {
+                case 1: // Hauling: Refuel + Bill
+                    Job r = TryReverseFetchForRefuel(pawn, pawnMap, otherMaps, currentElev);
+                    return r ?? TryReverseFetchForBill(pawn, pawnMap, otherMaps, currentElev);
+                case 2: // Doctor: Medicine + PatientFeed + Hemogen
+                    Job m = TryReverseFetchForMedicine(pawn, pawnMap, otherMaps, currentElev);
+                    if (m != null) return m;
+                    Job p = TryReverseFetchForPatientFeed(pawn, pawnMap, otherMaps, currentElev);
+                    return p ?? TryReverseFetchForHemogen(pawn, pawnMap, otherMaps, currentElev);
+                case 3: // Warden
+                    return TryReverseFetchForWardFeed(pawn, pawnMap, otherMaps, currentElev);
+                case 4: // Handling
+                    return TryReverseFetchForAnimalFeed(pawn, pawnMap, otherMaps, currentElev);
+                case 5: // Childcare
+                    return TryReverseFetchForBabyFeed(pawn, pawnMap, otherMaps, currentElev);
+                default: // 0=Construction 由 Patch_ConstructDeliverResources 处理
+                    return null;
+            }
         }
 
         // ========== 建造 ==========
@@ -401,6 +460,546 @@ namespace MapLevelFramework.Patches
                         }
                     }
                 }
+            }
+            return null;
+        }
+
+        // ========== 医疗取药 ==========
+
+        private static Job TryFetchForMedicine(Pawn pawn, Map pawnMap, Map targetMap, int targetElev,
+            List<(Map map, int elevation)> otherMaps, int currentElev)
+        {
+            // 目标层有需要治疗的 pawn
+            foreach (Pawn patient in targetMap.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer))
+            {
+                if (!NeedsMedicineFromOtherFloor(patient, targetMap, pawn)) continue;
+
+                // 先找 pawn 当前层的药
+                Thing med = FindMedicineOnMap(pawnMap, pawn);
+                if (med != null)
+                    return MakeFetchJob(pawn, med.def, patient, targetElev,
+                        CrossLevelJobUtility.NeedType.Medicine);
+
+                // 三层：搜索其他层
+                foreach (var (matMap, matElev) in otherMaps)
+                {
+                    if (matMap == targetMap) continue;
+                    Thing remoteMed = FindMedicineOnOtherMap(matMap, pawn);
+                    if (remoteMed == null) continue;
+
+                    int nextElev = matElev > currentElev ? currentElev + 1 : currentElev - 1;
+                    Building_Stairs stairs = CrossLevelJobUtility.FindStairsToElevation(
+                        pawn, pawnMap, nextElev);
+                    if (stairs == null) continue;
+
+                    return MakeReverseFetchJob(pawn, remoteMed.def, patient, targetElev,
+                        CrossLevelJobUtility.NeedType.Medicine, stairs);
+                }
+            }
+            // 囚犯也需要治疗
+            foreach (Pawn prisoner in targetMap.mapPawns.PrisonersOfColony)
+            {
+                if (!NeedsMedicineFromOtherFloor(prisoner, targetMap, pawn)) continue;
+
+                Thing med = FindMedicineOnMap(pawnMap, pawn);
+                if (med != null)
+                    return MakeFetchJob(pawn, med.def, prisoner, targetElev,
+                        CrossLevelJobUtility.NeedType.Medicine);
+
+                foreach (var (matMap, matElev) in otherMaps)
+                {
+                    if (matMap == targetMap) continue;
+                    Thing remoteMed = FindMedicineOnOtherMap(matMap, pawn);
+                    if (remoteMed == null) continue;
+
+                    int nextElev = matElev > currentElev ? currentElev + 1 : currentElev - 1;
+                    Building_Stairs stairs = CrossLevelJobUtility.FindStairsToElevation(
+                        pawn, pawnMap, nextElev);
+                    if (stairs == null) continue;
+
+                    return MakeReverseFetchJob(pawn, remoteMed.def, prisoner, targetElev,
+                        CrossLevelJobUtility.NeedType.Medicine, stairs);
+                }
+            }
+            return null;
+        }
+
+        // 医疗反向
+        private static Job TryReverseFetchForMedicine(Pawn pawn, Map pawnMap,
+            List<(Map map, int elevation)> otherMaps, int currentElev)
+        {
+            // 当前层有需要治疗的 pawn，其他层有药
+            List<Pawn> patients = new List<Pawn>();
+            patients.AddRange(pawnMap.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer));
+            patients.AddRange(pawnMap.mapPawns.PrisonersOfColony);
+
+            foreach (Pawn patient in patients)
+            {
+                if (!NeedsMedicineFromOtherFloor(patient, pawnMap, pawn)) continue;
+
+                foreach (var (otherMap, otherElev) in otherMaps)
+                {
+                    Thing remoteMed = FindMedicineOnOtherMap(otherMap, pawn);
+                    if (remoteMed == null) continue;
+
+                    int nextElev = otherElev > currentElev ? currentElev + 1 : currentElev - 1;
+                    Building_Stairs stairs = CrossLevelJobUtility.FindStairsToElevation(
+                        pawn, pawnMap, nextElev);
+                    if (stairs == null) continue;
+
+                    return MakeReverseFetchJob(pawn, remoteMed.def, patient, currentElev,
+                        CrossLevelJobUtility.NeedType.Medicine, stairs);
+                }
+            }
+            return null;
+        }
+
+        private static bool NeedsMedicineFromOtherFloor(Pawn patient, Map patientMap, Pawn hauler)
+        {
+            if (!patient.Spawned || patient.Dead) return false;
+            // 使用原版 API 判断是否需要治疗
+            if (!HealthAIUtility.ShouldBeTendedNowByPlayer(patient)) return false;
+
+            // 当前层没有药物才需要跨层取
+            var meds = patientMap.listerThings.ThingsInGroup(ThingRequestGroup.Medicine);
+            for (int i = 0; i < meds.Count; i++)
+            {
+                if (!meds[i].IsForbidden(hauler) && meds[i].stackCount > 0)
+                    return false; // 本层有药，让原版处理
+            }
+            return true;
+        }
+
+        private static Thing FindMedicineOnMap(Map map, Pawn pawn)
+        {
+            return GenClosest.ClosestThingReachable(
+                pawn.Position, map,
+                ThingRequest.ForGroup(ThingRequestGroup.Medicine),
+                PathEndMode.ClosestTouch,
+                TraverseParms.For(pawn),
+                9999f,
+                t => !t.IsForbidden(pawn) && pawn.CanReserve(t) && t.stackCount > 0);
+        }
+
+        private static Thing FindMedicineOnOtherMap(Map map, Pawn pawn)
+        {
+            var meds = map.listerThings.ThingsInGroup(ThingRequestGroup.Medicine);
+            for (int i = 0; i < meds.Count; i++)
+            {
+                if (!meds[i].IsForbidden(pawn) && meds[i].stackCount > 0)
+                    return meds[i];
+            }
+            return null;
+        }
+
+        // ========== 监管喂饭 ==========
+
+        private static Job TryFetchForWardFeed(Pawn pawn, Map pawnMap, Map targetMap, int targetElev,
+            List<(Map map, int elevation)> otherMaps, int currentElev)
+        {
+            foreach (Pawn prisoner in targetMap.mapPawns.PrisonersOfColony)
+            {
+                if (!NeedsFoodFromOtherFloor(prisoner, targetMap, pawn)) continue;
+
+                Thing food = FindFoodOnMap(pawnMap, pawn);
+                if (food != null)
+                    return MakeFetchJob(pawn, food.def, prisoner, targetElev,
+                        CrossLevelJobUtility.NeedType.WardFeed);
+
+                // 三层
+                foreach (var (matMap, matElev) in otherMaps)
+                {
+                    if (matMap == targetMap) continue;
+                    Thing remoteFood = FindFoodOnOtherMap(matMap, pawn);
+                    if (remoteFood == null) continue;
+
+                    int nextElev = matElev > currentElev ? currentElev + 1 : currentElev - 1;
+                    Building_Stairs stairs = CrossLevelJobUtility.FindStairsToElevation(
+                        pawn, pawnMap, nextElev);
+                    if (stairs == null) continue;
+
+                    return MakeReverseFetchJob(pawn, remoteFood.def, prisoner, targetElev,
+                        CrossLevelJobUtility.NeedType.WardFeed, stairs);
+                }
+            }
+            return null;
+        }
+
+        // 监管喂饭反向
+        private static Job TryReverseFetchForWardFeed(Pawn pawn, Map pawnMap,
+            List<(Map map, int elevation)> otherMaps, int currentElev)
+        {
+            foreach (Pawn prisoner in pawnMap.mapPawns.PrisonersOfColony)
+            {
+                if (!NeedsFoodFromOtherFloor(prisoner, pawnMap, pawn)) continue;
+
+                foreach (var (otherMap, otherElev) in otherMaps)
+                {
+                    Thing remoteFood = FindFoodOnOtherMap(otherMap, pawn);
+                    if (remoteFood == null) continue;
+
+                    int nextElev = otherElev > currentElev ? currentElev + 1 : currentElev - 1;
+                    Building_Stairs stairs = CrossLevelJobUtility.FindStairsToElevation(
+                        pawn, pawnMap, nextElev);
+                    if (stairs == null) continue;
+
+                    return MakeReverseFetchJob(pawn, remoteFood.def, prisoner, currentElev,
+                        CrossLevelJobUtility.NeedType.WardFeed, stairs);
+                }
+            }
+            return null;
+        }
+
+        private static bool NeedsFoodFromOtherFloor(Pawn prisoner, Map prisonerMap, Pawn hauler)
+        {
+            if (!prisoner.Spawned || prisoner.Dead) return false;
+            // 使用原版 API 判断囚犯是否需要喂饭
+            if (!WardenFeedUtility.ShouldBeFed(prisoner)) return false;
+
+            // 当前层没有可用食物才需要跨层取
+            var foods = prisonerMap.listerThings.ThingsInGroup(ThingRequestGroup.FoodSourceNotPlantOrTree);
+            for (int i = 0; i < foods.Count; i++)
+            {
+                Thing f = foods[i];
+                if (!f.IsForbidden(hauler) && f.stackCount > 0 && f.IngestibleNow && f.def.ingestible != null)
+                    return false; // 本层有食物
+            }
+            return true;
+        }
+
+        private static Thing FindFoodOnMap(Map map, Pawn pawn)
+        {
+            return GenClosest.ClosestThingReachable(
+                pawn.Position, map,
+                ThingRequest.ForGroup(ThingRequestGroup.FoodSourceNotPlantOrTree),
+                PathEndMode.ClosestTouch,
+                TraverseParms.For(pawn),
+                9999f,
+                t => !t.IsForbidden(pawn) && pawn.CanReserve(t)
+                     && t.stackCount > 0 && t.IngestibleNow && t.def.ingestible != null);
+        }
+
+        private static Thing FindFoodOnOtherMap(Map map, Pawn pawn)
+        {
+            var foods = map.listerThings.ThingsInGroup(ThingRequestGroup.FoodSourceNotPlantOrTree);
+            for (int i = 0; i < foods.Count; i++)
+            {
+                Thing f = foods[i];
+                if (!f.IsForbidden(pawn) && f.stackCount > 0 && f.IngestibleNow && f.def.ingestible != null)
+                    return f;
+            }
+            return null;
+        }
+
+        // ========== 喂食病人 ==========
+
+        private static Job TryFetchForPatientFeed(Pawn pawn, Map pawnMap, Map targetMap, int targetElev,
+            List<(Map map, int elevation)> otherMaps, int currentElev)
+        {
+            foreach (Pawn patient in targetMap.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer))
+            {
+                if (!NeedsPatientFeedFromOtherFloor(patient, targetMap, pawn)) continue;
+
+                Thing food = FindFoodOnMap(pawnMap, pawn);
+                if (food != null)
+                    return MakeFetchJob(pawn, food.def, patient, targetElev,
+                        CrossLevelJobUtility.NeedType.PatientFeed);
+
+                foreach (var (matMap, matElev) in otherMaps)
+                {
+                    if (matMap == targetMap) continue;
+                    Thing remoteFood = FindFoodOnOtherMap(matMap, pawn);
+                    if (remoteFood == null) continue;
+
+                    int nextElev = matElev > currentElev ? currentElev + 1 : currentElev - 1;
+                    Building_Stairs stairs = CrossLevelJobUtility.FindStairsToElevation(
+                        pawn, pawnMap, nextElev);
+                    if (stairs == null) continue;
+
+                    return MakeReverseFetchJob(pawn, remoteFood.def, patient, targetElev,
+                        CrossLevelJobUtility.NeedType.PatientFeed, stairs);
+                }
+            }
+            return null;
+        }
+
+        private static Job TryReverseFetchForPatientFeed(Pawn pawn, Map pawnMap,
+            List<(Map map, int elevation)> otherMaps, int currentElev)
+        {
+            foreach (Pawn patient in pawnMap.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer))
+            {
+                if (!NeedsPatientFeedFromOtherFloor(patient, pawnMap, pawn)) continue;
+
+                foreach (var (otherMap, otherElev) in otherMaps)
+                {
+                    Thing remoteFood = FindFoodOnOtherMap(otherMap, pawn);
+                    if (remoteFood == null) continue;
+
+                    int nextElev = otherElev > currentElev ? currentElev + 1 : currentElev - 1;
+                    Building_Stairs stairs = CrossLevelJobUtility.FindStairsToElevation(
+                        pawn, pawnMap, nextElev);
+                    if (stairs == null) continue;
+
+                    return MakeReverseFetchJob(pawn, remoteFood.def, patient, currentElev,
+                        CrossLevelJobUtility.NeedType.PatientFeed, stairs);
+                }
+            }
+            return null;
+        }
+
+        private static bool NeedsPatientFeedFromOtherFloor(Pawn patient, Map patientMap, Pawn hauler)
+        {
+            if (!patient.Spawned || patient.Dead) return false;
+            if (patient.IsPrisoner) return false; // 囚犯由 WardFeed 处理
+            if (!FoodUtility.ShouldBeFedBySomeone(patient)) return false;
+
+            var foods = patientMap.listerThings.ThingsInGroup(ThingRequestGroup.FoodSourceNotPlantOrTree);
+            for (int i = 0; i < foods.Count; i++)
+            {
+                Thing f = foods[i];
+                if (!f.IsForbidden(hauler) && f.stackCount > 0 && f.IngestibleNow && f.def.ingestible != null)
+                    return false;
+            }
+            return true;
+        }
+
+        // ========== 喂食动物 ==========
+
+        private static Job TryFetchForAnimalFeed(Pawn pawn, Map pawnMap, Map targetMap, int targetElev,
+            List<(Map map, int elevation)> otherMaps, int currentElev)
+        {
+            foreach (Pawn animal in targetMap.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer))
+            {
+                if (!NeedsAnimalFeedFromOtherFloor(animal, targetMap, pawn)) continue;
+
+                Thing food = FindFoodOnMap(pawnMap, pawn);
+                if (food != null)
+                    return MakeFetchJob(pawn, food.def, animal, targetElev,
+                        CrossLevelJobUtility.NeedType.AnimalFeed);
+
+                foreach (var (matMap, matElev) in otherMaps)
+                {
+                    if (matMap == targetMap) continue;
+                    Thing remoteFood = FindFoodOnOtherMap(matMap, pawn);
+                    if (remoteFood == null) continue;
+
+                    int nextElev = matElev > currentElev ? currentElev + 1 : currentElev - 1;
+                    Building_Stairs stairs = CrossLevelJobUtility.FindStairsToElevation(
+                        pawn, pawnMap, nextElev);
+                    if (stairs == null) continue;
+
+                    return MakeReverseFetchJob(pawn, remoteFood.def, animal, targetElev,
+                        CrossLevelJobUtility.NeedType.AnimalFeed, stairs);
+                }
+            }
+            return null;
+        }
+
+        private static Job TryReverseFetchForAnimalFeed(Pawn pawn, Map pawnMap,
+            List<(Map map, int elevation)> otherMaps, int currentElev)
+        {
+            foreach (Pawn animal in pawnMap.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer))
+            {
+                if (!NeedsAnimalFeedFromOtherFloor(animal, pawnMap, pawn)) continue;
+
+                foreach (var (otherMap, otherElev) in otherMaps)
+                {
+                    Thing remoteFood = FindFoodOnOtherMap(otherMap, pawn);
+                    if (remoteFood == null) continue;
+
+                    int nextElev = otherElev > currentElev ? currentElev + 1 : currentElev - 1;
+                    Building_Stairs stairs = CrossLevelJobUtility.FindStairsToElevation(
+                        pawn, pawnMap, nextElev);
+                    if (stairs == null) continue;
+
+                    return MakeReverseFetchJob(pawn, remoteFood.def, animal, currentElev,
+                        CrossLevelJobUtility.NeedType.AnimalFeed, stairs);
+                }
+            }
+            return null;
+        }
+
+        private static bool NeedsAnimalFeedFromOtherFloor(Pawn animal, Map animalMap, Pawn hauler)
+        {
+            if (!animal.Spawned || animal.Dead) return false;
+            if (!animal.RaceProps.Animal) return false;
+            Need_Food foodNeed = animal.needs?.food;
+            if (foodNeed == null || foodNeed.CurLevelPercentage > 0.3f) return false;
+
+            var foods = animalMap.listerThings.ThingsInGroup(ThingRequestGroup.FoodSourceNotPlantOrTree);
+            for (int i = 0; i < foods.Count; i++)
+            {
+                Thing f = foods[i];
+                if (!f.IsForbidden(hauler) && f.stackCount > 0 && f.IngestibleNow && f.def.ingestible != null)
+                    return false;
+            }
+            return true;
+        }
+
+        // ========== 喂养婴儿 ==========
+
+        private static Job TryFetchForBabyFeed(Pawn pawn, Map pawnMap, Map targetMap, int targetElev,
+            List<(Map map, int elevation)> otherMaps, int currentElev)
+        {
+            foreach (Pawn baby in targetMap.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer))
+            {
+                if (!NeedsBabyFeedFromOtherFloor(baby, targetMap, pawn)) continue;
+
+                Thing food = FindFoodOnMap(pawnMap, pawn);
+                if (food != null)
+                    return MakeFetchJob(pawn, food.def, baby, targetElev,
+                        CrossLevelJobUtility.NeedType.BabyFeed);
+
+                foreach (var (matMap, matElev) in otherMaps)
+                {
+                    if (matMap == targetMap) continue;
+                    Thing remoteFood = FindFoodOnOtherMap(matMap, pawn);
+                    if (remoteFood == null) continue;
+
+                    int nextElev = matElev > currentElev ? currentElev + 1 : currentElev - 1;
+                    Building_Stairs stairs = CrossLevelJobUtility.FindStairsToElevation(
+                        pawn, pawnMap, nextElev);
+                    if (stairs == null) continue;
+
+                    return MakeReverseFetchJob(pawn, remoteFood.def, baby, targetElev,
+                        CrossLevelJobUtility.NeedType.BabyFeed, stairs);
+                }
+            }
+            return null;
+        }
+
+        private static Job TryReverseFetchForBabyFeed(Pawn pawn, Map pawnMap,
+            List<(Map map, int elevation)> otherMaps, int currentElev)
+        {
+            foreach (Pawn baby in pawnMap.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer))
+            {
+                if (!NeedsBabyFeedFromOtherFloor(baby, pawnMap, pawn)) continue;
+
+                foreach (var (otherMap, otherElev) in otherMaps)
+                {
+                    Thing remoteFood = FindFoodOnOtherMap(otherMap, pawn);
+                    if (remoteFood == null) continue;
+
+                    int nextElev = otherElev > currentElev ? currentElev + 1 : currentElev - 1;
+                    Building_Stairs stairs = CrossLevelJobUtility.FindStairsToElevation(
+                        pawn, pawnMap, nextElev);
+                    if (stairs == null) continue;
+
+                    return MakeReverseFetchJob(pawn, remoteFood.def, baby, currentElev,
+                        CrossLevelJobUtility.NeedType.BabyFeed, stairs);
+                }
+            }
+            return null;
+        }
+
+        private static bool NeedsBabyFeedFromOtherFloor(Pawn baby, Map babyMap, Pawn hauler)
+        {
+            if (!baby.Spawned || baby.Dead) return false;
+            if (baby.DevelopmentalStage != DevelopmentalStage.Baby) return false;
+            Need_Food foodNeed = baby.needs?.food;
+            if (foodNeed == null || foodNeed.CurLevelPercentage > 0.3f) return false;
+
+            var foods = babyMap.listerThings.ThingsInGroup(ThingRequestGroup.FoodSourceNotPlantOrTree);
+            for (int i = 0; i < foods.Count; i++)
+            {
+                Thing f = foods[i];
+                if (!f.IsForbidden(hauler) && f.stackCount > 0 && f.IngestibleNow && f.def.ingestible != null)
+                    return false;
+            }
+            return true;
+        }
+
+        // ========== 血原质 ==========
+
+        private static Job TryFetchForHemogen(Pawn pawn, Map pawnMap, Map targetMap, int targetElev,
+            List<(Map map, int elevation)> otherMaps, int currentElev)
+        {
+            foreach (Pawn target in targetMap.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer))
+            {
+                if (!NeedsHemogenFromOtherFloor(target, targetMap, pawn)) continue;
+
+                Thing pack = FindHemogenOnMap(pawnMap, pawn);
+                if (pack != null)
+                    return MakeFetchJob(pawn, pack.def, target, targetElev,
+                        CrossLevelJobUtility.NeedType.Hemogen);
+
+                foreach (var (matMap, matElev) in otherMaps)
+                {
+                    if (matMap == targetMap) continue;
+                    Thing remotePack = FindHemogenOnOtherMap(matMap, pawn);
+                    if (remotePack == null) continue;
+
+                    int nextElev = matElev > currentElev ? currentElev + 1 : currentElev - 1;
+                    Building_Stairs stairs = CrossLevelJobUtility.FindStairsToElevation(
+                        pawn, pawnMap, nextElev);
+                    if (stairs == null) continue;
+
+                    return MakeReverseFetchJob(pawn, remotePack.def, target, targetElev,
+                        CrossLevelJobUtility.NeedType.Hemogen, stairs);
+                }
+            }
+            return null;
+        }
+
+        private static Job TryReverseFetchForHemogen(Pawn pawn, Map pawnMap,
+            List<(Map map, int elevation)> otherMaps, int currentElev)
+        {
+            foreach (Pawn target in pawnMap.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer))
+            {
+                if (!NeedsHemogenFromOtherFloor(target, pawnMap, pawn)) continue;
+
+                foreach (var (otherMap, otherElev) in otherMaps)
+                {
+                    Thing remotePack = FindHemogenOnOtherMap(otherMap, pawn);
+                    if (remotePack == null) continue;
+
+                    int nextElev = otherElev > currentElev ? currentElev + 1 : currentElev - 1;
+                    Building_Stairs stairs = CrossLevelJobUtility.FindStairsToElevation(
+                        pawn, pawnMap, nextElev);
+                    if (stairs == null) continue;
+
+                    return MakeReverseFetchJob(pawn, remotePack.def, target, currentElev,
+                        CrossLevelJobUtility.NeedType.Hemogen, stairs);
+                }
+            }
+            return null;
+        }
+
+        private static bool NeedsHemogenFromOtherFloor(Pawn target, Map targetMap, Pawn hauler)
+        {
+            if (!target.Spawned || target.Dead) return false;
+            if (target.genes == null) return false;
+            Gene_Hemogen hemogen = target.genes.GetFirstGeneOfType<Gene_Hemogen>();
+            if (hemogen == null) return false;
+            if (hemogen.Value >= hemogen.targetValue) return false;
+
+            var packs = targetMap.listerThings.ThingsOfDef(ThingDefOf.HemogenPack);
+            for (int i = 0; i < packs.Count; i++)
+            {
+                if (!packs[i].IsForbidden(hauler) && packs[i].stackCount > 0)
+                    return false;
+            }
+            return true;
+        }
+
+        private static Thing FindHemogenOnMap(Map map, Pawn pawn)
+        {
+            return GenClosest.ClosestThingReachable(
+                pawn.Position, map,
+                ThingRequest.ForDef(ThingDefOf.HemogenPack),
+                PathEndMode.ClosestTouch,
+                TraverseParms.For(pawn),
+                9999f,
+                t => !t.IsForbidden(pawn) && pawn.CanReserve(t) && t.stackCount > 0);
+        }
+
+        private static Thing FindHemogenOnOtherMap(Map map, Pawn pawn)
+        {
+            var packs = map.listerThings.ThingsOfDef(ThingDefOf.HemogenPack);
+            for (int i = 0; i < packs.Count; i++)
+            {
+                if (!packs[i].IsForbidden(pawn) && packs[i].stackCount > 0)
+                    return packs[i];
             }
             return null;
         }

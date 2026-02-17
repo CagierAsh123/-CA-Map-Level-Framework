@@ -41,6 +41,22 @@ namespace MapLevelFramework
 
             TerrainGrid terrainGrid = map.terrainGrid;
 
+            // 确定"下层"参考：创建 N 层时，检查 N-1 层的地板（或基地图的屋顶）
+            int elevation = lmp.elevation;
+            int belowElev = elevation > 0 ? elevation - 1 : elevation + 1;
+            Map belowMap = null;
+            bool useBelowTerrain = false; // true = 检查下层地板, false = 检查基地图屋顶
+
+            if (belowElev != 0 && lmp.hostManager != null)
+            {
+                var belowLevel = lmp.hostManager.GetLevel(belowElev);
+                if (belowLevel?.LevelMap != null)
+                {
+                    belowMap = belowLevel.LevelMap;
+                    useBelowTerrain = true;
+                }
+            }
+
             // 子地图与基地图同尺寸，坐标完全一致。
             // 先把所有格子设为 OpenAir（虚空），再填充 area 内的格子。
             foreach (IntVec3 cell in map.AllCells)
@@ -51,10 +67,26 @@ namespace MapLevelFramework
             // 只填充 area 范围内的格子（坐标与基地图一致，无需转换）
             foreach (IntVec3 cell in area)
             {
-                if (!cell.InBounds(map) || !cell.InBounds(hostMap)) continue;
+                if (!cell.InBounds(map)) continue;
 
-                bool hasRoof = hostMap.roofGrid.RoofAt(cell) != null;
-                if (hasRoof)
+                bool hasSupport;
+                if (useBelowTerrain && belowMap != null && cell.InBounds(belowMap))
+                {
+                    // 检查下层地板：非 OpenAir = 有结构支撑
+                    TerrainDef belowTerrain = belowMap.terrainGrid.TerrainAt(cell);
+                    hasSupport = belowTerrain != openAir;
+                }
+                else if (cell.InBounds(hostMap))
+                {
+                    // 回退：检查基地图屋顶
+                    hasSupport = hostMap.roofGrid.RoofAt(cell) != null;
+                }
+                else
+                {
+                    hasSupport = false;
+                }
+
+                if (hasSupport)
                 {
                     terrainGrid.SetTerrain(cell, floorTerrain);
                     // 底层设为 LevelBase（支持 Heavy affordance），而非 OpenAir

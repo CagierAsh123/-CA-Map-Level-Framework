@@ -272,6 +272,12 @@ namespace MapLevelFramework
             Construction,   // 建造：送到蓝图/框架
             Refuel,         // 加油：送到 CompRefuelable 建筑
             Bill,           // 制作/烹饪等：送原料到工作台附近
+            Medicine,       // 医疗：送药到病人附近
+            WardFeed,       // 监管喂饭：送食物到囚犯附近
+            PatientFeed,    // 喂食病人：送食物到无法自理的病人附近
+            AnimalFeed,     // 喂食动物：送食物到饥饿的殖民地动物附近
+            BabyFeed,       // 喂养婴儿：送婴儿食物到婴儿附近
+            Hemogen,        // 血原质：送血原质包到需要的 pawn 附近
         }
 
         public struct FetchData

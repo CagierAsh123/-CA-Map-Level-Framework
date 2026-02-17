@@ -29,6 +29,11 @@ namespace MapLevelFramework
         private bool autoSpawned;
 
         /// <summary>
+        /// 缓存的电力组件（跨层电力传输用）。
+        /// </summary>
+        public CompPowerTrader CompPowerTrader;
+
+        /// <summary>
         /// 该楼梯 Def 是否标记为下楼方向。
         /// </summary>
         public bool GoesDown => def.GetModExtension<StairsExtension>()?.goesDown ?? false;
@@ -36,6 +41,9 @@ namespace MapLevelFramework
         public override void SpawnSetup(Map map, bool respawningAfterLoad)
         {
             base.SpawnSetup(map, respawningAfterLoad);
+
+            // 缓存电力组件
+            CompPowerTrader = GetComp<CompPowerTrader>();
 
             // 注册到楼梯缓存（包括 respawningAfterLoad 和 autoSpawned）
             StairsCache.Register(this);
@@ -98,6 +106,9 @@ namespace MapLevelFramework
 
             if (mgr == null) yield break;
 
+            // 地面层（elevation 0）不需要创建/销毁按钮
+            if (targetElevation == 0) yield break;
+
             bool levelExists = mgr.GetLevel(targetElevation) != null;
 
             if (!levelExists)
@@ -151,6 +162,34 @@ namespace MapLevelFramework
             if (elevation > 0) return $"{elevation + 1}F";
             if (elevation < 0) return $"B{-elevation}";
             return "地面";
+        }
+
+        // ========== 电力传输辅助 ==========
+
+        /// <summary>
+        /// 重置楼梯的电力输出为 0（由 PowerRelayManager 调用前重置）。
+        /// </summary>
+        public void ResetPowerOutput()
+        {
+            if (CompPowerTrader != null)
+                CompPowerTrader.powerOutputInt = 0f;
+        }
+
+        /// <summary>
+        /// 获取楼梯当前的电力传输信息。
+        /// </summary>
+        public override string GetInspectString()
+        {
+            string baseStr = base.GetInspectString();
+            if (CompPowerTrader != null && CompPowerTrader.PowerNet != null)
+            {
+                float output = CompPowerTrader.PowerOutput;
+                if (output > 0.5f)
+                    baseStr += $"\n跨层供电: +{output:F0} W";
+                else if (output < -0.5f)
+                    baseStr += $"\n跨层输电: {output:F0} W";
+            }
+            return baseStr;
         }
 
         // ========== 右键菜单 ==========
@@ -390,29 +429,38 @@ namespace MapLevelFramework
                 System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
             TerrainDef[] underGrid = underGridField?.GetValue(levelMap.terrainGrid) as TerrainDef[];
 
-            foreach (IntVec3 cell in level.area)
+            // 抑制屋顶-地板同步，防止设置 OpenAir 时清除下层屋顶
+            Patches.RoofFloorSync.SuppressSync = true;
+            try
             {
-                if (!cell.InBounds(levelMap)) continue;
-
-                if (level.usableCells != null && level.usableCells.Contains(cell))
+                foreach (IntVec3 cell in level.area)
                 {
-                    if (levelMap.terrainGrid.TerrainAt(cell) == openAir)
-                    {
-                        levelMap.terrainGrid.SetTerrain(cell, floor);
-                    }
-                    // 确保底层是 LevelBase（支持所有地板建造）
-                    if (underGrid != null && levelBase != null)
-                    {
-                        int index = levelMap.cellIndices.CellToIndex(cell);
-                        underGrid[index] = levelBase;
-                    }
-                }
-                else
-                {
-                    levelMap.terrainGrid.SetTerrain(cell, openAir);
-                }
+                    if (!cell.InBounds(levelMap)) continue;
 
-                levelMap.mapDrawer.MapMeshDirty(cell, MapMeshFlagDefOf.Terrain);
+                    if (level.usableCells != null && level.usableCells.Contains(cell))
+                    {
+                        if (levelMap.terrainGrid.TerrainAt(cell) == openAir)
+                        {
+                            levelMap.terrainGrid.SetTerrain(cell, floor);
+                        }
+                        // 确保底层是 LevelBase（支持所有地板建造）
+                        if (underGrid != null && levelBase != null)
+                        {
+                            int index = levelMap.cellIndices.CellToIndex(cell);
+                            underGrid[index] = levelBase;
+                        }
+                    }
+                    else
+                    {
+                        levelMap.terrainGrid.SetTerrain(cell, openAir);
+                    }
+
+                    levelMap.mapDrawer.MapMeshDirty(cell, MapMeshFlagDefOf.Terrain);
+                }
+            }
+            finally
+            {
+                Patches.RoofFloorSync.SuppressSync = false;
             }
         }
 

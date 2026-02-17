@@ -54,9 +54,56 @@ namespace MapLevelFramework
                         9999f,
                         t => !t.IsForbidden(pawn) && pawn.CanReserve(t) && filter.Allows(t));
                 }
+                else if (fetchData.needType == CrossLevelJobUtility.NeedType.Medicine)
+                {
+                    // 医疗：找药物
+                    material = GenClosest.ClosestThingReachable(
+                        pawn.Position, pawn.Map,
+                        ThingRequest.ForGroup(ThingRequestGroup.Medicine),
+                        PathEndMode.ClosestTouch,
+                        TraverseParms.For(pawn),
+                        9999f,
+                        t => !t.IsForbidden(pawn) && pawn.CanReserve(t) && t.stackCount > 0);
+                }
+                else if (fetchData.needType == CrossLevelJobUtility.NeedType.WardFeed
+                    || fetchData.needType == CrossLevelJobUtility.NeedType.PatientFeed
+                    || fetchData.needType == CrossLevelJobUtility.NeedType.AnimalFeed)
+                {
+                    // 喂食：找食物
+                    material = GenClosest.ClosestThingReachable(
+                        pawn.Position, pawn.Map,
+                        ThingRequest.ForGroup(ThingRequestGroup.FoodSourceNotPlantOrTree),
+                        PathEndMode.ClosestTouch,
+                        TraverseParms.For(pawn),
+                        9999f,
+                        t => !t.IsForbidden(pawn) && pawn.CanReserve(t)
+                             && t.stackCount > 0 && t.IngestibleNow && t.def.ingestible != null);
+                }
+                else if (fetchData.needType == CrossLevelJobUtility.NeedType.BabyFeed)
+                {
+                    // 喂养婴儿：找婴儿食物（按 thingDef 匹配，扫描时已确定）
+                    material = GenClosest.ClosestThingReachable(
+                        pawn.Position, pawn.Map,
+                        ThingRequest.ForDef(fetchData.thingDef),
+                        PathEndMode.ClosestTouch,
+                        TraverseParms.For(pawn),
+                        9999f,
+                        t => !t.IsForbidden(pawn) && pawn.CanReserve(t) && t.stackCount > 0);
+                }
+                else if (fetchData.needType == CrossLevelJobUtility.NeedType.Hemogen)
+                {
+                    // 血原质：找血原质包（按 thingDef 匹配）
+                    material = GenClosest.ClosestThingReachable(
+                        pawn.Position, pawn.Map,
+                        ThingRequest.ForDef(fetchData.thingDef),
+                        PathEndMode.ClosestTouch,
+                        TraverseParms.For(pawn),
+                        9999f,
+                        t => !t.IsForbidden(pawn) && pawn.CanReserve(t) && t.stackCount > 0);
+                }
                 else
                 {
-                    // 建造等：按 thingDef 匹配
+                    // 建造/Bill 等：按 thingDef 匹配
                     material = GenClosest.ClosestThingReachable(
                         pawn.Position, pawn.Map,
                         ThingRequest.ForDef(fetchData.thingDef),
@@ -187,6 +234,27 @@ namespace MapLevelFramework
                         target.Position, ThingPlaceMode.Near, out _);
                     return null;
 
+                case CrossLevelJobUtility.NeedType.Medicine:
+                    // 放在病人附近，让原版医生下一轮扫描时使用
+                    pawn.carryTracker.TryDropCarriedThing(
+                        target.Position, ThingPlaceMode.Near, out _);
+                    return null;
+
+                case CrossLevelJobUtility.NeedType.WardFeed:
+                    // 放在囚犯附近，让原版看守下一轮扫描时喂饭
+                    pawn.carryTracker.TryDropCarriedThing(
+                        target.Position, ThingPlaceMode.Near, out _);
+                    return null;
+
+                case CrossLevelJobUtility.NeedType.PatientFeed:
+                case CrossLevelJobUtility.NeedType.AnimalFeed:
+                case CrossLevelJobUtility.NeedType.BabyFeed:
+                case CrossLevelJobUtility.NeedType.Hemogen:
+                    // 放在目标附近，让原版下一轮扫描处理
+                    pawn.carryTracker.TryDropCarriedThing(
+                        target.Position, ThingPlaceMode.Near, out _);
+                    return null;
+
                 default:
                     return null;
             }
@@ -214,6 +282,24 @@ namespace MapLevelFramework
                 case CrossLevelJobUtility.NeedType.Bill:
                     // Bill 原料搬运：尽量多拿
                     return -1;
+
+                case CrossLevelJobUtility.NeedType.Medicine:
+                    // 药物：1 个就够一次治疗
+                    return 1;
+
+                case CrossLevelJobUtility.NeedType.WardFeed:
+                    // 食物：1 份
+                    return 1;
+
+                case CrossLevelJobUtility.NeedType.PatientFeed:
+                case CrossLevelJobUtility.NeedType.AnimalFeed:
+                case CrossLevelJobUtility.NeedType.BabyFeed:
+                    // 食物：1 份
+                    return 1;
+
+                case CrossLevelJobUtility.NeedType.Hemogen:
+                    // 血原质包：1 个
+                    return 1;
 
                 default:
                     return -1;

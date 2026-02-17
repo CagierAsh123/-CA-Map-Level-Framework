@@ -237,6 +237,14 @@
     <building>
       <isInert>true</isInert>
     </building>
+    <comps>
+      <li Class="CompProperties_Power">
+        <compClass>CompPowerTrader</compClass>
+        <transmitsPower>true</transmitsPower>
+        <basePowerConsumption>0</basePowerConsumption>
+        <showPowerNeededIfOff>false</showPowerNeededIfOff>
+      </li>
+    </comps>
   </ThingDef>
 
   <!-- 楼梯（下楼） -->
@@ -270,6 +278,14 @@
     <building>
       <isInert>true</isInert>
     </building>
+    <comps>
+      <li Class="CompProperties_Power">
+        <compClass>CompPowerTrader</compClass>
+        <transmitsPower>true</transmitsPower>
+        <basePowerConsumption>0</basePowerConsumption>
+        <showPowerNeededIfOff>false</showPowerNeededIfOff>
+      </li>
+    </comps>
     <modExtensions>
       <li Class="MapLevelFramework.StairsExtension">
         <goesDown>true</goesDown>

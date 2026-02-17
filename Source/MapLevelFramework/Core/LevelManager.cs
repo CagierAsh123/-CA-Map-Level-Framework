@@ -771,8 +771,10 @@ namespace MapLevelFramework
             data.mapParent = mapParent;
 
             // 生成地图（参照 VMF 的 GenerateVehicleMap）
+            Patches.RoofFloorSync.SuppressSync = true;
             Map levelMap = MapGenerator.GenerateMap(size, mapParent, genDef,
                 mapParent.ExtraGenStepDefs, null, true, false);
+            Patches.RoofFloorSync.SuppressSync = false;
             Find.World.pocketMaps.Add(mapParent);
 
             // 清除子地图迷雾（层级地图不需要战争迷雾）

@@ -21,6 +21,12 @@ namespace MapLevelFramework.Patches
     {
         private static bool syncing = false;
 
+        /// <summary>
+        /// 层级地图生成期间为 true，抑制屋顶-地板同步。
+        /// 防止 GenStep 设置 OpenAir 时清除下层屋顶。
+        /// </summary>
+        public static bool SuppressSync;
+
         private static TerrainDef openAirDef;
         private static TerrainDef defaultFloorDef;
 
@@ -53,7 +59,7 @@ namespace MapLevelFramework.Patches
         /// </summary>
         public static void OnRoofChanged(Map hostMap, IntVec3 hostCell, RoofDef newRoof)
         {
-            if (syncing) return;
+            if (syncing || SuppressSync) return;
 
             var mgr = LevelManager.GetManager(hostMap);
             if (mgr == null) return;
@@ -173,7 +179,7 @@ namespace MapLevelFramework.Patches
         /// </summary>
         public static void OnFloorChanged(Map levelMap, IntVec3 levelCell, TerrainDef newTerrain)
         {
-            if (syncing) return;
+            if (syncing || SuppressSync) return;
 
             LevelManager manager;
             LevelData level;
