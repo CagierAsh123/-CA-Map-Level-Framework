@@ -137,13 +137,16 @@ namespace MapLevelFramework
 
             int currentElev = GetMapElevation(pawnMap, mgr, baseMap);
 
-            // 收集其他层级地图，按距离当前层远近排序（复用 buffer）
+            // 只收集相邻楼层（elevation ± 1），避免多跳导致 deferred job 失效
             otherMapsBuffer.Clear();
-            if (pawnMap != baseMap)
+            int adjUp = currentElev + 1;
+            int adjDown = currentElev - 1;
+            if (pawnMap != baseMap && (0 == adjUp || 0 == adjDown))
                 otherMapsBuffer.Add((baseMap, 0));
             foreach (var level in mgr.AllLevels)
             {
-                if (level.LevelMap != null && level.LevelMap != pawnMap)
+                if (level.LevelMap != null && level.LevelMap != pawnMap
+                    && (level.elevation == adjUp || level.elevation == adjDown))
                     otherMapsBuffer.Add((level.LevelMap, level.elevation));
             }
 

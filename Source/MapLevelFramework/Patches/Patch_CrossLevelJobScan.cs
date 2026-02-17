@@ -42,6 +42,39 @@ namespace MapLevelFramework.Patches
                 __result = new ThinkResult(fetchJob, __instance, null, false);
                 return;
             }
+
+            // 无工作且在非基地图层 → 返回基地图方向（每次走一层）
+            Job returnJob = TryReturnToBase(pawn);
+            if (returnJob != null)
+            {
+                __result = new ThinkResult(returnJob, __instance, null, false);
+                return;
+            }
+        }
+
+        /// <summary>
+        /// 当 pawn 在非基地图层且无工作时，返回基地图方向（每次走一层）。
+        /// </summary>
+        private static Job TryReturnToBase(Pawn pawn)
+        {
+            Map pawnMap = pawn.Map;
+            if (pawnMap == null) return null;
+            if (!LevelManager.IsLevelMap(pawnMap, out var parentMgr, out _)) return null;
+
+            // 冷却检查，复用跨层扫描冷却
+            if (CrossLevelJobUtility.IsOnCooldown(pawn)) return null;
+
+            Map baseMap = parentMgr.map;
+            LevelManager mgr = parentMgr;
+            int currentElev = CrossLevelJobUtility.GetMapElevation(pawnMap, mgr, baseMap);
+
+            // 往 elevation 0（基地图）方向走一层
+            int homeElev = currentElev > 0 ? currentElev - 1 : currentElev + 1;
+            Building_Stairs stairs = CrossLevelJobUtility.FindStairsToElevation(pawn, pawnMap, homeElev);
+            if (stairs == null) return null;
+
+            CrossLevelJobUtility.RecordRedirect(pawn);
+            return JobMaker.MakeJob(MLF_JobDefOf.MLF_UseStairs, stairs);
         }
 
         /// <summary>
@@ -107,13 +140,16 @@ namespace MapLevelFramework.Patches
 
             int currentElev = CrossLevelJobUtility.GetMapElevation(pawnMap, mgr, baseMap);
 
-            // 收集其他楼层地图
+            // 只收集相邻楼层（elevation ± 1），避免多跳导致 job 失效
+            int adjUp = currentElev + 1;
+            int adjDown = currentElev - 1;
             var otherMaps = new List<(Map map, int elevation)>();
-            if (pawnMap != baseMap)
+            if (pawnMap != baseMap && (0 == adjUp || 0 == adjDown))
                 otherMaps.Add((baseMap, 0));
             foreach (var level in mgr.AllLevels)
             {
-                if (level.LevelMap != null && level.LevelMap != pawnMap)
+                if (level.LevelMap != null && level.LevelMap != pawnMap
+                    && (level.elevation == adjUp || level.elevation == adjDown))
                     otherMaps.Add((level.LevelMap, level.elevation));
             }
             if (otherMaps.Count == 0) return null;
