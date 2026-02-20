@@ -90,6 +90,12 @@ namespace MapLevelFramework.CrossFloor
                         int needed = c.ThingCountNeeded(cost.thingDef);
                         if (needed <= 0) continue;
 
+                        // 扣除目标层已有的散落材料（已传送但还没搬到蓝图的）
+                        int looseOnDest = CountLooseMaterial(
+                            otherMap, cost.thingDef);
+                        needed -= looseOnDest;
+                        if (needed <= 0) continue;
+
                         // 在本层找这个材料
                         Thing material = FindMaterialOnMap(
                             pawnMap, pawn, cost.thingDef);
@@ -208,6 +214,22 @@ namespace MapLevelFramework.CrossFloor
             result.AddRange(
                 map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame));
             return result;
+        }
+
+        /// <summary>
+        /// 统计地图上散落的指定材料总数（已 Spawn、未被安装的）。
+        /// 用于避免重复搬运：目标层已经有足够材料就不再搬了。
+        /// </summary>
+        private static int CountLooseMaterial(Map map, ThingDef matDef)
+        {
+            int total = 0;
+            var things = map.listerThings.ThingsOfDef(matDef);
+            for (int i = 0; i < things.Count; i++)
+            {
+                if (things[i].Spawned)
+                    total += things[i].stackCount;
+            }
+            return total;
         }
 
         /// <summary>

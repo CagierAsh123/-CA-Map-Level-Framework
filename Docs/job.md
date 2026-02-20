@@ -2,24 +2,31 @@
 
 ## 兼容标记说明
 
-- ✅ 完全兼容 — 通过 TryCrossLevelScan 通用扫描或专用系统支持
-- ✅+ 材料配送 — 额外支持跨层材料/燃料/原料配送（NeedType 系统）
-- ⚠️ 部分兼容 — 基本功能可用，但特定场景（如跨层取材料）未覆盖
+- ✅ 完全兼容 — 系统主动检测并跨层处理
+- ⚠️ 被动兼容 — pawn 到了目标层后原版 AI 自然处理，但不会主动跨层去做
+- ❌ 未覆盖 — 跨层取材料/物品场景未处理
 - ➖ 不适用 — 自身行为，无需跨层
 
-## 跨层机制
+## 跨层机制（重构后）
 
 | 机制 | 说明 |
 |---|---|
-| TryCrossLevelScan | 通用：临时传送 pawn 到其他层运行原版 WorkGiver，找到工作就走楼梯过去 |
-| NeedType.Construction | 建造材料配送：蓝图/框架需要材料 → 跨层取材 → HaulToContainer |
-| NeedType.Refuel | 加油配送：CompRefuelable 缺燃料 → 跨层取燃料 |
-| NeedType.Bill | Bill 原料配送：工作台 Bill 缺原料 → 跨层取原料放工作台旁 |
-| NeedType.Medicine | 医疗取药：病人需要治疗但当前层无药 → 跨层送药到病人旁 |
-| NeedType.WardFeed | 监管喂饭：囚犯需要食物但当前层无食物 → 跨层送食物到囚犯旁 |
-| Patch_ConstructDeliverResources | 建造反向取材：pawn 在蓝图层但材料在其他层 |
-| Patch_CrossLevelNeeds | 需求系统：饥饿/疲劳/娱乐等跨层搜索满足 |
-| WorkGiver_HaulAcrossLevel | 跨层搬运：检测其他层更优储物区 |
+| GoToWorkFloor | `Patch_JobGiver_Work_CrossFloor` P3：pawn 无工作 → 检测其他层有蓝图/框架/搬运/污渍 → UseStairs 过去，到达后原版 AI 分配 |
+| HaulToStairs | P1：本层有材料 + 其他层蓝图需要 → pawn 搬到楼梯 → 材料传送到目标层 |
+| FetchMaterial | P2：本层蓝图缺材料 + 其他层有 → UseStairs 去取（到达后 P1 接手） |
+| CrossLevelNeeds | `Patch_CrossLevelNeeds`：睡觉（优先自己的床）/ 吃饭 / 娱乐 → UseStairs 去有资源的层 |
+| HaulAcrossLevel | `WorkGiver_HaulAcrossLevel`：本层无合适仓库 → 搬到其他层更优仓库 |
+
+### 与旧系统对比
+
+| 旧机制 | 新机制 | 变化 |
+|---|---|---|
+| TryCrossLevelScan（临时传送 pawn 扫描） | GoToWorkFloor（检测工作存在性） | 不再逐个 WorkGiver 扫描，只检测蓝图/框架/搬运/污渍 |
+| NeedType.Construction | HaulToStairs + FetchMaterial | 物理搬运替代即时传送 |
+| NeedType.Bill | ❌ 未实现 | 工作台原料跨层取未覆盖 |
+| NeedType.Refuel | ❌ 未实现 | 燃料跨层取未覆盖 |
+| NeedType.Medicine | ❌ 未实现 | 药品跨层取未覆盖 |
+| NeedType.WardFeed | ❌ 未实现 | 囚犯食物跨层取未覆盖 |
 
 ---
 
@@ -27,264 +34,264 @@
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 扑灭火焰（紧急） | ✅ | TryCrossLevelScan |
+| 扑灭火焰（紧急） | ⚠️ | 被动（GoToWorkFloor 不检测火灾） |
 
 ## 2. 就医
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 去床上接受紧急治疗（紧急） | ✅ | Patch_CrossLevelNeeds |
-| 去床上接受治疗 | ✅ | Patch_CrossLevelNeeds |
+| 去床上接受紧急治疗（紧急） | ✅ | CrossLevelNeeds（找床） |
+| 去床上接受治疗 | ✅ | CrossLevelNeeds（找床） |
 
 ## 3. 医生
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 提供紧急治疗（紧急） | ✅+ | TryCrossLevelScan + NeedType.Medicine |
-| 治疗病人 | ✅+ | TryCrossLevelScan + NeedType.Medicine |
+| 提供紧急治疗（紧急） | ⚠️ | 被动（不主动跨层找病人） |
+| 治疗病人 | ⚠️ | 被动 |
 | 治疗自己（紧急） | ➖ | 自身行为 |
-| 治疗实体 | ✅ | TryCrossLevelScan |
+| 治疗实体 | ⚠️ | 被动 |
 | 治疗自己 | ➖ | 自身行为 |
-| 喂食病人 | ⚠️ | TryCrossLevelScan（食物在其他层时不会跨层取） |
-| 人类手术 | ✅+ | TryCrossLevelScan + NeedType.Medicine |
-| 施用血原质 | ⚠️ | TryCrossLevelScan（血原质在其他层时不会跨层取） |
-| 救援倒地的殖民者 | ✅ | TryCrossLevelScan |
-| 治疗动物 | ✅+ | TryCrossLevelScan + NeedType.Medicine |
-| 喂食动物 | ⚠️ | TryCrossLevelScan（食物在其他层时不会跨层取） |
-| 动物手术 | ✅+ | TryCrossLevelScan + NeedType.Medicine |
-| 把病人带到手术床上 | ✅ | TryCrossLevelScan |
-| 看望病人 | ✅ | TryCrossLevelScan |
-| 从实体身上提取活铁 | ✅ | TryCrossLevelScan |
+| 喂食病人 | ⚠️ | 被动 + ❌ 跨层取食物 |
+| 人类手术 | ⚠️ | 被动 + ❌ 跨层取药 |
+| 施用血原质 | ⚠️ | 被动 + ❌ 跨层取血原质 |
+| 救援倒地的殖民者 | ⚠️ | 被动 |
+| 治疗动物 | ⚠️ | 被动 + ❌ 跨层取药 |
+| 喂食动物 | ⚠️ | 被动 + ❌ 跨层取食物 |
+| 动物手术 | ⚠️ | 被动 + ❌ 跨层取药 |
+| 把病人带到手术床上 | ⚠️ | 被动 |
+| 看望病人 | ⚠️ | 被动 |
+| 从实体身上提取活铁 | ⚠️ | 被动 |
 
 ## 4. 休养
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 卧床养病 | ✅ | Patch_CrossLevelNeeds |
+| 卧床养病 | ✅ | CrossLevelNeeds（找床） |
 
 ## 5. 保育
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 教育孩子 | ✅ | TryCrossLevelScan |
-| 带离婴儿 | ✅ | TryCrossLevelScan |
-| 母乳喂养婴儿 | ✅ | TryCrossLevelScan |
-| 与婴儿玩耍 | ✅ | TryCrossLevelScan |
-| 喂养婴儿 | ⚠️ | TryCrossLevelScan（婴儿食物在其他层时不会跨层取） |
-| 带给母亲 | ✅ | TryCrossLevelScan |
+| 教育孩子 | ⚠️ | 被动 |
+| 带离婴儿 | ⚠️ | 被动 |
+| 母乳喂养婴儿 | ⚠️ | 被动 |
+| 与婴儿玩耍 | ⚠️ | 被动 |
+| 喂养婴儿 | ⚠️ | 被动 + ❌ 跨层取婴儿食物 |
+| 带给母亲 | ⚠️ | 被动 |
 
 ## 6. 处理
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 开关 | ✅ | TryCrossLevelScan |
-| 释放囚犯 | ✅ | TryCrossLevelScan |
-| 打开容器 | ✅ | TryCrossLevelScan |
-| 取出燃料 | ✅ | TryCrossLevelScan |
-| 改变树精类型 | ✅ | TryCrossLevelScan |
-| 取出颅骨 | ✅ | TryCrossLevelScan |
+| 开关 | ⚠️ | 被动 |
+| 释放囚犯 | ⚠️ | 被动 |
+| 打开容器 | ⚠️ | 被动 |
+| 取出燃料 | ⚠️ | 被动 |
+| 改变树精类型 | ⚠️ | 被动 |
+| 取出颅骨 | ⚠️ | 被动 |
 
 ## 7. 监管
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 审问身份 | ✅ | TryCrossLevelScan |
-| 处决实体 | ✅ | TryCrossLevelScan |
-| 处决囚犯 | ✅ | TryCrossLevelScan |
-| 处决有罪的殖民者 | ✅ | TryCrossLevelScan |
-| 处决奴隶 | ✅ | TryCrossLevelScan |
-| 释放奴隶 | ✅ | TryCrossLevelScan |
-| 释放囚犯 | ✅ | TryCrossLevelScan |
-| 奴役囚犯 | ✅ | TryCrossLevelScan |
-| 抑制实体活跃度 | ✅ | TryCrossLevelScan |
-| 把囚犯带到床上 | ✅ | TryCrossLevelScan |
-| 给囚犯喂食 | ✅+ | TryCrossLevelScan + NeedType.WardFeed |
-| 囚禁奴隶 | ✅ | TryCrossLevelScan |
-| 教化囚犯 | ✅ | TryCrossLevelScan |
-| 给犯人提供血原质 | ⚠️ | TryCrossLevelScan（血原质在其他层时不会跨层取） |
-| 给犯人送餐 | ✅+ | TryCrossLevelScan + NeedType.WardFeed |
-| 镇压奴隶 | ✅ | TryCrossLevelScan |
-| 释放实体 | ✅ | TryCrossLevelScan |
-| 和囚犯聊天 | ✅ | TryCrossLevelScan |
+| 审问身份 | ⚠️ | 被动 |
+| 处决实体 | ⚠️ | 被动 |
+| 处决囚犯 | ⚠️ | 被动 |
+| 处决有罪的殖民者 | ⚠️ | 被动 |
+| 处决奴隶 | ⚠️ | 被动 |
+| 释放奴隶 | ⚠️ | 被动 |
+| 释放囚犯 | ⚠️ | 被动 |
+| 奴役囚犯 | ⚠️ | 被动 |
+| 抑制实体活跃度 | ⚠️ | 被动 |
+| 把囚犯带到床上 | ⚠️ | 被动 |
+| 给囚犯喂食 | ⚠️ | 被动 + ❌ 跨层取食物 |
+| 囚禁奴隶 | ⚠️ | 被动 |
+| 教化囚犯 | ⚠️ | 被动 |
+| 给犯人提供血原质 | ⚠️ | 被动 + ❌ 跨层取血原质 |
+| 给犯人送餐 | ⚠️ | 被动 + ❌ 跨层取食物 |
+| 镇压奴隶 | ⚠️ | 被动 |
+| 释放实体 | ⚠️ | 被动 |
+| 和囚犯聊天 | ⚠️ | 被动 |
 
 ## 8. 驯兽
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 牵引迁徙中的动物 | ✅ | TryCrossLevelScan |
-| 喂养动物 | ⚠️ | TryCrossLevelScan（食物在其他层时不会跨层取） |
-| 牵引动物 | ✅ | TryCrossLevelScan |
-| 宰杀动物 | ✅ | TryCrossLevelScan |
-| 放生 | ✅ | TryCrossLevelScan |
-| 收取动物产物 | ✅ | TryCrossLevelScan |
-| 给动物剪毛 | ✅ | TryCrossLevelScan |
-| 驯服动物 | ✅ | TryCrossLevelScan |
-| 训练动物 | ✅ | TryCrossLevelScan |
-| 分配圈养的动物 | ✅ | TryCrossLevelScan |
+| 牵引迁徙中的动物 | ⚠️ | 被动 |
+| 喂养动物 | ⚠️ | 被动 + ❌ 跨层取食物 |
+| 牵引动物 | ⚠️ | 被动 |
+| 宰杀动物 | ⚠️ | 被动 |
+| 放生 | ⚠️ | 被动 |
+| 收取动物产物 | ⚠️ | 被动 |
+| 给动物剪毛 | ⚠️ | 被动 |
+| 驯服动物 | ⚠️ | 被动 |
+| 训练动物 | ⚠️ | 被动 |
+| 分配圈养的动物 | ⚠️ | 被动 |
 
 ## 9. 烹饪
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 在炉灶烹饪食物 | ✅+ | TryCrossLevelScan + NeedType.Bill |
-| 在篝火烹饪食物 | ✅+ | TryCrossLevelScan + NeedType.Bill |
-| 屠宰尸体 | ✅+ | TryCrossLevelScan + NeedType.Bill |
-| 在酿造台酿酒 | ✅+ | TryCrossLevelScan + NeedType.Bill |
+| 在炉灶烹饪食物 | ⚠️ | 被动 + ❌ 跨层取原料 |
+| 在篝火烹饪食物 | ⚠️ | 被动 + ❌ 跨层取原料 |
+| 屠宰尸体 | ⚠️ | 被动 + ❌ 跨层取原料 |
+| 在酿造台酿酒 | ⚠️ | 被动 + ❌ 跨层取原料 |
 
 ## 10. 狩猎
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 狩猎 | ✅ | TryCrossLevelScan |
+| 狩猎 | ⚠️ | 被动 |
 
 ## 11. 建造
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 替换损坏的零部件 | ✅ | TryCrossLevelScan |
-| 卸载建筑 | ✅ | TryCrossLevelScan |
-| 建造屋顶 | ✅ | TryCrossLevelScan |
-| 移除屋顶 | ✅ | TryCrossLevelScan |
-| 拆除蓝图上的建筑 | ✅ | TryCrossLevelScan |
-| 建造布置好的框架 | ✅+ | TryCrossLevelScan + NeedType.Construction |
-| 搬运材料至框架 | ✅+ | NeedType.Construction + Patch_ConstructDeliverResources |
-| 搬运材料至蓝图 | ✅+ | NeedType.Construction + Patch_ConstructDeliverResources |
-| 收容 | ✅ | TryCrossLevelScan |
-| 拆除建筑 | ✅ | TryCrossLevelScan |
-| 修理受损建筑 | ✅ | TryCrossLevelScan |
-| 移除地板 | ✅ | TryCrossLevelScan |
-| 移除地基 | ✅ | TryCrossLevelScan |
-| 打磨地面 | ✅ | TryCrossLevelScan |
-| 打磨墙壁 | ✅ | TryCrossLevelScan |
+| 替换损坏的零部件 | ✅ | GoToWorkFloor |
+| 卸载建筑 | ✅ | GoToWorkFloor |
+| 建造屋顶 | ✅ | GoToWorkFloor |
+| 移除屋顶 | ✅ | GoToWorkFloor |
+| 拆除蓝图上的建筑 | ✅ | GoToWorkFloor |
+| 建造布置好的框架 | ✅ | GoToWorkFloor + HaulToStairs |
+| 搬运材料至框架 | ✅ | HaulToStairs + FetchMaterial |
+| 搬运材料至蓝图 | ✅ | HaulToStairs + FetchMaterial |
+| 收容 | ⚠️ | 被动 |
+| 拆除建筑 | ✅ | GoToWorkFloor |
+| 修理受损建筑 | ✅ | GoToWorkFloor |
+| 移除地板 | ✅ | GoToWorkFloor |
+| 移除地基 | ✅ | GoToWorkFloor |
+| 打磨地面 | ✅ | GoToWorkFloor |
+| 打磨墙壁 | ✅ | GoToWorkFloor |
 
 ## 12. 种植
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 收获作物 | ✅ | TryCrossLevelScan |
-| 播撒种子 | ✅ | TryCrossLevelScan |
-| 栽植树木 | ✅ | TryCrossLevelScan |
-| 播种作物 | ✅ | TryCrossLevelScan |
+| 收获作物 | ⚠️ | 被动 |
+| 播撒种子 | ⚠️ | 被动 |
+| 栽植树木 | ⚠️ | 被动 |
+| 播种作物 | ⚠️ | 被动 |
 
 ## 13. 开采
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 采矿 | ✅ | TryCrossLevelScan |
-| 钻探 | ✅ | TryCrossLevelScan |
+| 采矿 | ⚠️ | 被动 |
+| 钻探 | ⚠️ | 被动 |
 
 ## 14. 割除
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 掘起树木 | ✅ | TryCrossLevelScan |
-| 修剪母树 | ✅ | TryCrossLevelScan |
-| 割除植物 | ✅ | TryCrossLevelScan |
+| 掘起树木 | ⚠️ | 被动 |
+| 修剪母树 | ⚠️ | 被动 |
+| 割除植物 | ⚠️ | 被动 |
 
 ## 15. 锻造
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 在编译器制作 | ✅+ | TryCrossLevelScan + NeedType.Bill |
-| 在机械培育器制作 | ✅+ | TryCrossLevelScan + NeedType.Bill |
-| 维修机械族 | ✅ | TryCrossLevelScan |
-| 锻造武器 | ✅+ | TryCrossLevelScan + NeedType.Bill |
-| 完成机械加工台的清单 | ✅+ | TryCrossLevelScan + NeedType.Bill |
-| 在活铁塑造台制作 | ✅+ | TryCrossLevelScan + NeedType.Bill |
-| 装配物品 | ✅+ | TryCrossLevelScan + NeedType.Bill |
+| 在编译器制作 | ⚠️ | 被动 + ❌ 跨层取原料 |
+| 在机械培育器制作 | ⚠️ | 被动 + ❌ 跨层取原料 |
+| 维修机械族 | ⚠️ | 被动 |
+| 锻造武器 | ⚠️ | 被动 + ❌ 跨层取原料 |
+| 完成机械加工台的清单 | ⚠️ | 被动 + ❌ 跨层取原料 |
+| 在活铁塑造台制作 | ⚠️ | 被动 + ❌ 跨层取原料 |
+| 装配物品 | ⚠️ | 被动 + ❌ 跨层取原料 |
 
 ## 16. 缝制
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 制作衣物 | ✅+ | TryCrossLevelScan + NeedType.Bill |
+| 制作衣物 | ⚠️ | 被动 + ❌ 跨层取原料 |
 
 ## 17. 艺术
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 移除涂料 | ✅ | TryCrossLevelScan |
-| 粉饰建筑 | ✅ | TryCrossLevelScan |
-| 粉饰地板 | ✅ | TryCrossLevelScan |
-| 雕刻 | ✅+ | TryCrossLevelScan + NeedType.Bill |
+| 移除涂料 | ⚠️ | 被动 |
+| 粉饰建筑 | ⚠️ | 被动 |
+| 粉饰地板 | ⚠️ | 被动 |
+| 雕刻 | ⚠️ | 被动 + ❌ 跨层取原料 |
 
 ## 18. 制作
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 完成手工加工点的清单 | ✅+ | TryCrossLevelScan + NeedType.Bill |
-| 操作精炼设备 | ✅+ | TryCrossLevelScan + NeedType.Bill |
-| 合成药物 | ✅+ | TryCrossLevelScan + NeedType.Bill |
-| 切割石砖 | ✅+ | TryCrossLevelScan + NeedType.Bill |
-| 熔炼物品 | ✅+ | TryCrossLevelScan + NeedType.Bill |
-| 在血清实验室制作物品 | ✅+ | TryCrossLevelScan + NeedType.Bill |
+| 完成手工加工点的清单 | ⚠️ | 被动 + ❌ 跨层取原料 |
+| 操作精炼设备 | ⚠️ | 被动 + ❌ 跨层取原料 |
+| 合成药物 | ⚠️ | 被动 + ❌ 跨层取原料 |
+| 切割石砖 | ⚠️ | 被动 + ❌ 跨层取原料 |
+| 熔炼物品 | ⚠️ | 被动 + ❌ 跨层取原料 |
+| 在血清实验室制作物品 | ⚠️ | 被动 + ❌ 跨层取原料 |
 
 ## 19. 钓鱼
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 钓鱼 | ✅ | TryCrossLevelScan |
+| 钓鱼 | ⚠️ | 被动 |
 
 ## 20. 搬运
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 捕获实体 | ✅ | TryCrossLevelScan |
-| 整备炮塔 | ✅ | TryCrossLevelScan |
-| 补充燃料 | ✅+ | NeedType.Refuel |
-| 卸下货物 | ✅ | TryCrossLevelScan |
-| 装载远行队 | ✅ | TryCrossLevelScan |
-| 储存基因组 | ✅ | TryCrossLevelScan |
-| 装载运输舱 | ✅ | TryCrossLevelScan |
-| 清空污染物容器 | ✅ | TryCrossLevelScan |
-| 搬运至塑形舱 | ✅ | TryCrossLevelScan |
-| 带到培育舱 | ✅ | TryCrossLevelScan |
-| 搬运到地图外 | ✅ | TryCrossLevelScan |
-| 剥光衣物 | ✅ | TryCrossLevelScan |
-| 搬运尸体 | ✅ | TryCrossLevelScan |
-| 带到基因提取器 | ✅ | TryCrossLevelScan |
-| 搬到充电站 | ✅ | TryCrossLevelScan |
-| 带去次核扫描 | ✅ | TryCrossLevelScan |
-| 搬运资源 | ✅ | TryCrossLevelScan + WorkGiver_HaulAcrossLevel |
-| 搬到垃圾分解器 | ✅ | TryCrossLevelScan |
-| 跨层搬运 | ✅+ | WorkGiver_HaulAcrossLevel（MLF 专用） |
-| 移送实体 | ✅ | TryCrossLevelScan |
-| 装填进料口 | ✅ | TryCrossLevelScan |
-| 火化尸体或衣物 | ✅+ | TryCrossLevelScan + NeedType.Bill |
-| 在篝火工作 | ✅+ | TryCrossLevelScan + NeedType.Bill |
-| 从发酵桶中取出啤酒 | ✅ | TryCrossLevelScan |
-| 清空卵箱 | ✅ | TryCrossLevelScan |
-| 取出活铁采集器产物 | ✅ | TryCrossLevelScan |
-| 填充发酵桶 | ✅ | TryCrossLevelScan |
-| 搬运物品 | ✅ | TryCrossLevelScan + WorkGiver_HaulAcrossLevel |
-| 向建筑框架运送物资 | ✅+ | NeedType.Construction + Patch_ConstructDeliverResources |
-| 向建筑蓝图运送物资 | ✅+ | NeedType.Construction + Patch_ConstructDeliverResources |
-| 合并物品 | ✅ | TryCrossLevelScan |
+| 捕获实体 | ⚠️ | 被动 |
+| 整备炮塔 | ⚠️ | 被动 |
+| 补充燃料 | ⚠️ | 被动 + ❌ 跨层取燃料 |
+| 卸下货物 | ⚠️ | 被动 |
+| 装载远行队 | ⚠️ | 被动 |
+| 储存基因组 | ⚠️ | 被动 |
+| 装载运输舱 | ⚠️ | 被动 |
+| 清空污染物容器 | ⚠️ | 被动 |
+| 搬运至塑形舱 | ⚠️ | 被动 |
+| 带到培育舱 | ⚠️ | 被动 |
+| 搬运到地图外 | ⚠️ | 被动 |
+| 剥光衣物 | ⚠️ | 被动 |
+| 搬运尸体 | ✅ | GoToWorkFloor（haulables） |
+| 带到基因提取器 | ⚠️ | 被动 |
+| 搬到充电站 | ⚠️ | 被动 |
+| 带去次核扫描 | ⚠️ | 被动 |
+| 搬运资源 | ✅ | GoToWorkFloor + HaulAcrossLevel |
+| 搬到垃圾分解器 | ⚠️ | 被动 |
+| 跨层搬运 | ✅ | HaulAcrossLevel（MLF 专用） |
+| 移送实体 | ⚠️ | 被动 |
+| 装填进料口 | ⚠️ | 被动 |
+| 火化尸体或衣物 | ⚠️ | 被动 + ❌ 跨层取原料 |
+| 在篝火工作 | ⚠️ | 被动 + ❌ 跨层取原料 |
+| 从发酵桶中取出啤酒 | ⚠️ | 被动 |
+| 清空卵箱 | ⚠️ | 被动 |
+| 取出活铁采集器产物 | ⚠️ | 被动 |
+| 填充发酵桶 | ⚠️ | 被动 |
+| 搬运物品 | ✅ | GoToWorkFloor + HaulAcrossLevel |
+| 向建筑框架运送物资 | ✅ | HaulToStairs + FetchMaterial |
+| 向建筑蓝图运送物资 | ✅ | HaulToStairs + FetchMaterial |
+| 合并物品 | ⚠️ | 被动 |
 
 ## 21. 清洁
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 清除积雪 | ✅ | TryCrossLevelScan |
-| 清理污渍 | ✅ | TryCrossLevelScan |
-| 清理污染 | ✅ | TryCrossLevelScan |
+| 清除积雪 | ✅ | GoToWorkFloor（filth） |
+| 清理污渍 | ✅ | GoToWorkFloor（filth） |
+| 清理污染 | ✅ | GoToWorkFloor（filth） |
 
 ## 22. 调查
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 调查 | ✅ | TryCrossLevelScan |
+| 调查 | ⚠️ | 被动 |
 
 ## 23. 研究
 
 | Job | 兼容 | 机制 |
 |---|---|---|
-| 骇入建筑 | ✅ | TryCrossLevelScan |
-| 创建异种胚芽 | ✅ | TryCrossLevelScan |
-| 调查超凡结构 | ✅ | TryCrossLevelScan |
-| 研究科技 | ✅ | TryCrossLevelScan |
-| 操作远距离矿物扫描仪 | ✅ | TryCrossLevelScan |
-| 操作地质扫描仪 | ✅ | TryCrossLevelScan |
+| 骇入建筑 | ⚠️ | 被动 |
+| 创建异种胚芽 | ⚠️ | 被动 |
+| 调查超凡结构 | ⚠️ | 被动 |
+| 研究科技 | ⚠️ | 被动 |
+| 操作远距离矿物扫描仪 | ⚠️ | 被动 |
+| 操作地质扫描仪 | ⚠️ | 被动 |
 
 ---
 
@@ -292,19 +299,33 @@
 
 | 状态 | 数量 |
 |---|---|
-| ✅ 完全兼容 | 95 |
-| ✅+ 材料配送 | 27 |
-| ⚠️ 部分兼容 | 5 |
+| ✅ 完全兼容 | 20 |
+| ⚠️ 被动兼容 | 87 |
+| ⚠️ + ❌ 跨层取物品 | 22 |
 | ➖ 不适用 | 2 |
 
-## ⚠️ 部分兼容详情
+## 待实现：GoToWorkFloor 扩展检测
 
-以下 job 基本功能可用（pawn 能跨层去目标），但「目标在 A 层 + 所需物品在 B 层」时不会跨层取物品：
+当前 `FloorHasWork` 只检测蓝图/框架/搬运/污渍。扩展后可覆盖更多 ⚠️ → ✅：
 
-| Job | 缺失 | 可能的 NeedType |
+| 检测项 | 覆盖的工作类型 | 优先级 |
 |---|---|---|
-| 喂食病人 | 食物跨层取 | NeedType.PatientFeed |
-| 喂食动物 | 食物跨层取 | NeedType.AnimalFeed |
-| 喂养婴儿 | 婴儿食物跨层取 | NeedType.BabyFeed |
-| 施用血原质 | 血原质跨层取 | NeedType.Hemogen |
-| 给犯人提供血原质 | 血原质跨层取 | NeedType.Hemogen |
+| 病人/伤员 | 医生、就医 | 高 |
+| 囚犯需求 | 监管全部 | 高 |
+| 工作台有 Bill | 烹饪、锻造、缝制、制作、艺术 | 中 |
+| 可开采岩石 | 开采 | 中 |
+| 可种植区域 | 种植 | 低 |
+| 研究台 | 研究 | 低 |
+| 可驯服动物 | 驯兽 | 低 |
+
+## 待实现：跨层取物品（HaulToStairs 扩展）
+
+当前 HaulToStairs 只处理建造材料。扩展后可覆盖 ❌ 场景：
+
+| 场景 | 说明 |
+|---|---|
+| Bill 原料 | 工作台 Bill 需要原料但本层没有 → 从其他层搬到楼梯传送 |
+| 燃料 | CompRefuelable 缺燃料 → 跨层取燃料 |
+| 药品 | 治疗需要药但本层没有 → 跨层取药 |
+| 囚犯食物 | 囚犯需要喂食但本层没食物 → 跨层取食物 |
+

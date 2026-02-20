@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MapLevelFramework")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+39e6ad05da61b52931f5343f6947902b51ff832a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7f2b3b07ed06faeccaba5d1e498496399c582989")]
 [assembly: System.Reflection.AssemblyProductAttribute("MapLevelFramework")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MapLevelFramework")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

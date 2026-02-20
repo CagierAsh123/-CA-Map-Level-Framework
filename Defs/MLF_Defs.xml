@@ -155,6 +155,13 @@
     <allowOpportunisticPrefix>false</allowOpportunisticPrefix>
   </JobDef>
 
+  <JobDef>
+    <defName>MLF_HaulAcrossLevel</defName>
+    <driverClass>MapLevelFramework.JobDriver_HaulAcrossLevel</driverClass>
+    <reportString>搬运物品到其他楼层。</reportString>
+    <allowOpportunisticPrefix>false</allowOpportunisticPrefix>
+  </JobDef>
+
   <!-- ========== 精神崩溃：跳楼 ========== -->
 
   <MentalStateDef>
@@ -185,6 +192,17 @@
     <baseCommonality>0.15</baseCommonality>
     <intensity>Extreme</intensity>
   </MentalBreakDef>
+
+  <!-- 跨层搬运 WorkGiver -->
+  <WorkGiverDef>
+    <defName>MLF_HaulAcrossLevel</defName>
+    <label>跨层搬运</label>
+    <giverClass>MapLevelFramework.WorkGiver_HaulAcrossLevel</giverClass>
+    <workType>Hauling</workType>
+    <priorityInType>70</priorityInType>
+    <verb>搬运到其他楼层</verb>
+    <gerund>搬运物品到其他楼层</gerund>
+  </WorkGiverDef>
 
   <!-- ========== 建筑 ========== -->
 

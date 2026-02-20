@@ -9,6 +9,7 @@ namespace MapLevelFramework
         public static JobDef MLF_UseStairs;
         public static JobDef MLF_JumpDown;
         public static JobDef MLF_HaulToStairs;
+        public static JobDef MLF_HaulAcrossLevel;
 
         static MLF_JobDefOf()
         {
