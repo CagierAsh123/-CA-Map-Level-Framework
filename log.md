@@ -1,96 +1,232 @@
-Called MaterialsNeededTotal on a Blueprint\_Install.
+【MLF】寻路与job检测-Hayhouse—在1F，本层无工作，开始跨层扫描
 
-UnityEngine.StackTraceUtility:ExtractStackTrace ()
+【MLF】寻路与job检测-Hayhouse—  2F有工作: 搬运(Hauling)
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Verse.Log.Error\_Patch4 (string)
+【MLF】寻路与job检测-Hayhouse—P3命中→去2F找工作
 
-RimWorld.Blueprint\_Install:TotalMaterialCost ()
+【MLF】寻路与job检测-Hayhouse—执行UseStairs: 1F→2F
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:DigitalStorage.HarmonyPatches.Patch\_WorkGiver\_ConstructDeliverResources\_V2.Postfix\_Patch1 (Verse.AI.Job\&,RimWorld.WorkGiver\_ConstructDeliverResources,Verse.Pawn,RimWorld.IConstructible,bool,bool)
+【MLF】寻路与job检测-Hayhouse—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:RimWorld.WorkGiver\_ConstructDeliverResources.ResourceDeliverJobFor\_Patch2 (RimWorld.WorkGiver\_ConstructDeliverResources,Verse.Pawn,RimWorld.IConstructible,bool,bool)
+【MLF】寻路与job检测-Hayhouse—执行UseStairs: 2F→1F
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:RimWorld.WorkGiver\_ConstructDeliverResourcesToBlueprints.JobOnThing\_Patch2 (RimWorld.WorkGiver\_ConstructDeliverResourcesToBlueprints,Verse.Pawn,Verse.Thing,bool)
+【MLF】寻路与job检测-Hayhouse—在1F，冷却中(3/600)，跳过
 
-RimWorld.WorkGiver\_Scanner:HasJobOnThing (Verse.Pawn,Verse.Thing,bool)
+【MLF】寻路与job检测-Havalina—在1F，本层无工作，开始跨层扫描
 
-RimWorld.JobGiver\_Work/<>c\_\_DisplayClass3\_1:<TryIssueJobPackage>g\_\_Validator|0 (Verse.Thing)
+【MLF】寻路与job检测-Havalina—  2F有工作: 搬运(Hauling)
 
-Verse.RegionProcessorClosestThingReachable:ProcessThing (Verse.Region,Verse.Thing)
+【MLF】寻路与job检测-Havalina—P3命中→去2F找工作
 
-Verse.RegionProcessorClosestThingReachable:RegionProcessor (Verse.Region)
+【MLF】寻路与job检测-Sebastien—在1F，本层无工作，开始跨层扫描
 
-Verse.RegionTraverser/BFSWorker:BreadthFirstTraverseWork (Verse.Region,Verse.RegionEntryPredicate,Verse.RegionProcessor,int,Verse.RegionType)
+【MLF】寻路与job检测-Sebastien—  2F有工作: 搬运(Hauling)
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Verse.RegionTraverser.BreadthFirstTraverse\_Patch1 (Verse.Region,Verse.RegionEntryPredicate,Verse.RegionProcessor,int,Verse.RegionType)
+【MLF】寻路与job检测-Sebastien—P3命中→去2F找工作
 
-Verse.RegionTraverser:BreadthFirstTraverse (Verse.Region,Verse.RegionProcessorDelegateCache,int,Verse.RegionType)
+【MLF】寻路与job检测-Sebastien—执行UseStairs: 1F→2F
 
-Verse.GenClosest:RegionwiseBFSWorker (Verse.IntVec3,Verse.Map,Verse.ThingRequest,Verse.AI.PathEndMode,Verse.TraverseParms,System.Predicate`1<Verse.Thing>,System.Func`2<Verse.Thing, single>,int,int,single,int\&,Verse.RegionType,bool,bool)
+【MLF】寻路与job检测-Havalina—执行UseStairs: 1F→2F
 
-Verse.GenClosest:ClosestThingReachable (Verse.IntVec3,Verse.Map,Verse.ThingRequest,Verse.AI.PathEndMode,Verse.TraverseParms,single,System.Predicate`1<Verse.Thing>,System.Collections.Generic.IEnumerable`1<Verse.Thing>,int,int,bool,Verse.RegionType,bool,bool)
+【MLF】寻路与job检测-Havalina—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:RimWorld.JobGiver\_Work.TryIssueJobPackage\_Patch2 (RimWorld.JobGiver\_Work,Verse.Pawn,Verse.AI.JobIssueParams)
+【MLF】寻路与job检测-Havalina—执行UseStairs: 2F→1F
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Glue:AbiFixup<Verse.AI.ThinkResult RimWorld.JobGiver\_Work:TryIssueJobPackage(Verse.Pawn, Verse.AI.JobIssueParams),Verse.AI.ThinkResult RimWorld.JobGiver\_Work.TryIssueJobPackage\_Patch2(RimWorld.JobGiver\_Work, Verse.Pawn, Verse.AI.JobIssueParams)> (RimWorld.JobGiver\_Work,Verse.AI.ThinkResult\&,Verse.Pawn,Verse.AI.JobIssueParams)
+【MLF】寻路与job检测-Havalina—在1F，冷却中(29/600)，跳过
 
-MapLevelFramework.Patches.Patch\_CrossLevelJobScan/<>c\_\_DisplayClass0\_0:<Postfix>b\_\_0 ()
+【MLF】寻路与job检测-Sebastien—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
 
-MapLevelFramework.CrossLevelJobUtility:TryCrossLevelScan (Verse.Pawn,System.Func`1<Verse.AI.Job>)
+【MLF】寻路与job检测-Sebastien—执行UseStairs: 2F→1F
 
-MapLevelFramework.Patches.Patch\_CrossLevelJobScan:Postfix (Verse.AI.ThinkResult\&,RimWorld.JobGiver\_Work,Verse.Pawn,Verse.AI.JobIssueParams)
+【MLF】寻路与job检测-Sebastien—在1F，冷却中(28/600)，跳过
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:RimWorld.JobGiver\_Work.TryIssueJobPackage\_Patch2 (RimWorld.JobGiver\_Work,Verse.Pawn,Verse.AI.JobIssueParams)
+【MLF】寻路与job检测-Havalina—在1F，冷却中(81/600)，跳过
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Glue:AbiFixup<Verse.AI.ThinkResult RimWorld.JobGiver\_Work:TryIssueJobPackage(Verse.Pawn, Verse.AI.JobIssueParams),Verse.AI.ThinkResult RimWorld.JobGiver\_Work.TryIssueJobPackage\_Patch2(RimWorld.JobGiver\_Work, Verse.Pawn, Verse.AI.JobIssueParams)> (RimWorld.JobGiver\_Work,Verse.AI.ThinkResult\&,Verse.Pawn,Verse.AI.JobIssueParams)
+【MLF】寻路与job检测-Sebastien—在1F，冷却中(80/600)，跳过
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Verse.AI.ThinkNode\_PrioritySorter.TryIssueJobPackage\_Patch1 (Verse.AI.ThinkNode\_PrioritySorter,Verse.Pawn,Verse.AI.JobIssueParams)
+【MLF】寻路与job检测-Hayhouse—在1F，冷却中(198/600)，跳过
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Glue:AbiFixup<Verse.AI.ThinkResult Verse.AI.ThinkNode\_PrioritySorter:TryIssueJobPackage(Verse.Pawn, Verse.AI.JobIssueParams),Verse.AI.ThinkResult Verse.AI.ThinkNode\_PrioritySorter.TryIssueJobPackage\_Patch1(Verse.AI.ThinkNode\_PrioritySorter, Verse.Pawn, Verse.AI.JobIssueParams)> (Verse.AI.ThinkNode\_PrioritySorter,Verse.AI.ThinkResult\&,Verse.Pawn,Verse.AI.JobIssueParams)
+【MLF】寻路与job检测-Sebastien—在1F，冷却中(279/600)，跳过
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Verse.AI.ThinkNode\_Priority.TryIssueJobPackage\_Patch1 (Verse.AI.ThinkNode\_Priority,Verse.Pawn,Verse.AI.JobIssueParams)
+【MLF】寻路与job检测-Havalina—在1F，冷却中(304/600)，跳过
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Glue:AbiFixup<Verse.AI.ThinkResult Verse.AI.ThinkNode\_Priority:TryIssueJobPackage(Verse.Pawn, Verse.AI.JobIssueParams),Verse.AI.ThinkResult Verse.AI.ThinkNode\_Priority.TryIssueJobPackage\_Patch1(Verse.AI.ThinkNode\_Priority, Verse.Pawn, Verse.AI.JobIssueParams)> (Verse.AI.ThinkNode\_Priority,Verse.AI.ThinkResult\&,Verse.Pawn,Verse.AI.JobIssueParams)
+【MLF】寻路与job检测-Sebastien—在1F，冷却中(331/600)，跳过
 
-Verse.AI.ThinkNode\_Tagger:TryIssueJobPackage (Verse.Pawn,Verse.AI.JobIssueParams)
+【MLF】寻路与job检测-Hayhouse—在1F，冷却中(452/600)，跳过
 
-Verse.AI.ThinkNode\_Subtree:TryIssueJobPackage (Verse.Pawn,Verse.AI.JobIssueParams)
+【MLF】寻路与job检测-Hayhouse—在1F，冷却中(504/600)，跳过
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Verse.AI.ThinkNode\_Priority.TryIssueJobPackage\_Patch1 (Verse.AI.ThinkNode\_Priority,Verse.Pawn,Verse.AI.JobIssueParams)
+【MLF】寻路与job检测-Sebastien—在1F，本层无工作，开始跨层扫描
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Glue:AbiFixup<Verse.AI.ThinkResult Verse.AI.ThinkNode\_Priority:TryIssueJobPackage(Verse.Pawn, Verse.AI.JobIssueParams),Verse.AI.ThinkResult Verse.AI.ThinkNode\_Priority.TryIssueJobPackage\_Patch1(Verse.AI.ThinkNode\_Priority, Verse.Pawn, Verse.AI.JobIssueParams)> (Verse.AI.ThinkNode\_Priority,Verse.AI.ThinkResult\&,Verse.Pawn,Verse.AI.JobIssueParams)
+【MLF】寻路与job检测-Sebastien—  2F有工作: 搬运(Hauling)
 
-Verse.AI.ThinkNode\_Conditional:TryIssueJobPackage (Verse.Pawn,Verse.AI.JobIssueParams)
+【MLF】寻路与job检测-Sebastien—P3命中→去2F找工作
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Verse.AI.ThinkNode\_Priority.TryIssueJobPackage\_Patch1 (Verse.AI.ThinkNode\_Priority,Verse.Pawn,Verse.AI.JobIssueParams)
+【MLF】寻路与job检测-Havalina—在1F，本层无工作，开始跨层扫描
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Glue:AbiFixup<Verse.AI.ThinkResult Verse.AI.ThinkNode\_Priority:TryIssueJobPackage(Verse.Pawn, Verse.AI.JobIssueParams),Verse.AI.ThinkResult Verse.AI.ThinkNode\_Priority.TryIssueJobPackage\_Patch1(Verse.AI.ThinkNode\_Priority, Verse.Pawn, Verse.AI.JobIssueParams)> (Verse.AI.ThinkNode\_Priority,Verse.AI.ThinkResult\&,Verse.Pawn,Verse.AI.JobIssueParams)
+【MLF】寻路与job检测-Havalina—  2F有工作: 搬运(Hauling)
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Verse.AI.Pawn\_JobTracker.DetermineNextJob\_Patch2 (Verse.AI.Pawn\_JobTracker,Verse.ThinkTreeDef\&,bool)
+【MLF】寻路与job检测-Havalina—P3命中→去2F找工作
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Glue:AbiFixup<Verse.AI.ThinkResult Verse.AI.Pawn\_JobTracker:DetermineNextJob(Verse.ThinkTreeDef\&, System.Boolean),Verse.AI.ThinkResult Verse.AI.Pawn\_JobTracker.DetermineNextJob\_Patch2(Verse.AI.Pawn\_JobTracker, Verse.ThinkTreeDef\&, System.Boolean)> (Verse.AI.Pawn\_JobTracker,Verse.AI.ThinkResult\&,Verse.ThinkTreeDef\&,bool)
+【MLF】寻路与job检测-Sebastien—执行UseStairs: 1F→2F
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Verse.AI.Pawn\_JobTracker.TryFindAndStartJob\_Patch1 (Verse.AI.Pawn\_JobTracker)
+【MLF】寻路与job检测-Sebastien—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Verse.AI.Pawn\_JobTracker.EndCurrentJob\_Patch4 (Verse.AI.Pawn\_JobTracker,Verse.AI.JobCondition,bool,bool)
+【MLF】寻路与job检测-Sebastien—执行UseStairs: 2F→1F
 
-Verse.AI.Pawn\_JobTracker:JobTrackerTickInterval (int)
+【MLF】寻路与job检测-Sebastien—在1F，冷却中(28/600)，跳过
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Verse.Pawn.TickInterval\_Patch1 (Verse.Pawn,int)
+【MLF】寻路与job检测-Havalina—执行UseStairs: 1F→2F
 
-Verse.Thing:DoTick ()
+【MLF】寻路与job检测-Havalina—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Verse.TickList.Tick\_Patch3 (Verse.TickList)
+【MLF】寻路与job检测-Havalina—执行UseStairs: 2F→1F
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Verse.TickManager.DoSingleTick\_Patch5 (Verse.TickManager)
+【MLF】寻路与job检测-Havalina—在1F，冷却中(33/600)，跳过
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Verse.TickManager.TickManagerUpdate\_Patch3 (Verse.TickManager)
+【MLF】寻路与job检测-Sebastien—在1F，冷却中(80/600)，跳过
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Verse.Game.UpdatePlay\_Patch3 (Verse.Game)
+【MLF】寻路与job检测-Hayhouse—在1F，本层无工作，开始跨层扫描
 
-(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Verse.Root\_Play.Update\_Patch1 (Verse.Root\_Play)
+【MLF】寻路与job检测-Hayhouse—  2F有工作: 搬运(Hauling)
 
+【MLF】寻路与job检测-Hayhouse—P3命中→去2F找工作
 
+【MLF】寻路与job检测-Hayhouse—执行UseStairs: 1F→2F
 
-搬运建筑去其他楼层
+【MLF】寻路与job检测-Hayhouse—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
+
+【MLF】寻路与job检测-Hayhouse—执行UseStairs: 2F→1F
+
+【MLF】寻路与job检测-Hayhouse—在1F，冷却中(18/600)，跳过
+
+【MLF】寻路与job检测-Hayhouse—在1F，冷却中(70/600)，跳过
+
+【MLF】寻路与job检测-Sebastien—在1F，冷却中(271/600)，跳过
+
+【MLF】寻路与job检测-Havalina—在1F，冷却中(288/600)，跳过
+
+【MLF】寻路与job检测-Sebastien—在1F，冷却中(323/600)，跳过
+
+【MLF】寻路与job检测-Sebastien—在1F，冷却中(508/600)，跳过
+
+【MLF】寻路与job检测-Hayhouse—在1F，冷却中(414/600)，跳过
+
+【MLF】寻路与job检测-Sebastien—在1F，冷却中(560/600)，跳过
+
+【MLF】寻路与job检测-Havalina—在1F，冷却中(540/600)，跳过
+
+【MLF】寻路与job检测-Havalina—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Havalina—  2F有工作: 搬运(Hauling)
+
+【MLF】寻路与job检测-Havalina—P3命中→去2F找工作
+
+【MLF】寻路与job检测-Havalina—执行UseStairs: 1F→2F
+
+【MLF】寻路与job检测-Havalina—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
+
+【MLF】寻路与job检测-Havalina—执行UseStairs: 2F→1F
+
+【MLF】寻路与job检测-Havalina—在1F，冷却中(6/600)，跳过
+
+【MLF】寻路与job检测-Havalina—在1F，冷却中(58/600)，跳过
+
+【MLF】寻路与job检测-Hayhouse—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Hayhouse—  2F有工作: 搬运(Hauling)
+
+【MLF】寻路与job检测-Hayhouse—P3命中→去2F找工作
+
+【MLF】寻路与job检测-Hayhouse—执行UseStairs: 1F→2F
+
+【MLF】寻路与job检测-Hayhouse—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
+
+【MLF】寻路与job检测-Hayhouse—执行UseStairs: 2F→1F
+
+【MLF】寻路与job检测-Hayhouse—在1F，冷却中(25/600)，跳过
+
+【MLF】寻路与job检测-Sebastien—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Sebastien—  2F有工作: 搬运(Hauling)
+
+【MLF】寻路与job检测-Sebastien—P3命中→去2F找工作
+
+【MLF】寻路与job检测-Sebastien—执行UseStairs: 1F→2F
+
+【MLF】寻路与job检测-Sebastien—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
+
+【MLF】寻路与job检测-Sebastien—执行UseStairs: 2F→1F
+
+【MLF】寻路与job检测-Sebastien—在1F，冷却中(27/600)，跳过
+
+【MLF】寻路与job检测-Havalina—在1F，冷却中(210/600)，跳过
+
+【MLF】寻路与job检测-Sebastien—在1F，冷却中(79/600)，跳过
+
+【MLF】寻路与job检测-Havalina—在1F，冷却中(262/600)，跳过
+
+【MLF】寻路与job检测-Hayhouse—在1F，冷却中(225/600)，跳过
+
+【MLF】寻路与job检测-Sebastien—在1F，冷却中(267/600)，跳过
+
+【MLF】寻路与job检测-Sebastien—在1F，冷却中(319/600)，跳过
+
+【MLF】寻路与job检测-Hayhouse—在1F，冷却中(398/600)，跳过
+
+【MLF】寻路与job检测-Havalina—在1F，冷却中(480/600)，跳过
+
+【MLF】寻路与job检测-Havalina—在1F，冷却中(532/600)，跳过
+
+【MLF】寻路与job检测-Sebastien—在1F，冷却中(536/600)，跳过
+
+【MLF】寻路与job检测-Hayhouse—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Hayhouse—  2F有工作: 搬运(Hauling)
+
+【MLF】寻路与job检测-Hayhouse—P3命中→去2F找工作
+
+【MLF】寻路与job检测-Hayhouse—执行UseStairs: 1F→2F
+
+【MLF】寻路与job检测-Sebastien—在1F，冷却中(588/600)，跳过
+
+【MLF】寻路与job检测-Hayhouse—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
+
+【MLF】寻路与job检测-Hayhouse—执行UseStairs: 2F→1F
+
+【MLF】寻路与job检测-Hayhouse—在1F，冷却中(9/600)，跳过
+
+【MLF】寻路与job检测-Hayhouse—在1F，冷却中(61/600)，跳过
+
+【MLF】寻路与job检测-Havalina—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Havalina—  2F有工作: 搬运(Hauling)
+
+【MLF】寻路与job检测-Havalina—P3命中→去2F找工作
+
+【MLF】寻路与job检测-Havalina—执行UseStairs: 1F→2F
+
+【MLF】寻路与job检测-Havalina—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
+
+【MLF】寻路与job检测-Havalina—执行UseStairs: 2F→1F
+
+【MLF】寻路与job检测-Havalina—在1F，冷却中(27/600)，跳过
+
+【MLF】寻路与job检测-Havalina—在1F，冷却中(79/600)，跳过
+
+【MLF】寻路与job检测-Sebastien—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Sebastien—  2F有工作: 搬运(Hauling)
+
+【MLF】寻路与job检测-Sebastien—P3命中→去2F找工作
+
+【MLF】寻路与job检测-Hayhouse—在1F，冷却中(256/600)，跳过
+
+【MLF】寻路与job检测-Sebastien—执行UseStairs: 1F→2F
+
+【MLF】寻路与job检测-Sebastien—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
+
+【MLF】寻路与job检测-Sebastien—执行UseStairs: 2F→1F
+
+【MLF】寻路与job检测-Sebastien—在1F，冷却中(24/600)，跳过
 

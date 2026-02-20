@@ -8,11 +8,18 @@ namespace MapLevelFramework
     /// 搬运材料到楼梯 JobDriver。
     /// pawn 捡起材料 → 走到楼梯 → 材料通过楼梯传送到目标楼层。
     /// pawn 留在原地，材料出现在目标楼层的楼梯位置。
+    /// 电梯模式：targetC 存储目标楼层 elevation（IntVec3.x），可直达任意楼层。
     /// </summary>
     public class JobDriver_HaulToStairs : JobDriver
     {
         private Thing Material => job.targetA.Thing;
         private Building_Stairs Stairs => (Building_Stairs)job.targetB.Thing;
+
+        /// <summary>
+        /// 获取材料传送的目标楼层。优先用 targetC，否则用楼梯默认值。
+        /// </summary>
+        private int TargetElevation =>
+            job.targetC.IsValid ? job.targetC.Cell.x : Stairs.targetElevation;
 
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
@@ -43,8 +50,9 @@ namespace MapLevelFramework
                 Building_Stairs stairs = Stairs;
                 if (stairs == null) return;
 
+                int targetElev = TargetElevation;
                 if (!StairTransferUtility.TryGetTransferTarget(
-                        stairs, out Map destMap, out IntVec3 destPos))
+                        stairs, targetElev, out Map destMap, out IntVec3 destPos))
                     return;
 
                 // 从 pawn 手中取出

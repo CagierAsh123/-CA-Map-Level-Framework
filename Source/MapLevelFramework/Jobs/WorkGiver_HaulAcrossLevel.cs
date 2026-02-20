@@ -39,11 +39,13 @@ namespace MapLevelFramework
 
             // 其他楼层找仓库
             if (!CrossLevelHaulUtility.TryFindBetterStorageOnOtherLevel(
-                    t, pawn, out _, out _, out Building_Stairs stairs))
+                    t, pawn, out Map destMap, out _, out Building_Stairs stairs))
                 return null;
 
+            int destElev = FloorMapUtility.GetMapElevation(destMap);
             Job job = JobMaker.MakeJob(MLF_JobDefOf.MLF_HaulAcrossLevel, t, stairs);
             job.count = t.stackCount;
+            job.targetC = new IntVec3(destElev, 0, 0);
             return job;
         }
     }

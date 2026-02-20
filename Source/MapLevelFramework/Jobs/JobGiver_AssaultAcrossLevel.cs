@@ -59,14 +59,12 @@ namespace MapLevelFramework
             // 找最近的有目标的楼层，走楼梯过去
             foreach (var (_, targetElev) in otherMaps)
             {
-                int nextElev = targetElev > currentElev
-                    ? currentElev + 1
-                    : currentElev - 1;
-
-                Building_Stairs stairs = FloorMapUtility.FindStairsToElevation(pawn, pawnMap, nextElev);
+                Building_Stairs stairs = FloorMapUtility.FindStairsToFloor(pawn, pawnMap, targetElev);
                 if (stairs != null)
                 {
-                    return JobMaker.MakeJob(MLF_JobDefOf.MLF_UseStairs, stairs);
+                    Job job = JobMaker.MakeJob(MLF_JobDefOf.MLF_UseStairs, stairs);
+                    job.targetB = new IntVec3(targetElev, 0, 0);
+                    return job;
                 }
             }
 

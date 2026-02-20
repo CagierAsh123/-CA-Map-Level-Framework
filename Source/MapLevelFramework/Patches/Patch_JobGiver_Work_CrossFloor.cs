@@ -21,6 +21,21 @@ namespace MapLevelFramework.CrossFloor
             = new Dictionary<int, int>();
         private const int CooldownTicks = 600;
 
+        private static bool DebugLog => MapLevelFrameworkMod.Settings?.debugPathfindingAndJob ?? false;
+
+        private static string ElevLabel(int elev)
+        {
+            if (elev > 0) return $"{elev + 1}F";
+            if (elev < 0) return $"B{-elev}";
+            return "1F";
+        }
+
+        private static void LogPJ(Pawn pawn, string msg)
+        {
+            if (DebugLog)
+                Log.Message($"【MLF】寻路与job检测-{pawn.LabelShort}—{msg}");
+        }
+
         public static void Postfix(
             ref ThinkResult __result,
             JobGiver_Work __instance,
@@ -34,15 +49,22 @@ namespace MapLevelFramework.CrossFloor
             if (!pawnMap.IsPartOfFloorSystem()) return;
             if (!pawn.IsColonist) return;
 
+            int pawnElev = FloorMapUtility.GetMapElevation(pawnMap);
             int curTick = Find.TickManager?.TicksGame ?? 0;
             if (lastCrossFloorTick.TryGetValue(pawn.thingIDNumber, out int lastTick)
                 && curTick - lastTick < CooldownTicks)
+            {
+                LogPJ(pawn, $"在{ElevLabel(pawnElev)}，冷却中({curTick - lastTick}/{CooldownTicks})，跳过");
                 return;
+            }
+
+            LogPJ(pawn, $"在{ElevLabel(pawnElev)}，本层无工作，开始跨层扫描");
 
             // P1: 本层材料 → 其他层蓝图需要 → HaulToStairs
             Job haulJob = TryCreateHaulToStairsJob(pawn, pawnMap);
             if (haulJob != null)
             {
+                LogPJ(pawn, $"P1命中→搬运{haulJob.targetA.Thing?.LabelShort}到楼梯");
                 lastCrossFloorTick[pawn.thingIDNumber] = curTick;
                 __result = new ThinkResult(haulJob, __instance, null, false);
                 return;
@@ -52,6 +74,8 @@ namespace MapLevelFramework.CrossFloor
             Job fetchJob = TryCreateFetchMaterialJob(pawn, pawnMap);
             if (fetchJob != null)
             {
+                int destElev = fetchJob.targetB.IsValid ? fetchJob.targetB.Cell.x : -999;
+                LogPJ(pawn, $"P2命中→去{ElevLabel(destElev)}取材料");
                 lastCrossFloorTick[pawn.thingIDNumber] = curTick;
                 __result = new ThinkResult(fetchJob, __instance, null, false);
                 return;
@@ -61,108 +85,90 @@ namespace MapLevelFramework.CrossFloor
             Job goJob = TryCreateGoToWorkFloorJob(pawn, pawnMap);
             if (goJob != null)
             {
+                int destElev = goJob.targetB.IsValid ? goJob.targetB.Cell.x : -999;
+                LogPJ(pawn, $"P3命中→去{ElevLabel(destElev)}找工作");
                 lastCrossFloorTick[pawn.thingIDNumber] = curTick;
                 __result = new ThinkResult(goJob, __instance, null, false);
                 return;
             }
+
+            LogPJ(pawn, "P1/P2/P3均未命中，无跨层工作");
         }
 
         /// <summary>
-        /// P1: 本层有材料，其他层蓝图/框架需要 → 搬到楼梯传送过去。
+        /// P1: 本层有材料，其他层需要 → 搬到楼梯传送过去。
+        /// 覆盖：建造材料、燃料、Bill 原料、药品、囚犯食物。
         /// </summary>
         private static Job TryCreateHaulToStairsJob(Pawn pawn, Map pawnMap)
         {
-            int pawnElev = FloorMapUtility.GetMapElevation(pawnMap);
-
             foreach (Map otherMap in pawnMap.BaseMapAndFloorMaps())
             {
                 if (otherMap == pawnMap) continue;
 
-                // 检查该层的蓝图和框架
-                var constructibles = GetConstructibles(otherMap);
-                for (int i = 0; i < constructibles.Count; i++)
+                // 收集该层所有材料需求
+                CollectMaterialNeeds(otherMap, needsBuffer);
+
+                for (int i = 0; i < needsBuffer.Count; i++)
                 {
-                    IConstructible c = constructibles[i] as IConstructible;
-                    if (c == null) continue;
+                    var need = needsBuffer[i];
 
-                    foreach (var cost in c.TotalMaterialCost())
-                    {
-                        int needed = c.ThingCountNeeded(cost.thingDef);
-                        if (needed <= 0) continue;
+                    // 扣除目标层已有的散落材料
+                    int looseOnDest = CountLooseMaterial(otherMap, need.thingDef);
+                    int actualNeeded = need.count - looseOnDest;
+                    if (actualNeeded <= 0) continue;
 
-                        // 扣除目标层已有的散落材料（已传送但还没搬到蓝图的）
-                        int looseOnDest = CountLooseMaterial(
-                            otherMap, cost.thingDef);
-                        needed -= looseOnDest;
-                        if (needed <= 0) continue;
+                    // 在本层找这个材料
+                    Thing material = FindMaterialOnMap(pawnMap, pawn, need.thingDef);
+                    if (material == null) continue;
 
-                        // 在本层找这个材料
-                        Thing material = FindMaterialOnMap(
-                            pawnMap, pawn, cost.thingDef);
-                        if (material == null) continue;
+                    // 电梯模式：直接找通往目标层的楼梯（楼梯井）
+                    int otherElev = FloorMapUtility.GetMapElevation(otherMap);
+                    Building_Stairs stairs =
+                        FloorMapUtility.FindStairsToFloor(pawn, pawnMap, otherElev);
+                    if (stairs == null) break; // 这层没楼梯井连通，跳过整层
 
-                        // 找通往目标层的楼梯
-                        int otherElev = FloorMapUtility.GetMapElevation(otherMap);
-                        int nextElev = otherElev > pawnElev
-                            ? pawnElev + 1 : pawnElev - 1;
-                        Building_Stairs stairs =
-                            FloorMapUtility.FindStairsToElevation(
-                                pawn, pawnMap, nextElev);
-                        if (stairs == null) continue;
-
-                        int toCarry = Math.Min(needed, material.stackCount);
-                        Job job = JobMaker.MakeJob(
-                            MLF_JobDefOf.MLF_HaulToStairs,
-                            material, stairs);
-                        job.count = toCarry;
-                        return job;
-                    }
+                    int toCarry = Math.Min(actualNeeded, material.stackCount);
+                    Job job = JobMaker.MakeJob(
+                        MLF_JobDefOf.MLF_HaulToStairs, material, stairs);
+                    job.count = toCarry;
+                    job.targetC = new IntVec3(otherElev, 0, 0);
+                    return job;
                 }
             }
             return null;
         }
 
         /// <summary>
-        /// P2: 本层蓝图缺材料（本层没有），其他层有 → UseStairs 去那层取。
+        /// P2: 本层有需求但缺材料，其他层有 → UseStairs 去取。
         /// </summary>
         private static Job TryCreateFetchMaterialJob(Pawn pawn, Map pawnMap)
         {
-            int pawnElev = FloorMapUtility.GetMapElevation(pawnMap);
-            var constructibles = GetConstructibles(pawnMap);
+            // 收集本层的材料需求
+            CollectMaterialNeeds(pawnMap, needsBuffer);
 
-            for (int i = 0; i < constructibles.Count; i++)
+            for (int i = 0; i < needsBuffer.Count; i++)
             {
-                IConstructible c = constructibles[i] as IConstructible;
-                if (c == null) continue;
+                var need = needsBuffer[i];
 
-                foreach (var cost in c.TotalMaterialCost())
+                // 本层有这个材料？跳过（原版会处理）
+                if (pawnMap.listerThings.ThingsOfDef(need.thingDef).Count > 0)
+                    continue;
+
+                // 其他层找
+                foreach (Map otherMap in pawnMap.BaseMapAndFloorMaps())
                 {
-                    int needed = c.ThingCountNeeded(cost.thingDef);
-                    if (needed <= 0) continue;
-
-                    // 本层有这个材料？跳过（原版会处理）
-                    if (pawnMap.listerThings.ThingsOfDef(cost.thingDef).Count > 0)
+                    if (otherMap == pawnMap) continue;
+                    if (otherMap.listerThings.ThingsOfDef(need.thingDef).Count == 0)
                         continue;
 
-                    // 其他层找
-                    foreach (Map otherMap in pawnMap.BaseMapAndFloorMaps())
-                    {
-                        if (otherMap == pawnMap) continue;
-                        if (otherMap.listerThings.ThingsOfDef(
-                                cost.thingDef).Count == 0)
-                            continue;
+                    int otherElev = FloorMapUtility.GetMapElevation(otherMap);
+                    Building_Stairs stairs =
+                        FloorMapUtility.FindStairsToFloor(pawn, pawnMap, otherElev);
+                    if (stairs == null) continue;
 
-                        int otherElev = FloorMapUtility.GetMapElevation(otherMap);
-                        int nextElev = otherElev > pawnElev
-                            ? pawnElev + 1 : pawnElev - 1;
-                        Building_Stairs stairs =
-                            FloorMapUtility.FindStairsToElevation(
-                                pawn, pawnMap, nextElev);
-                        if (stairs == null) continue;
-
-                        return JobMaker.MakeJob(
-                            MLF_JobDefOf.MLF_UseStairs, stairs);
-                    }
+                    Job job = JobMaker.MakeJob(MLF_JobDefOf.MLF_UseStairs, stairs);
+                    job.targetB = new IntVec3(otherElev, 0, 0);
+                    return job;
                 }
             }
             return null;
@@ -170,17 +176,19 @@ namespace MapLevelFramework.CrossFloor
 
         /// <summary>
         /// P3: 本层无工作 → 去有工作的最近楼层。
+        /// FloorHasWork 按 pawn 的工作设置过滤，不会白跑。
         /// </summary>
         private static Job TryCreateGoToWorkFloorJob(Pawn pawn, Map pawnMap)
         {
             int currentElev = FloorMapUtility.GetMapElevation(pawnMap);
             Map bestFloor = null;
             int bestElevDist = int.MaxValue;
+            int bestElev = 0;
 
             foreach (Map otherMap in pawnMap.BaseMapAndFloorMaps())
             {
                 if (otherMap == pawnMap) continue;
-                if (!FloorHasWork(otherMap)) continue;
+                if (!FloorHasWork(otherMap, pawn)) continue;
 
                 int otherElev = FloorMapUtility.GetMapElevation(otherMap);
                 int dist = Math.Abs(otherElev - currentElev);
@@ -188,20 +196,172 @@ namespace MapLevelFramework.CrossFloor
                 {
                     bestElevDist = dist;
                     bestFloor = otherMap;
+                    bestElev = otherElev;
                 }
             }
 
             if (bestFloor == null) return null;
 
-            int targetElev = FloorMapUtility.GetMapElevation(bestFloor);
-            int nextElev = targetElev > currentElev
-                ? currentElev + 1 : currentElev - 1;
+            // 电梯模式：直接找通往目标层的楼梯
             Building_Stairs stairs =
-                FloorMapUtility.FindStairsToElevation(pawn, pawnMap, nextElev);
+                FloorMapUtility.FindStairsToFloor(pawn, pawnMap, bestElev);
             if (stairs == null) return null;
 
-            return JobMaker.MakeJob(MLF_JobDefOf.MLF_UseStairs, stairs);
+            Job job = JobMaker.MakeJob(MLF_JobDefOf.MLF_UseStairs, stairs);
+            job.targetB = new IntVec3(bestElev, 0, 0);
+            return job;
         }
+
+        // ========== 材料需求收集系统 ==========
+
+        private struct MaterialNeed
+        {
+            public ThingDef thingDef;
+            public int count;
+        }
+
+        private static readonly List<MaterialNeed> needsBuffer = new List<MaterialNeed>();
+
+        /// <summary>
+        /// 收集指定地图上所有材料需求（建造、加油、Bill、医疗、囚犯食物）。
+        /// </summary>
+        private static void CollectMaterialNeeds(Map map, List<MaterialNeed> result)
+        {
+            result.Clear();
+
+            // 1. 建造材料（蓝图/框架）
+            AddConstructionNeeds(map, result);
+
+            // 2. 加油（CompRefuelable）
+            AddRefuelNeeds(map, result);
+
+            // 3. Bill 原料（工作台）
+            AddBillNeeds(map, result);
+
+            // 4. 医疗（需要治疗的 pawn）
+            AddMedicineNeeds(map, result);
+
+            // 5. 囚犯食物
+            AddPrisonerFoodNeeds(map, result);
+        }
+
+        private static void AddConstructionNeeds(Map map, List<MaterialNeed> result)
+        {
+            var constructibles = GetConstructibles(map);
+            for (int i = 0; i < constructibles.Count; i++)
+            {
+                IConstructible c = constructibles[i] as IConstructible;
+                if (c == null) continue;
+                foreach (var cost in c.TotalMaterialCost())
+                {
+                    int needed = c.ThingCountNeeded(cost.thingDef);
+                    if (needed > 0)
+                        result.Add(new MaterialNeed { thingDef = cost.thingDef, count = needed });
+                }
+            }
+        }
+
+        private static void AddRefuelNeeds(Map map, List<MaterialNeed> result)
+        {
+            foreach (Building b in map.listerBuildings.allBuildingsColonist)
+            {
+                CompRefuelable comp = b.TryGetComp<CompRefuelable>();
+                if (comp == null || comp.IsFull) continue;
+
+                ThingDef fuelDef = comp.Props.fuelFilter?.AnyAllowedDef;
+                if (fuelDef == null) continue;
+
+                int needed = (int)Math.Ceiling((double)comp.GetFuelCountToFullyRefuel());
+                if (needed > 0)
+                    result.Add(new MaterialNeed { thingDef = fuelDef, count = needed });
+            }
+        }
+
+        private static void AddBillNeeds(Map map, List<MaterialNeed> result)
+        {
+            foreach (Building b in map.listerBuildings.allBuildingsColonist)
+            {
+                IBillGiver billGiver = b as IBillGiver;
+                if (billGiver == null) continue;
+
+                BillStack bills = billGiver.BillStack;
+                if (bills == null || bills.Count == 0) continue;
+
+                for (int bi = 0; bi < bills.Count; bi++)
+                {
+                    Bill bill = bills[bi];
+                    if (!bill.ShouldDoNow()) continue;
+
+                    foreach (IngredientCount ing in bill.recipe.ingredients)
+                    {
+                        // 取 filter 中第一个允许的 ThingDef
+                        ThingDef ingDef = ing.filter?.AnyAllowedDef;
+                        if (ingDef == null) continue;
+
+                        // 本层已有这个原料 → 原版处理，跳过
+                        if (map.listerThings.ThingsOfDef(ingDef).Count > 0)
+                            continue;
+
+                        int needed = (int)Math.Ceiling(
+                            (double)ing.GetBaseCount());
+                        if (needed > 0)
+                            result.Add(new MaterialNeed { thingDef = ingDef, count = needed });
+                    }
+                }
+            }
+        }
+
+        private static void AddMedicineNeeds(Map map, List<MaterialNeed> result)
+        {
+            // 有需要治疗的殖民者但本层没药
+            bool needsMedicine = false;
+            var colonists = map.mapPawns.FreeColonistsSpawned;
+            for (int i = 0; i < colonists.Count; i++)
+            {
+                if (colonists[i].health?.HasHediffsNeedingTend(false) ?? false)
+                {
+                    needsMedicine = true;
+                    break;
+                }
+            }
+            if (!needsMedicine) return;
+
+            // 本层有药就不管
+            if (map.listerThings.ThingsInGroup(ThingRequestGroup.Medicine).Count > 0)
+                return;
+
+            // 需要药但没有 → 加入需求（用 MedicineIndustrial 作为默认）
+            result.Add(new MaterialNeed
+            {
+                thingDef = ThingDefOf.MedicineIndustrial,
+                count = 1
+            });
+            // 也接受草药
+            result.Add(new MaterialNeed
+            {
+                thingDef = ThingDefOf.MedicineHerbal,
+                count = 1
+            });
+        }
+
+        private static void AddPrisonerFoodNeeds(Map map, List<MaterialNeed> result)
+        {
+            if (map.mapPawns.PrisonersOfColonySpawned.Count == 0) return;
+
+            // 本层有食物就不管
+            if (map.listerThings.ThingsInGroup(
+                    ThingRequestGroup.FoodSourceNotPlantOrTree).Count > 0)
+                return;
+
+            // 需要食物但没有 → 加入需求（用 MealSimple 作为默认）
+            result.Add(new MaterialNeed
+            {
+                thingDef = ThingDefOf.MealSimple,
+                count = 1
+            });
+        }
+
+        // ========== 工具方法 ==========
 
         /// <summary>
         /// 获取地图上所有蓝图和框架。
@@ -261,60 +421,118 @@ namespace MapLevelFramework.CrossFloor
             return best;
         }
 
-        private static bool FloorHasWork(Map map)
+        /// <summary>
+        /// 检查该楼层是否有这个 pawn 能做的工作。
+        /// 根据 pawn 的 workSettings 过滤，避免白跑。
+        /// </summary>
+        private static bool FloorHasWork(Map map, Pawn pawn)
         {
+            var ws = pawn.workSettings;
+            if (ws == null) return false;
+
+            int elev = FloorMapUtility.GetMapElevation(map);
+
             // 建造（蓝图、框架）
-            if (map.listerThings.ThingsInGroup(
-                    ThingRequestGroup.Blueprint).Count > 0)
-                return true;
-            if (map.listerThings.ThingsInGroup(
-                    ThingRequestGroup.BuildingFrame).Count > 0)
-                return true;
+            if (ws.WorkIsActive(WorkTypeDefOf.Construction))
+            {
+                if (map.listerThings.ThingsInGroup(
+                        ThingRequestGroup.Blueprint).Count > 0)
+                { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 蓝图(Construction)"); return true; }
+                if (map.listerThings.ThingsInGroup(
+                        ThingRequestGroup.BuildingFrame).Count > 0)
+                { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 框架(Construction)"); return true; }
+            }
 
             // 搬运
-            if (map.listerHaulables
-                    .ThingsPotentiallyNeedingHauling().Count > 0)
-                return true;
+            if (ws.WorkIsActive(WorkTypeDefOf.Hauling))
+            {
+                if (map.listerHaulables
+                        .ThingsPotentiallyNeedingHauling().Count > 0)
+                { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 搬运(Hauling)"); return true; }
+            }
 
             // 清洁
-            var filthLister = map.listerFilthInHomeArea;
-            if (filthLister != null
-                && filthLister.FilthInHomeArea.Count > 0)
-                return true;
+            if (ws.WorkIsActive(WorkTypeDefOf.Cleaning))
+            {
+                var filthLister = map.listerFilthInHomeArea;
+                if (filthLister != null
+                    && filthLister.FilthInHomeArea.Count > 0)
+                { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 清洁(Cleaning)"); return true; }
+            }
 
             // 医疗：倒地或需要治疗的殖民者
-            var colonists = map.mapPawns.FreeColonistsSpawned;
-            for (int i = 0; i < colonists.Count; i++)
+            if (ws.WorkIsActive(WorkTypeDefOf.Doctor))
             {
-                Pawn p = colonists[i];
-                if (p.Downed || (p.health?.HasHediffsNeedingTend(false) ?? false))
-                    return true;
+                var colonists = map.mapPawns.FreeColonistsSpawned;
+                for (int i = 0; i < colonists.Count; i++)
+                {
+                    Pawn p = colonists[i];
+                    if (p.Downed || (p.health?.HasHediffsNeedingTend(false) ?? false))
+                    { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 医疗(Doctor)"); return true; }
+                }
             }
 
             // 监管：有囚犯
-            if (map.mapPawns.PrisonersOfColonySpawned.Count > 0)
-                return true;
+            if (ws.WorkIsActive(WorkTypeDefOf.Warden))
+            {
+                if (map.mapPawns.PrisonersOfColonySpawned.Count > 0)
+                { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 监管(Warden)"); return true; }
+            }
 
-            // 工作指示（开采、割除、狩猎、驯服、打磨等）
-            if (HasAnyDesignation(map, DesignationDefOf.Mine)
-                || HasAnyDesignation(map, DesignationDefOf.Deconstruct)
-                || HasAnyDesignation(map, DesignationDefOf.CutPlant)
-                || HasAnyDesignation(map, DesignationDefOf.HarvestPlant)
-                || HasAnyDesignation(map, DesignationDefOf.Hunt)
-                || HasAnyDesignation(map, DesignationDefOf.Tame)
-                || HasAnyDesignation(map, DesignationDefOf.SmoothFloor)
-                || HasAnyDesignation(map, DesignationDefOf.SmoothWall))
-                return true;
+            // 开采
+            if (ws.WorkIsActive(WorkTypeDefOf.Mining))
+            {
+                if (HasAnyDesignation(map, DesignationDefOf.Mine))
+                { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 开采(Mining)"); return true; }
+            }
+
+            // 建造类指示（拆除、打磨）
+            if (ws.WorkIsActive(WorkTypeDefOf.Construction))
+            {
+                if (HasAnyDesignation(map, DesignationDefOf.Deconstruct)
+                    || HasAnyDesignation(map, DesignationDefOf.SmoothFloor)
+                    || HasAnyDesignation(map, DesignationDefOf.SmoothWall))
+                { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 拆除/打磨(Construction)"); return true; }
+            }
+
+            // 种植类指示（割除、收获）
+            if (ws.WorkIsActive(WorkTypeDefOf.PlantCutting))
+            {
+                if (HasAnyDesignation(map, DesignationDefOf.CutPlant)
+                    || HasAnyDesignation(map, DesignationDefOf.HarvestPlant))
+                { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 割除/收获(PlantCutting)"); return true; }
+            }
+
+            // 狩猎
+            if (ws.WorkIsActive(WorkTypeDefOf.Hunting))
+            {
+                if (HasAnyDesignation(map, DesignationDefOf.Hunt))
+                { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 狩猎(Hunting)"); return true; }
+            }
+
+            // 驯服
+            if (ws.WorkIsActive(WorkTypeDefOf.Handling))
+            {
+                if (HasAnyDesignation(map, DesignationDefOf.Tame))
+                { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 驯服(Handling)"); return true; }
+            }
 
             // 灭火
-            if (map.listerThings.ThingsOfDef(ThingDefOf.Fire).Count > 0)
-                return true;
+            if (ws.WorkIsActive(WorkTypeDefOf.Firefighter))
+            {
+                if (map.listerThings.ThingsOfDef(ThingDefOf.Fire).Count > 0)
+                { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 灭火(Firefighter)"); return true; }
+            }
 
-            // 研究：有研究台且有进行中的研究
-            if (Find.ResearchManager?.GetProject() != null
-                && map.listerBuildings.ColonistsHaveResearchBench())
-                return true;
+            // 研究
+            if (ws.WorkIsActive(WorkTypeDefOf.Research))
+            {
+                if (Find.ResearchManager?.GetProject() != null
+                    && map.listerBuildings.ColonistsHaveResearchBench())
+                { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 研究(Research)"); return true; }
+            }
 
+            LogPJ(pawn, $"  {ElevLabel(elev)}无匹配工作");
             return false;
         }
 

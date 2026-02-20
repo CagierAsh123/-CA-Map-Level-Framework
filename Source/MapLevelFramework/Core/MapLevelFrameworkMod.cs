@@ -1,4 +1,5 @@
 using HarmonyLib;
+using UnityEngine;
 using Verse;
 
 namespace MapLevelFramework
@@ -16,10 +17,12 @@ namespace MapLevelFramework
     {
         public static MapLevelFrameworkMod Instance { get; private set; }
         public static Harmony HarmonyInstance { get; private set; }
+        public static MLF_Settings Settings { get; private set; }
 
         public MapLevelFrameworkMod(ModContentPack content) : base(content)
         {
             Instance = this;
+            Settings = GetSettings<MLF_Settings>();
             HarmonyInstance = new Harmony("CA.MapLevelFramework");
             HarmonyInstance.PatchAll();
 
@@ -76,6 +79,13 @@ namespace MapLevelFramework
             {
                 Log.Error($"[MLF] Failed to patch ZoneLayer: {ex}");
             }
+        }
+
+        public override string SettingsCategory() => "Map Level Framework";
+
+        public override void DoSettingsWindowContents(Rect inRect)
+        {
+            Settings.DoSettingsWindowContents(inRect);
         }
     }
 }

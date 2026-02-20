@@ -47,10 +47,9 @@ namespace MapLevelFramework
 
             foreach (var (otherMap, targetElev) in otherMaps)
             {
-                int nextElev = targetElev > currentElev
-                    ? currentElev + 1 : currentElev - 1;
+                // 电梯模式：直接找通往目标层的楼梯
                 Building_Stairs candidateStairs =
-                    FloorMapUtility.FindStairsToElevation(pawn, pawnMap, nextElev);
+                    FloorMapUtility.FindStairsToFloor(pawn, pawnMap, targetElev);
                 if (candidateStairs == null) continue;
 
                 if (TryFindStorageCellOnMap(thing, otherMap, bestFoundPriority,

@@ -58,13 +58,21 @@ namespace MapLevelFramework
         /// </summary>
         public static bool TryGetTransferTarget(Building_Stairs stairs, out Map destMap, out IntVec3 destPos)
         {
+            return TryGetTransferTarget(stairs, stairs.targetElevation, out destMap, out destPos);
+        }
+
+        /// <summary>
+        /// 电梯模式：指定目标楼层 elevation，直接传送到该楼层。
+        /// 楼梯位置在所有楼层相同，无需坐标转换。
+        /// </summary>
+        public static bool TryGetTransferTarget(Building_Stairs stairs, int targetElevation, out Map destMap, out IntVec3 destPos)
+        {
             destMap = null;
             destPos = IntVec3.Invalid;
 
             Map stairsMap = stairs.Map;
             if (stairsMap == null) return false;
 
-            // 先检查是否在子地图上（子地图也有自动创建的空 LevelManager，必须先排除）
             LevelManager mgr;
             Map baseMap;
             if (LevelManager.IsLevelMap(stairsMap, out var parentMgr, out _))
@@ -80,17 +88,13 @@ namespace MapLevelFramework
 
             if (mgr == null) return false;
 
-            int targetElev = stairs.targetElevation;
-
-            if (targetElev == 0)
+            if (targetElevation == 0)
             {
-                // 目标是地面层
                 destMap = baseMap;
             }
             else
             {
-                // 目标是某个子地图层级
-                var level = mgr.GetLevel(targetElev);
+                var level = mgr.GetLevel(targetElevation);
                 if (level?.LevelMap == null) return false;
                 destMap = level.LevelMap;
             }

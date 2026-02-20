@@ -9,11 +9,15 @@ namespace MapLevelFramework
     /// 跨层搬运 JobDriver - 拿起物品 → 走到楼梯 → 转移 → 在目标层放到仓库。
     /// TargetA = 要搬运的物品
     /// TargetB = 楼梯
+    /// TargetC = 目标楼层 elevation（IntVec3.x），电梯模式直达
     /// </summary>
     public class JobDriver_HaulAcrossLevel : JobDriver
     {
         private Thing Item => job.targetA.Thing;
         private Building_Stairs Stairs => (Building_Stairs)job.targetB.Thing;
+
+        private int TargetElevation =>
+            job.targetC.IsValid ? job.targetC.Cell.x : Stairs.targetElevation;
 
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
@@ -37,7 +41,8 @@ namespace MapLevelFramework
 
         private void TransferAndHaul()
         {
-            if (!StairTransferUtility.TryGetTransferTarget(Stairs, out Map destMap, out IntVec3 destPos))
+            int targetElev = TargetElevation;
+            if (!StairTransferUtility.TryGetTransferTarget(Stairs, targetElev, out Map destMap, out IntVec3 destPos))
                 return;
 
             Thing carried = pawn.carryTracker.CarriedThing;

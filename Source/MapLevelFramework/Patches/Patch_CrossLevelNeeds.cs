@@ -23,23 +23,41 @@ namespace MapLevelFramework.Patches
             if (pawn?.Map == null || !pawn.IsColonist) return;
             if (!pawn.Map.IsPartOfFloorSystem()) return;
 
-            // 有自己的床在其他楼层 → 优先去那里
+            Need_Rest rest = pawn.needs?.rest;
+            if (rest == null) return;
+
+            // 有自己的床在其他楼层 → 只在 VeryTired 以上才跨层回去睡
             Building_Bed ownedBed = pawn.ownership?.OwnedBed;
-            if (ownedBed != null && ownedBed.Map != pawn.Map)
+            if (ownedBed != null && ownedBed.Map != pawn.Map
+                && rest.CurCategory >= RestCategory.VeryTired)
             {
                 Job stairJob = CrossLevelNeedsUtility.TryGoToMap(
                     pawn, ownedBed.Map);
                 if (stairJob != null)
                 {
+                    CrossLevelNeedsUtility.LogNeed(pawn, "休息",
+                        $"自己的床在{FloorMapUtility.GetMapElevation(ownedBed.Map)}F，很困了 (category={rest.CurCategory}, level={rest.CurLevelPercentage:P0})");
                     __result = stairJob;
                     return;
                 }
             }
 
-            // 当前层找不到床 → 找其他层有空床的
-            if (__result != null) return;
-            __result = CrossLevelNeedsUtility.TryFindNeedOnOtherFloor(
+            // 当前层找不到床 → 只在 VeryTired 以上才跨层
+            if (__result != null)
+            {
+                CrossLevelNeedsUtility.LogNeed(pawn, "休息", $"原版已分配job: {__result.def.defName}，跳过跨层");
+                return;
+            }
+            if (rest.CurCategory < RestCategory.VeryTired) return;
+
+            var job = CrossLevelNeedsUtility.TryFindNeedOnOtherFloor(
                 pawn, CrossLevelNeedsUtility.HasAvailableBed);
+            if (job != null)
+            {
+                CrossLevelNeedsUtility.LogNeed(pawn, "休息",
+                    $"本层无空床，很困了跨层 (category={rest.CurCategory}, level={rest.CurLevelPercentage:P0})");
+                __result = job;
+            }
         }
     }
 
@@ -49,12 +67,35 @@ namespace MapLevelFramework.Patches
     {
         public static void Postfix(ref Job __result, Pawn pawn)
         {
-            if (__result != null) return;
             if (pawn?.Map == null || !pawn.IsColonist) return;
             if (!pawn.Map.IsPartOfFloorSystem()) return;
 
-            __result = CrossLevelNeedsUtility.TryFindNeedOnOtherFloor(
+            if (__result != null)
+            {
+                CrossLevelNeedsUtility.LogNeed(pawn, "食物", $"原版已分配job: {__result.def.defName}，跳过跨层");
+                return;
+            }
+
+            // 只在 UrgentlyHungry 或 Starving 时才跨层找食物。
+            // 普通饥饿（Hungry）让 PrioritySorter 自然 fallthrough 到 Work，
+            // 避免 pawn 刚到工作楼层就被拉回食物楼层。
+            Need_Food food = pawn.needs?.food;
+            if (food == null) return;
+            if (food.CurCategory < HungerCategory.UrgentlyHungry)
+            {
+                CrossLevelNeedsUtility.LogNeed(pawn, "食物",
+                    $"饥饿度不足，不跨层 (category={food.CurCategory}, level={food.CurLevelPercentage:P0})");
+                return;
+            }
+
+            var job = CrossLevelNeedsUtility.TryFindNeedOnOtherFloor(
                 pawn, CrossLevelNeedsUtility.HasFood);
+            if (job != null)
+            {
+                CrossLevelNeedsUtility.LogNeed(pawn, "食物",
+                    $"紧急饥饿跨层 (category={food.CurCategory}, level={food.CurLevelPercentage:P0})");
+                __result = job;
+            }
         }
     }
 
@@ -64,12 +105,33 @@ namespace MapLevelFramework.Patches
     {
         public static void Postfix(ref Job __result, Pawn pawn)
         {
-            if (__result != null) return;
             if (pawn?.Map == null || !pawn.IsColonist) return;
             if (!pawn.Map.IsPartOfFloorSystem()) return;
 
-            __result = CrossLevelNeedsUtility.TryFindNeedOnOtherFloor(
+            if (__result != null)
+            {
+                CrossLevelNeedsUtility.LogNeed(pawn, "娱乐", $"原版已分配job: {__result.def.defName}，跳过跨层");
+                return;
+            }
+
+            // 只在 joy 非常低时才跨层，避免轻微缺乏就把 pawn 从工作楼层拉走
+            Need_Joy joy = pawn.needs?.joy;
+            if (joy == null) return;
+            if (joy.CurLevelPercentage > 0.15f)
+            {
+                CrossLevelNeedsUtility.LogNeed(pawn, "娱乐",
+                    $"娱乐度不够低，不跨层 (level={joy.CurLevelPercentage:P0})");
+                return;
+            }
+
+            var job = CrossLevelNeedsUtility.TryFindNeedOnOtherFloor(
                 pawn, CrossLevelNeedsUtility.HasJoySource);
+            if (job != null)
+            {
+                CrossLevelNeedsUtility.LogNeed(pawn, "娱乐",
+                    $"娱乐极低跨层 (level={joy.CurLevelPercentage:P0})");
+                __result = job;
+            }
         }
     }
 
@@ -79,7 +141,7 @@ namespace MapLevelFramework.Patches
     public static class CrossLevelNeedsUtility
     {
         /// <summary>
-        /// 尝试派 pawn 走楼梯去指定地图。
+        /// 尝试派 pawn 走楼梯去指定地图。电梯模式：直达目标楼层。
         /// </summary>
         public static Job TryGoToMap(Pawn pawn, Map targetMap)
         {
@@ -88,13 +150,13 @@ namespace MapLevelFramework.Patches
             int targetElev = FloorMapUtility.GetMapElevation(targetMap);
             if (pawnElev == targetElev) return null;
 
-            int nextElev = targetElev > pawnElev
-                ? pawnElev + 1 : pawnElev - 1;
             Building_Stairs stairs =
-                FloorMapUtility.FindStairsToElevation(pawn, pawnMap, nextElev);
+                FloorMapUtility.FindStairsToFloor(pawn, pawnMap, targetElev);
             if (stairs == null) return null;
 
-            return JobMaker.MakeJob(MLF_JobDefOf.MLF_UseStairs, stairs);
+            Job job = JobMaker.MakeJob(MLF_JobDefOf.MLF_UseStairs, stairs);
+            job.targetB = new IntVec3(targetElev, 0, 0);
+            return job;
         }
 
         /// <summary>
@@ -149,6 +211,13 @@ namespace MapLevelFramework.Patches
         {
             return map.listerThings.ThingsInGroup(
                 ThingRequestGroup.BuildingArtificial).Count > 0;
+        }
+
+        public static void LogNeed(Pawn pawn, string needType, string reason)
+        {
+            if (!MapLevelFrameworkMod.Settings.debugPathfindingAndJob) return;
+            int elev = FloorMapUtility.GetMapElevation(pawn.Map);
+            Log.Message($"【MLF】寻路与job检测-{pawn.LabelShort}—需求跨层: {needType}，原因: {reason}，当前楼层: {elev}F");
         }
     }
 }

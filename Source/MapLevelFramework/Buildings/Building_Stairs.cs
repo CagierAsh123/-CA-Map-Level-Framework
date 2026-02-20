@@ -3,6 +3,7 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.AI;
+using MapLevelFramework.CrossFloor;
 
 namespace MapLevelFramework
 {
@@ -202,18 +203,25 @@ namespace MapLevelFramework
             // pawn 必须和楼梯在同一张地图
             if (selPawn.Map != this.Map) yield break;
 
-            if (!StairTransferUtility.TryGetTransferTarget(this, out Map destMap, out IntVec3 destPos))
-                yield break;
-
-            // 判断上楼还是下楼
+            // 电梯模式：显示所有可达楼层
             int currentElevation = GetCurrentElevation();
-            string label = targetElevation > currentElevation ? "上楼" : "下楼";
+            var reachableFloors = FloorMapUtility.GetReachableFloors(this);
 
-            yield return new FloatMenuOption(label, delegate
+            for (int i = 0; i < reachableFloors.Count; i++)
             {
-                Job job = JobMaker.MakeJob(MLF_JobDefOf.MLF_UseStairs, this);
-                selPawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
-            });
+                var (destMap, destElev) = reachableFloors[i];
+                string direction = destElev > currentElevation ? "上楼" : "下楼";
+                string floorLabel = GetElevationLabel(destElev);
+                string label = $"{direction}到 {floorLabel}";
+
+                int capturedElev = destElev;
+                yield return new FloatMenuOption(label, delegate
+                {
+                    Job job = JobMaker.MakeJob(MLF_JobDefOf.MLF_UseStairs, this);
+                    job.targetB = new IntVec3(capturedElev, 0, 0);
+                    selPawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
+                });
+            }
         }
 
         /// <summary>

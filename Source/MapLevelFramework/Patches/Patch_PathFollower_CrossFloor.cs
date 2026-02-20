@@ -39,17 +39,16 @@ namespace MapLevelFramework.CrossFloor
             // 已经在走楼梯了，不要再拦截
             if (___pawn.CurJobDef == MLF_JobDefOf.MLF_UseStairs) return true;
 
-            // 计算目标楼层方向，找到下一跳的楼梯
-            int currentElev = FloorMapUtility.GetMapElevation(pawnMap);
+            // 电梯模式：直达目标楼层
             int destElev = FloorMapUtility.GetMapElevation(destMap);
-            int nextElev = destElev > currentElev ? currentElev + 1 : currentElev - 1;
 
-            Building_Stairs stairs = FloorMapUtility.FindStairsToElevation(___pawn, pawnMap, nextElev);
+            Building_Stairs stairs = FloorMapUtility.FindStairsToFloor(___pawn, pawnMap, destElev);
             if (stairs == null) return true; // 找不到楼梯，让原版处理（会失败）
 
             // 中断当前 job，开始走楼梯
             // 走楼梯完成后，AI 会重新分配 job，GenClosest 会再次找到目标
             Job stairJob = JobMaker.MakeJob(MLF_JobDefOf.MLF_UseStairs, stairs);
+            stairJob.targetB = new IntVec3(destElev, 0, 0);
             ___pawn.jobs.StartJob(stairJob, JobCondition.InterruptForced);
             return false;
         }
