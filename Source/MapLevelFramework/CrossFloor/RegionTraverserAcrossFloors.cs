@@ -163,20 +163,22 @@ namespace MapLevelFramework.CrossFloor
                     Region stairRegion = regionMap.regionGrid.GetRegionAt_NoRebuild_InvalidAllowed(stairs.Position);
                     if (stairRegion != region) continue;
 
-                    // 获取目标地图和位置
-                    if (!StairTransferUtility.TryGetTransferTarget(stairs, out Map destMap, out IntVec3 destPos))
-                        continue;
+                    // 电梯模型：遍历楼梯井内所有可达楼层
+                    IntVec3 stairPos = stairs.Position;
+                    foreach (Map floorMap in regionMap.BaseMapAndFloorMaps())
+                    {
+                        if (floorMap == regionMap) continue;
+                        if (!FloorMapUtility.HasStairsAtPosition(floorMap, stairPos)) continue;
+                        if (!stairPos.InBounds(floorMap)) continue;
 
-                    if (!destPos.InBounds(destMap)) continue;
+                        Region destRegion = floorMap.regionGrid.GetRegionAt_NoRebuild_InvalidAllowed(stairPos);
+                        if (destRegion == null) continue;
+                        if (closed.Contains(destRegion)) continue;
+                        if ((destRegion.type & traversableRegionTypes) == 0) continue;
 
-                    // 获取目标位置的 Region
-                    Region destRegion = destMap.regionGrid.GetRegionAt_NoRebuild_InvalidAllowed(destPos);
-                    if (destRegion == null) continue;
-                    if (closed.Contains(destRegion)) continue;
-                    if ((destRegion.type & traversableRegionTypes) == 0) continue;
-
-                    open.Enqueue(destRegion);
-                    closed.Add(destRegion);
+                        open.Enqueue(destRegion);
+                        closed.Add(destRegion);
+                    }
                 }
             }
         }

@@ -76,6 +76,7 @@ namespace MapLevelFramework.CrossFloor
             TraverseParms localParams = pawnOnStartMap
                 ? traverseParams
                 : TraverseParms.For(TraverseMode.PassDoors, Danger.Deadly);
+            TraverseParms noPawnParams = TraverseParms.For(TraverseMode.PassDoors, Danger.Deadly);
 
             for (int i = 0; i < allStairs.Count; i++)
             {
@@ -87,23 +88,26 @@ namespace MapLevelFramework.CrossFloor
                     PathEndMode.OnCell, localParams))
                     continue;
 
-                // 楼梯通往哪里？
-                if (!StairTransferUtility.TryGetTransferTarget(stairs, out Map nextMap, out IntVec3 nextPos))
-                    continue;
+                // 电梯模型：遍历楼梯井内所有可达楼层（同位置有楼梯的楼层）
+                IntVec3 stairPos = stairs.Position;
+                foreach (Map floorMap in startMap.BaseMapAndFloorMaps())
+                {
+                    if (floorMap == startMap) continue;
+                    if (!FloorMapUtility.HasStairsAtPosition(floorMap, stairPos)) continue;
 
-                if (nextMap == destMap)
-                {
-                    // 直接到达目标层 → 检查目标层内可达性（无 pawn）
-                    TraverseParms destParams = TraverseParms.For(TraverseMode.PassDoors, Danger.Deadly);
-                    if (destMap.reachability.CanReach(nextPos, destCell,
-                        PathEndMode.OnCell, destParams))
-                        return true;
-                }
-                else
-                {
-                    // 中间层 → 递归检查（多跳，用无 pawn 的 params）
-                    if (CanReachViaStairs(nextMap, nextPos, destMap, destCell, traverseParams))
-                        return true;
+                    if (floorMap == destMap)
+                    {
+                        // 楼梯井直达目标层 → 检查目标层内可达性
+                        if (destMap.reachability.CanReach(stairPos, destCell,
+                            PathEndMode.OnCell, noPawnParams))
+                            return true;
+                    }
+                    else
+                    {
+                        // 目标层不在此楼梯井 → 到中间层后换楼梯井（两跳）
+                        if (CanReachViaStairs(floorMap, stairPos, destMap, destCell, traverseParams))
+                            return true;
+                    }
                 }
             }
 
