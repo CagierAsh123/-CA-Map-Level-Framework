@@ -25,26 +25,41 @@ namespace MapLevelFramework.Patches
             Need_Rest rest = pawn.needs?.rest;
             if (rest == null) return;
 
-            // 有自己的床在其他楼层 → 只在 VeryTired 以上才跨层回去睡
+            // 有自己的床在其他楼层 → 去自己的床
             Building_Bed ownedBed = pawn.ownership?.OwnedBed;
             if (ownedBed != null && ownedBed.Map != pawn.Map
-                && rest.CurCategory >= RestCategory.VeryTired)
+                && ownedBed.Map.IsPartOfFloorSystem())
             {
-                Job stairJob = CrossFloorJobUtility.TryGoToMap(pawn, ownedBed.Map);
-                if (stairJob != null)
+                // 原版给了 job（说明 pawn 该休息了，包括管制时间 Sleep）或者 pawn 已经 Tired
+                if (__result != null || rest.CurCategory >= RestCategory.Tired)
                 {
-                    CrossLevelNeedsUtility.LogNeed(pawn, "休息",
-                        $"自己的床在{FloorMapUtility.GetMapElevation(ownedBed.Map)}F，" +
-                        $"很困了 (category={rest.CurCategory}, level={rest.CurLevelPercentage:P0})");
-                    __result = stairJob;
-                    return;
+                    Job stairJob = CrossFloorJobUtility.TryGoToMap(pawn, ownedBed.Map);
+                    if (stairJob != null)
+                    {
+                        CrossLevelNeedsUtility.LogNeed(pawn, "休息",
+                            $"自己的床在{FloorMapUtility.GetMapElevation(ownedBed.Map)}F，" +
+                            $"去睡觉 (category={rest.CurCategory}, level={rest.CurLevelPercentage:P0})");
+                        __result = stairJob;
+                        return;
+                    }
                 }
             }
 
-            // 当前层找到了床 → 不跨层
-            if (__result != null) return;
-            // 不够困 → 不跨层
-            if (rest.CurCategory < RestCategory.VeryTired) return;
+            // 当前层找到了真正的床（不是睡地板） → 不跨层
+            if (__result != null && __result.targetA.HasThing
+                && __result.targetA.Thing is Building_Bed)
+                return;
+
+            // 判断是否需要去睡觉：
+            //   - 原版给了 job（包括管制 Sleep 时的地板睡觉 job）
+            //   - pawn 已经 Tired
+            //   - 管制时间是 Sleep
+            bool shouldSleep = __result != null
+                || rest.CurCategory >= RestCategory.Tired;
+            if (!shouldSleep && pawn.timetable != null)
+                shouldSleep = pawn.timetable.CurrentAssignment == TimeAssignmentDefOf.Sleep;
+            if (!shouldSleep)
+                return;
 
             // 精确搜索其他楼层的床
             Job job = CrossFloorJobUtility.FindNeedAcrossFloors(
@@ -57,7 +72,8 @@ namespace MapLevelFramework.Patches
             if (job != null)
             {
                 CrossLevelNeedsUtility.LogNeed(pawn, "休息",
-                    $"本层无空床，很困了跨层 (category={rest.CurCategory}, level={rest.CurLevelPercentage:P0})");
+                    $"本层无床，跨层找床 (category={rest.CurCategory}, level={rest.CurLevelPercentage:P0}," +
+                    $" schedule={pawn.timetable?.CurrentAssignment?.label ?? "?"})");
                 __result = job;
             }
         }

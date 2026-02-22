@@ -871,6 +871,10 @@ namespace MapLevelFramework.CrossFloor
                     || HasAnyDesignation(map, DesignationDefOf.SmoothFloor)
                     || HasAnyDesignation(map, DesignationDefOf.SmoothWall))
                 { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 拆除/打磨(Construction)"); return true; }
+
+                // 建造/拆除屋顶
+                if (FloorHasRoofWork(map))
+                { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 屋顶(Construction)"); return true; }
             }
 
             // 搬运
@@ -963,6 +967,34 @@ namespace MapLevelFramework.CrossFloor
         {
             foreach (var _ in map.designationManager.SpawnedDesignationsOfDef(def))
                 return true;
+            return false;
+        }
+
+        /// <summary>
+        /// 检查地图上是否有屋顶建造/拆除工作。
+        /// BuildRoof 区域内有未封顶格子 → 需要建造屋顶。
+        /// NoRoof 区域内有已封顶格子 → 需要拆除屋顶。
+        /// </summary>
+        private static bool FloorHasRoofWork(Map map)
+        {
+            var buildRoof = map.areaManager.BuildRoof;
+            if (buildRoof != null && buildRoof.TrueCount > 0)
+            {
+                foreach (IntVec3 cell in buildRoof.ActiveCells)
+                {
+                    if (!map.roofGrid.Roofed(cell))
+                        return true;
+                }
+            }
+            var noRoof = map.areaManager.NoRoof;
+            if (noRoof != null && noRoof.TrueCount > 0)
+            {
+                foreach (IntVec3 cell in noRoof.ActiveCells)
+                {
+                    if (map.roofGrid.Roofed(cell))
+                        return true;
+                }
+            }
             return false;
         }
 
