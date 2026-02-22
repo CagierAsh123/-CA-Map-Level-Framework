@@ -162,6 +162,13 @@
     <allowOpportunisticPrefix>false</allowOpportunisticPrefix>
   </JobDef>
 
+  <JobDef>
+    <defName>MLF_DeliverResourcesCrossFloor</defName>
+    <driverClass>MapLevelFramework.JobDriver_DeliverResourcesCrossFloor</driverClass>
+    <reportString>搬运建材到其他楼层的蓝图。</reportString>
+    <allowOpportunisticPrefix>false</allowOpportunisticPrefix>
+  </JobDef>
+
   <!-- ========== 精神崩溃：跳楼 ========== -->
 
   <MentalStateDef>

@@ -29,6 +29,7 @@ namespace MapLevelFramework
             }
             if (!list.Contains(stairs))
                 list.Add(stairs);
+            allStairsCacheTick = -1; // 使缓存失效
         }
 
         public static void Deregister(Building_Stairs stairs, Map map)
@@ -42,6 +43,7 @@ namespace MapLevelFramework
                 byElev.Remove(stairs.targetElevation);
             if (byElev.Count == 0)
                 cache.Remove(mapId);
+            allStairsCacheTick = -1; // 使缓存失效
         }
 
         /// <summary>
@@ -82,17 +84,37 @@ namespace MapLevelFramework
 
         /// <summary>
         /// 获取指定地图上的所有楼梯（不区分目标 elevation）。
+        /// 使用 per-map per-tick 缓存，安全支持递归调用。
         /// </summary>
+        private static readonly Dictionary<int, List<Building_Stairs>> allStairsPerMap
+            = new Dictionary<int, List<Building_Stairs>>();
+        private static int allStairsCacheTick = -1;
+
         public static List<Building_Stairs> GetAllStairsOnMap(Map map)
         {
             if (map == null) return null;
-            if (!cache.TryGetValue(map.uniqueID, out var byElev)) return null;
+            int mapId = map.uniqueID;
+            int curTick = Find.TickManager?.TicksGame ?? 0;
+
+            // 新 tick → 清除所有缓存
+            if (curTick != allStairsCacheTick)
+            {
+                allStairsPerMap.Clear();
+                allStairsCacheTick = curTick;
+            }
+
+            // 缓存命中
+            if (allStairsPerMap.TryGetValue(mapId, out var cached))
+                return cached;
+
+            if (!cache.TryGetValue(mapId, out var byElev)) return null;
 
             var result = new List<Building_Stairs>();
             foreach (var list in byElev.Values)
             {
                 result.AddRange(list);
             }
+            allStairsPerMap[mapId] = result;
             return result;
         }
     }

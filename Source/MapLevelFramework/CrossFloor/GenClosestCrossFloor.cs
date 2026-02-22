@@ -51,7 +51,7 @@ namespace MapLevelFramework.CrossFloor
                         continue;
 
                     // 估算距离：到楼梯的距离 + 楼梯到目标的距离
-                    float dist = EstimateCrossFloorDistance(root, map, t.Position, otherMap);
+                    float dist = EstimateCrossFloorDist(root, map, t.Position, otherMap);
                     if (dist < bestDist && dist <= maxDistance)
                     {
                         bestDist = dist;
@@ -67,7 +67,7 @@ namespace MapLevelFramework.CrossFloor
         /// 估算跨楼层距离：pawn 到最近楼梯 + 楼梯到目标。
         /// 楼梯在两层的位置相同，所以只需要计算到楼梯的距离 + 楼梯到目标的距离。
         /// </summary>
-        private static float EstimateCrossFloorDistance(
+        public static float EstimateCrossFloorDist(
             IntVec3 start, Map startMap, IntVec3 dest, Map destMap)
         {
             var allStairs = StairsCache.GetAllStairsOnMap(startMap);

@@ -21,6 +21,13 @@ namespace MapLevelFramework.CrossFloor
             = new Dictionary<int, int>();
         private const int CooldownTicks = 600;
 
+        // 失败楼层追踪：pawnId → (mapId → failTick)
+        // 当 pawn 到达某楼层但原版找不到工作时，标记该楼层为"失败"
+        // P3 会跳过最近失败的楼层，防止反复弹跳
+        private static readonly Dictionary<int, Dictionary<int, int>> failedFloors
+            = new Dictionary<int, Dictionary<int, int>>();
+        private const int FailedFloorCooldown = 2500; // ~42 秒
+
         private static bool DebugLog => MapLevelFrameworkMod.Settings?.debugPathfindingAndJob ?? false;
 
         private static string ElevLabel(int elev)
@@ -59,6 +66,9 @@ namespace MapLevelFramework.CrossFloor
             // ===== 本层有工作：检查其他层是否有更高优先级的 =====
             if (__result.Job != null)
             {
+                // 清除当前楼层的失败标记
+                ClearFailedFloor(pawn.thingIDNumber, pawnMap.uniqueID);
+
                 int localPri = GetJobPriority(pawn, __result.Job);
                 if (localPri <= 1) return; // 已是最高优先级，不用比
 
@@ -74,30 +84,21 @@ namespace MapLevelFramework.CrossFloor
             }
 
             // ===== 本层无工作：跨层扫描 =====
+            // 标记当前楼层为"失败"（原版找不到工作），防止其他层 P3 把 pawn 送回来
+            MarkFloorFailed(pawn.thingIDNumber, pawnMap.uniqueID, curTick);
             LogPJ(pawn, $"在{ElevLabel(pawnElev)}，本层无工作，开始跨层扫描");
 
-            // P1: 本层材料 → 其他层蓝图需要 → HaulToStairs
-            Job haulJob = TryCreateHaulToStairsJob(pawn, pawnMap);
-            if (haulJob != null)
+            // P1: 本层有材料，其他层蓝图需要 → 封装投递 job（全程手持）
+            Job deliverJob = TryCreateCrossFloorDeliverJob(pawn, pawnMap);
+            if (deliverJob != null)
             {
-                LogPJ(pawn, $"P1命中→搬运{haulJob.targetA.Thing?.LabelShort}到楼梯");
+                LogPJ(pawn, $"P1命中→封装投递 {deliverJob.targetA.Thing?.LabelShort}");
                 lastCrossFloorTick[pawn.thingIDNumber] = curTick;
-                __result = new ThinkResult(haulJob, __instance, null, false);
+                __result = new ThinkResult(deliverJob, __instance, null, false);
                 return;
             }
 
-            // P2: 本层蓝图缺材料，其他层有 → UseStairs 去取
-            Job fetchJob = TryCreateFetchMaterialJob(pawn, pawnMap);
-            if (fetchJob != null)
-            {
-                int destElev = fetchJob.targetB.IsValid ? fetchJob.targetB.Cell.x : -999;
-                LogPJ(pawn, $"P2命中→去{ElevLabel(destElev)}取材料");
-                lastCrossFloorTick[pawn.thingIDNumber] = curTick;
-                __result = new ThinkResult(fetchJob, __instance, null, false);
-                return;
-            }
-
-            // P3: 本层无工作 → 去有工作的楼层
+            // P3: 本层无工作 → 去有工作的楼层（智能过滤）
             Job goJob = TryCreateGoToWorkFloorJob(pawn, pawnMap);
             if (goJob != null)
             {
@@ -108,7 +109,7 @@ namespace MapLevelFramework.CrossFloor
                 return;
             }
 
-            LogPJ(pawn, "P1/P2/P3均未命中，无跨层工作");
+            LogPJ(pawn, "P3未命中，无跨层工作");
             // 扫描完毕，设置冷却（即使没找到，也避免频繁扫描）
             lastCrossFloorTick[pawn.thingIDNumber] = curTick;
         }
@@ -142,6 +143,11 @@ namespace MapLevelFramework.CrossFloor
             foreach (Map otherMap in pawnMap.BaseMapAndFloorMaps())
             {
                 if (otherMap == pawnMap) continue;
+
+                // 跳过最近失败的楼层
+                int curTick = Find.TickManager?.TicksGame ?? 0;
+                if (IsFloorFailed(pawn.thingIDNumber, otherMap.uniqueID, curTick))
+                    continue;
 
                 // 遍历工作类型，只看优先级比本层当前 job 更高的
                 Thing target = FindWorkWithPriorityBetterThan(otherMap, pawn, bestPri);
@@ -196,15 +202,20 @@ namespace MapLevelFramework.CrossFloor
                 }
             }
 
-            // 建造
+            // 建造 — 智能过滤：已完成框架、材料已齐的蓝图、拆除
             if (CheckWorkType(ws, WorkTypeDefOf.Construction, maxPri))
             {
-                Thing t = FirstSpawnedThing(map, ThingRequestGroup.Blueprint);
-                if (t != null) return t;
-                t = FirstSpawnedThing(map, ThingRequestGroup.BuildingFrame);
-                if (t != null) return t;
-                t = FirstDesignationTarget(map, DesignationDefOf.Deconstruct);
-                if (t != null) return t;
+                // 已完成框架
+                var frames = map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame);
+                for (int fi = 0; fi < frames.Count; fi++)
+                {
+                    if (frames[fi].IsForbidden(pawn)) continue;
+                    Frame frame = frames[fi] as Frame;
+                    if (frame != null && frame.IsCompleted()) return frames[fi];
+                }
+                // 拆除
+                Thing dt = FirstDesignationTarget(map, DesignationDefOf.Deconstruct);
+                if (dt != null) return dt;
             }
 
             // 搬运
@@ -267,7 +278,91 @@ namespace MapLevelFramework.CrossFloor
         }
 
         /// <summary>
-        /// P1: 本层有材料，其他层需要 → 搬到楼梯传送过去。
+        /// P1（新版）: 本层有材料，其他层蓝图/框架需要 → 封装投递 job。
+        /// 全程手持材料：拿起 → 走楼梯 → 传送 → 交给原版 HaulToContainer。
+        /// </summary>
+        private static Job TryCreateCrossFloorDeliverJob(Pawn pawn, Map pawnMap)
+        {
+            if (!pawn.workSettings.WorkIsActive(WorkTypeDefOf.Construction)
+                && !pawn.workSettings.WorkIsActive(WorkTypeDefOf.Hauling))
+                return null;
+
+            foreach (Map otherMap in pawnMap.BaseMapAndFloorMaps())
+            {
+                if (otherMap == pawnMap) continue;
+
+                // 扫描其他层的蓝图和框架
+                var constructibles = otherMap.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint);
+                var frames = otherMap.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame);
+
+                Job job = TryScanConstructibles(pawn, pawnMap, otherMap, constructibles);
+                if (job != null) return job;
+
+                job = TryScanConstructibles(pawn, pawnMap, otherMap, frames);
+                if (job != null) return job;
+            }
+            return null;
+        }
+
+        private static Job TryScanConstructibles(
+            Pawn pawn, Map pawnMap, Map otherMap, List<Thing> constructibles)
+        {
+            int otherElev = FloorMapUtility.GetMapElevation(otherMap);
+            for (int ci = 0; ci < constructibles.Count; ci++)
+            {
+                IConstructible c = constructibles[ci] as IConstructible;
+                if (c == null) continue;
+                if (constructibles[ci].IsForbidden(pawn)) continue;
+
+                var costs = c.TotalMaterialCost();
+                for (int i = 0; i < costs.Count; i++)
+                {
+                    int needed = c.ThingCountNeeded(costs[i].thingDef);
+                    if (needed <= 0) continue;
+
+                    // 目标层已有足够散落材料？跳过（不用 ThingsAvailableAnywhere，它在子地图上有误报）
+                    int looseOnDest = CountLooseMaterial(otherMap, costs[i].thingDef);
+                    if (looseOnDest >= needed)
+                        continue;
+                    int actualNeeded = needed - looseOnDest;
+
+                    // 本层有这个材料？
+                    Thing material = FindMaterialOnMap(pawnMap, pawn, costs[i].thingDef);
+                    if (material == null)
+                    {
+                        LogPJ(pawn, $"  P1: {ElevLabel(otherElev)}蓝图需要{costs[i].thingDef.label}x{actualNeeded}，本层找不到");
+                        continue;
+                    }
+
+                    // 找到楼梯
+                    Building_Stairs stairs =
+                        FloorMapUtility.FindStairsToFloor(pawn, pawnMap, otherElev);
+                    if (stairs == null) break; // 这层没楼梯井连通，跳过整层
+
+                    int toCarry = System.Math.Min(actualNeeded, material.stackCount);
+                    toCarry = System.Math.Min(toCarry,
+                        pawn.carryTracker.MaxStackSpaceEver(material.def));
+
+                    LogPJ(pawn, $"  P1命中: 搬{material.LabelShort}x{toCarry}→{ElevLabel(otherElev)} 给{constructibles[ci].LabelShort}@{constructibles[ci].Position}");
+
+                    IntVec3 encoded = new IntVec3(
+                        otherElev,
+                        constructibles[ci].Position.x,
+                        constructibles[ci].Position.z);
+
+                    Job job = JobMaker.MakeJob(
+                        MLF_JobDefOf.MLF_DeliverResourcesCrossFloor,
+                        material, stairs);
+                    job.targetC = encoded;
+                    job.count = toCarry;
+                    return job;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// P1（旧版，保留备用）: 本层有材料，其他层需要 → 搬到楼梯传送过去。
         /// 覆盖：建造材料、燃料、Bill 原料、药品、囚犯食物。
         /// </summary>
         private static Job TryCreateHaulToStairsJob(Pawn pawn, Map pawnMap)
@@ -361,10 +456,19 @@ namespace MapLevelFramework.CrossFloor
             {
                 if (otherMap == pawnMap) continue;
 
+                int otherElev = FloorMapUtility.GetMapElevation(otherMap);
+
+                // 跳过最近失败的楼层（防止弹跳）
+                int curTick = Find.TickManager?.TicksGame ?? 0;
+                if (IsFloorFailed(pawn.thingIDNumber, otherMap.uniqueID, curTick))
+                {
+                    LogPJ(pawn, $"  {ElevLabel(otherElev)}最近失败，跳过");
+                    continue;
+                }
+
                 Thing workTarget = FindFirstWorkTarget(otherMap, pawn);
                 if (workTarget == null && !FloorHasWork(otherMap, pawn)) continue;
 
-                int otherElev = FloorMapUtility.GetMapElevation(otherMap);
                 int dist = Math.Abs(otherElev - currentElev);
                 if (dist < bestElevDist)
                 {
@@ -407,13 +511,20 @@ namespace MapLevelFramework.CrossFloor
             var ws = pawn.workSettings;
             if (ws == null) return null;
 
-            // 建造（蓝图优先，然后框架）
+            // 建造 — 只返回可执行的目标（已完成框架、拆除）
             if (ws.WorkIsActive(WorkTypeDefOf.Construction))
             {
-                Thing t = FirstSpawnedThing(map, ThingRequestGroup.Blueprint);
-                if (t != null) return t;
-                t = FirstSpawnedThing(map, ThingRequestGroup.BuildingFrame);
-                if (t != null) return t;
+                // 已完成框架
+                var frames = map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame);
+                for (int fi = 0; fi < frames.Count; fi++)
+                {
+                    if (frames[fi].IsForbidden(pawn)) continue;
+                    Frame frame = frames[fi] as Frame;
+                    if (frame != null && frame.IsCompleted()) return frames[fi];
+                }
+                // 拆除
+                Thing dt = FirstDesignationTarget(map, DesignationDefOf.Deconstruct);
+                if (dt != null) return dt;
             }
 
             // 搬运
@@ -422,7 +533,10 @@ namespace MapLevelFramework.CrossFloor
                 var haulables = map.listerHaulables.ThingsPotentiallyNeedingHauling();
                 if (haulables.Count > 0)
                 {
-                    foreach (Thing h in haulables) return h;
+                    foreach (Thing h in haulables)
+                    {
+                        if (!h.IsForbidden(pawn)) return h;
+                    }
                 }
             }
 
@@ -430,7 +544,13 @@ namespace MapLevelFramework.CrossFloor
             if (ws.WorkIsActive(WorkTypeDefOf.Cleaning))
             {
                 var filth = map.listerFilthInHomeArea?.FilthInHomeArea;
-                if (filth != null && filth.Count > 0) return filth[0];
+                if (filth != null && filth.Count > 0)
+                {
+                    for (int i = 0; i < filth.Count; i++)
+                    {
+                        if (!filth[i].IsForbidden(pawn)) return filth[i];
+                    }
+                }
             }
 
             // 开采（从 designation 获取 Thing）
@@ -440,12 +560,7 @@ namespace MapLevelFramework.CrossFloor
                 if (t != null) return t;
             }
 
-            // 拆除/打磨
-            if (ws.WorkIsActive(WorkTypeDefOf.Construction))
-            {
-                Thing t = FirstDesignationTarget(map, DesignationDefOf.Deconstruct);
-                if (t != null) return t;
-            }
+            // 拆除/打磨 — 已在上面的 Construction 块中处理
 
             // 割除/收获
             if (ws.WorkIsActive(WorkTypeDefOf.PlantCutting))
@@ -721,15 +836,44 @@ namespace MapLevelFramework.CrossFloor
 
             int elev = FloorMapUtility.GetMapElevation(map);
 
-            // 建造（蓝图、框架）
+            // 建造（蓝图、框架）— 智能过滤：只有材料已齐或不需要材料时才算
             if (ws.WorkIsActive(WorkTypeDefOf.Construction))
             {
-                if (map.listerThings.ThingsInGroup(
-                        ThingRequestGroup.Blueprint).Count > 0)
-                { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 蓝图(Construction)"); return true; }
-                if (map.listerThings.ThingsInGroup(
-                        ThingRequestGroup.BuildingFrame).Count > 0)
-                { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 框架(Construction)"); return true; }
+                // 已完成的框架（可直接 FinishFrame）
+                var frames = map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame);
+                for (int i = 0; i < frames.Count; i++)
+                {
+                    if (frames[i].IsForbidden(pawn)) continue;
+                    Frame frame = frames[i] as Frame;
+                    if (frame != null && frame.IsCompleted())
+                    { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 已完成框架(FinishFrame)"); return true; }
+                }
+
+                // 蓝图 — 只有本层有材料且未被禁止时才算（否则由封装 job 搬材料）
+                var blueprints = map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint);
+                for (int i = 0; i < blueprints.Count; i++)
+                {
+                    if (blueprints[i].IsForbidden(pawn)) continue;
+                    IConstructible c = blueprints[i] as IConstructible;
+                    if (c == null) continue;
+                    if (HasAllMaterialsOnMap(map, c, pawn))
+                    { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 蓝图材料已齐(Construction)"); return true; }
+                }
+
+                // 零成本蓝图
+                for (int i = 0; i < blueprints.Count; i++)
+                {
+                    if (blueprints[i].IsForbidden(pawn)) continue;
+                    IConstructible c = blueprints[i] as IConstructible;
+                    if (c != null && c.TotalMaterialCost().Count == 0)
+                    { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 零成本蓝图(Construction)"); return true; }
+                }
+
+                // 拆除/打磨（不需要材料）
+                if (HasAnyDesignation(map, DesignationDefOf.Deconstruct)
+                    || HasAnyDesignation(map, DesignationDefOf.SmoothFloor)
+                    || HasAnyDesignation(map, DesignationDefOf.SmoothWall))
+                { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 拆除/打磨(Construction)"); return true; }
             }
 
             // 搬运
@@ -775,14 +919,7 @@ namespace MapLevelFramework.CrossFloor
                 { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 开采(Mining)"); return true; }
             }
 
-            // 建造类指示（拆除、打磨）
-            if (ws.WorkIsActive(WorkTypeDefOf.Construction))
-            {
-                if (HasAnyDesignation(map, DesignationDefOf.Deconstruct)
-                    || HasAnyDesignation(map, DesignationDefOf.SmoothFloor)
-                    || HasAnyDesignation(map, DesignationDefOf.SmoothWall))
-                { LogPJ(pawn, $"  {ElevLabel(elev)}有工作: 拆除/打磨(Construction)"); return true; }
-            }
+            // 建造类指示（拆除、打磨）— 已在上面的 Construction 块中处理
 
             // 种植类指示（割除、收获）
             if (ws.WorkIsActive(WorkTypeDefOf.PlantCutting))
@@ -832,9 +969,59 @@ namespace MapLevelFramework.CrossFloor
             return false;
         }
 
+        /// <summary>
+        /// 检查蓝图/框架所需的所有材料是否在指定地图上可用。
+        /// 用于 P3 智能过滤：只有材料已齐才派遣 pawn 过去。
+        /// 使用 CountLooseMaterial 直接计数，避免 ThingsAvailableAnywhere 在子地图上的误报。
+        /// </summary>
+        private static bool HasAllMaterialsOnMap(Map map, IConstructible c, Pawn pawn)
+        {
+            var costs = c.TotalMaterialCost();
+            for (int i = 0; i < costs.Count; i++)
+            {
+                int needed = c.ThingCountNeeded(costs[i].thingDef);
+                if (needed <= 0) continue;
+                int loose = CountLooseMaterial(map, costs[i].thingDef);
+                if (loose < needed)
+                    return false;
+            }
+            return true;
+        }
+
+        // ========== 失败楼层追踪 ==========
+
+        private static void MarkFloorFailed(int pawnId, int mapId, int tick)
+        {
+            if (!failedFloors.TryGetValue(pawnId, out var fails))
+            {
+                fails = new Dictionary<int, int>();
+                failedFloors[pawnId] = fails;
+            }
+            fails[mapId] = tick;
+        }
+
+        private static void ClearFailedFloor(int pawnId, int mapId)
+        {
+            if (failedFloors.TryGetValue(pawnId, out var fails))
+                fails.Remove(mapId);
+        }
+
+        private static bool IsFloorFailed(int pawnId, int mapId, int curTick)
+        {
+            if (!failedFloors.TryGetValue(pawnId, out var fails)) return false;
+            if (!fails.TryGetValue(mapId, out int failTick)) return false;
+            if (curTick - failTick >= FailedFloorCooldown)
+            {
+                fails.Remove(mapId);
+                return false;
+            }
+            return true;
+        }
+
         public static void ClearCooldowns()
         {
             lastCrossFloorTick.Clear();
+            failedFloors.Clear();
         }
     }
 }

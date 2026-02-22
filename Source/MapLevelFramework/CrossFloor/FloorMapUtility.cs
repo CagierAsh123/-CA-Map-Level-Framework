@@ -93,6 +93,14 @@ namespace MapLevelFramework.CrossFloor
 
         // ========== 电梯模式：楼梯井 ==========
 
+        // FindStairsToFloor 缓存：避免同一 tick 内重复查找
+        // key = (pawnId, mapId, targetElev), value = (stairs, tick)
+        private static int _fstfCachePawnId;
+        private static int _fstfCacheMapId;
+        private static int _fstfCacheTargetElev;
+        private static int _fstfCacheTick;
+        private static Building_Stairs _fstfCacheResult;
+
         /// <summary>
         /// 获取指定 elevation 对应的 Map。elevation=0 返回基地图。
         /// </summary>
@@ -150,26 +158,31 @@ namespace MapLevelFramework.CrossFloor
         /// <summary>
         /// 电梯模式：在当前地图上找到能直达目标楼层的最近可达楼梯。
         /// 判断依据：当前地图的楼梯位置在目标楼层也有楼梯（同一楼梯井）。
+        /// 结果缓存 60 tick，避免同一扫描周期内重复查找。
         /// </summary>
         public static Building_Stairs FindStairsToFloor(Pawn pawn, Map pawnMap, int targetElevation)
         {
-            bool debug = MapLevelFrameworkMod.Settings?.debugPathfindingAndJob ?? false;
+            int curTick = Find.TickManager?.TicksGame ?? 0;
+            int pawnId = pawn?.thingIDNumber ?? 0;
+            int mapId = pawnMap?.uniqueID ?? -1;
+
+            // 缓存命中：同一 pawn、同一地图、同一目标层、60 tick 内
+            if (pawnId == _fstfCachePawnId
+                && mapId == _fstfCacheMapId
+                && targetElevation == _fstfCacheTargetElev
+                && curTick - _fstfCacheTick < 60
+                && (_fstfCacheResult == null || _fstfCacheResult.Spawned))
+            {
+                return _fstfCacheResult;
+            }
 
             Map targetMap = GetMapForElevation(pawnMap, targetElevation);
             if (targetMap == null || targetMap == pawnMap)
-            {
-                if (debug) Log.Message($"【MLF】FindStairsToFloor: targetMap={targetMap?.uniqueID.ToString() ?? "null"}, pawnMap={pawnMap.uniqueID}, targetElev={targetElevation} → 失败(targetMap无效)");
                 return null;
-            }
 
             var allStairs = StairsCache.GetAllStairsOnMap(pawnMap);
             if (allStairs == null || allStairs.Count == 0)
-            {
-                if (debug) Log.Message($"【MLF】FindStairsToFloor: pawnMap={pawnMap.uniqueID} 无楼梯");
                 return null;
-            }
-
-            if (debug) Log.Message($"【MLF】FindStairsToFloor: pawnMap(elev={GetMapElevation(pawnMap)})→targetElev={targetElevation}, targetMap={targetMap.uniqueID}, 本层楼梯数={allStairs.Count}");
 
             Building_Stairs best = null;
             float bestDist = float.MaxValue;
@@ -178,12 +191,7 @@ namespace MapLevelFramework.CrossFloor
             {
                 var s = allStairs[i];
                 if (!s.Spawned) continue;
-
-                bool hasAtTarget = HasStairsAtPosition(targetMap, s.Position);
-                if (debug) Log.Message($"【MLF】  楼梯[{i}] pos={s.Position} targetElev={s.targetElevation} → 目标层同位置有楼梯={hasAtTarget}");
-
-                if (!hasAtTarget) continue;
-
+                if (!HasStairsAtPosition(targetMap, s.Position)) continue;
                 if (!pawn.CanReach(s, PathEndMode.OnCell, Danger.Deadly)) continue;
 
                 float dist = s.Position.DistanceToSquared(pawn.Position);
@@ -194,7 +202,17 @@ namespace MapLevelFramework.CrossFloor
                 }
             }
 
-            if (debug) Log.Message($"【MLF】FindStairsToFloor: 结果={best?.Position.ToString() ?? "null"}");
+            // 更新缓存
+            _fstfCachePawnId = pawnId;
+            _fstfCacheMapId = mapId;
+            _fstfCacheTargetElev = targetElevation;
+            _fstfCacheTick = curTick;
+            _fstfCacheResult = best;
+
+            bool debug = MapLevelFrameworkMod.Settings?.debugPathfindingAndJob ?? false;
+            if (debug)
+                Log.Message($"【MLF】FindStairsToFloor: elev={GetMapElevation(pawnMap)}→{targetElevation}, 结果={best?.Position.ToString() ?? "null"}");
+
             return best;
         }
     }

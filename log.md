@@ -1,232 +1,2280 @@
-【MLF】寻路与job检测-Hayhouse—在1F，本层无工作，开始跨层扫描
+\[MLF] Patched SectionLayer\_SunShadows.Regenerate OK.
 
-【MLF】寻路与job检测-Hayhouse—  2F有工作: 搬运(Hauling)
+\[MLF] Patched SectionLayer\_SunShadows.DrawLayer OK.
 
-【MLF】寻路与job检测-Hayhouse—P3命中→去2F找工作
+\[MLF] Patched SectionLayer\_Zones.Regenerate OK.
 
-【MLF】寻路与job检测-Hayhouse—执行UseStairs: 1F→2F
+\[MLF] Initialized.
 
-【MLF】寻路与job检测-Hayhouse—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
+\[MLF] Registered level elevation=1, area=(137,119,153,131), mapSize=(250, 1, 250), tag=none
 
-【MLF】寻路与job检测-Hayhouse—执行UseStairs: 2F→1F
+\[MLF] Created level 1: 221 cells, bounds=(137,119,153,131)
 
-【MLF】寻路与job检测-Hayhouse—在1F，冷却中(3/600)，跳过
+\[MLF] Focus switched: 0 -> 1
 
-【MLF】寻路与job检测-Havalina—在1F，本层无工作，开始跨层扫描
+\[MLF] SunShadows Prefix intercepted regeneration.
 
-【MLF】寻路与job检测-Havalina—  2F有工作: 搬运(Hauling)
+\[MLF] Focus switched: 1 -> 0
 
-【MLF】寻路与job检测-Havalina—P3命中→去2F找工作
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Sebastien—在1F，本层无工作，开始跨层扫描
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Sebastien—  2F有工作: 搬运(Hauling)
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Sebastien—P3命中→去2F找工作
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Sebastien—执行UseStairs: 1F→2F
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Havalina—执行UseStairs: 1F→2F
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Havalina—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Havalina—执行UseStairs: 2F→1F
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Havalina—在1F，冷却中(29/600)，跳过
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Sebastien—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Sebastien—执行UseStairs: 2F→1F
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Sebastien—在1F，冷却中(28/600)，跳过
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Havalina—在1F，冷却中(81/600)，跳过
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Sebastien—在1F，冷却中(80/600)，跳过
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Hayhouse—在1F，冷却中(198/600)，跳过
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Sebastien—在1F，冷却中(279/600)，跳过
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Havalina—在1F，冷却中(304/600)，跳过
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Sebastien—在1F，冷却中(331/600)，跳过
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Hayhouse—在1F，冷却中(452/600)，跳过
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Hayhouse—在1F，冷却中(504/600)，跳过
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Sebastien—在1F，本层无工作，开始跨层扫描
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Sebastien—  2F有工作: 搬运(Hauling)
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Sebastien—P3命中→去2F找工作
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Havalina—在1F，本层无工作，开始跨层扫描
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Havalina—  2F有工作: 搬运(Hauling)
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Havalina—P3命中→去2F找工作
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Sebastien—执行UseStairs: 1F→2F
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Sebastien—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
+【MLF】寻路与job检测-Jake—在1F，本层无工作，开始跨层扫描
 
-【MLF】寻路与job检测-Sebastien—执行UseStairs: 2F→1F
+【MLF】寻路与job检测-Jake—  2F有工作: 蓝图材料已齐(Construction)
 
-【MLF】寻路与job检测-Sebastien—在1F，冷却中(28/600)，跳过
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Havalina—执行UseStairs: 1F→2F
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Havalina—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Havalina—执行UseStairs: 2F→1F
+【MLF】寻路与job检测-Jake—P3命中→去2F找工作
 
-【MLF】寻路与job检测-Havalina—在1F，冷却中(33/600)，跳过
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Sebastien—在1F，冷却中(80/600)，跳过
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Hayhouse—在1F，本层无工作，开始跨层扫描
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Hayhouse—  2F有工作: 搬运(Hauling)
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Hayhouse—P3命中→去2F找工作
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Hayhouse—执行UseStairs: 1F→2F
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Hayhouse—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Hayhouse—执行UseStairs: 2F→1F
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Hayhouse—在1F，冷却中(18/600)，跳过
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Hayhouse—在1F，冷却中(70/600)，跳过
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Sebastien—在1F，冷却中(271/600)，跳过
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Havalina—在1F，冷却中(288/600)，跳过
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Sebastien—在1F，冷却中(323/600)，跳过
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Sebastien—在1F，冷却中(508/600)，跳过
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Hayhouse—在1F，冷却中(414/600)，跳过
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Sebastien—在1F，冷却中(560/600)，跳过
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Havalina—在1F，冷却中(540/600)，跳过
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Havalina—在1F，本层无工作，开始跨层扫描
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Havalina—  2F有工作: 搬运(Hauling)
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Havalina—P3命中→去2F找工作
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Havalina—执行UseStairs: 1F→2F
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Havalina—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Havalina—执行UseStairs: 2F→1F
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Havalina—在1F，冷却中(6/600)，跳过
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Havalina—在1F，冷却中(58/600)，跳过
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Hayhouse—在1F，本层无工作，开始跨层扫描
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Hayhouse—  2F有工作: 搬运(Hauling)
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Hayhouse—P3命中→去2F找工作
+【MLF】寻路与job检测-Inalas—在1F，本层无工作，开始跨层扫描
 
-【MLF】寻路与job检测-Hayhouse—执行UseStairs: 1F→2F
+【MLF】寻路与job检测-Inalas—  2F无匹配工作
 
-【MLF】寻路与job检测-Hayhouse—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
+【MLF】寻路与job检测-Inalas—P3未命中，无跨层工作
 
-【MLF】寻路与job检测-Hayhouse—执行UseStairs: 2F→1F
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Hayhouse—在1F，冷却中(25/600)，跳过
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Sebastien—在1F，本层无工作，开始跨层扫描
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Sebastien—  2F有工作: 搬运(Hauling)
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Sebastien—P3命中→去2F找工作
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Sebastien—执行UseStairs: 1F→2F
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Sebastien—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Sebastien—执行UseStairs: 2F→1F
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Sebastien—在1F，冷却中(27/600)，跳过
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Havalina—在1F，冷却中(210/600)，跳过
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Sebastien—在1F，冷却中(79/600)，跳过
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Havalina—在1F，冷却中(262/600)，跳过
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Hayhouse—在1F，冷却中(225/600)，跳过
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Sebastien—在1F，冷却中(267/600)，跳过
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Sebastien—在1F，冷却中(319/600)，跳过
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Hayhouse—在1F，冷却中(398/600)，跳过
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Havalina—在1F，冷却中(480/600)，跳过
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Havalina—在1F，冷却中(532/600)，跳过
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Sebastien—在1F，冷却中(536/600)，跳过
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Hayhouse—在1F，本层无工作，开始跨层扫描
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Hayhouse—  2F有工作: 搬运(Hauling)
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Hayhouse—P3命中→去2F找工作
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Hayhouse—执行UseStairs: 1F→2F
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Sebastien—在1F，冷却中(588/600)，跳过
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Hayhouse—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Hayhouse—执行UseStairs: 2F→1F
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Hayhouse—在1F，冷却中(9/600)，跳过
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Hayhouse—在1F，冷却中(61/600)，跳过
+【MLF】寻路与job检测-Serrano—在1F，本层无工作，开始跨层扫描
 
-【MLF】寻路与job检测-Havalina—在1F，本层无工作，开始跨层扫描
+【MLF】寻路与job检测-Serrano—  2F无匹配工作
 
-【MLF】寻路与job检测-Havalina—  2F有工作: 搬运(Hauling)
+【MLF】寻路与job检测-Serrano—P3未命中，无跨层工作
 
-【MLF】寻路与job检测-Havalina—P3命中→去2F找工作
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Havalina—执行UseStairs: 1F→2F
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Havalina—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Havalina—执行UseStairs: 2F→1F
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Havalina—在1F，冷却中(27/600)，跳过
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Havalina—在1F，冷却中(79/600)，跳过
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Sebastien—在1F，本层无工作，开始跨层扫描
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Sebastien—  2F有工作: 搬运(Hauling)
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Sebastien—P3命中→去2F找工作
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Hayhouse—在1F，冷却中(256/600)，跳过
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Sebastien—执行UseStairs: 1F→2F
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
 
-【MLF】寻路与job检测-Sebastien—需求跨层: 食物，原因: 本层无食物，去其他层，当前楼层: 1F
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
-【MLF】寻路与job检测-Sebastien—执行UseStairs: 2F→1F
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
 
-【MLF】寻路与job检测-Sebastien—在1F，冷却中(24/600)，跳过
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Jake—执行UseStairs: 1F→2F
+
+\[MLF] Transferred Jake to map 1 at (138, 0, 120)
+
+【MLF】寻路与job检测-Jake—在2F，本层无工作，开始跨层扫描
+
+【MLF】FindStairsToFloor: pawnMap(elev=1)→targetElev=0, targetMap=0, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=2 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Jake—P3: 设置意图 → Alina, 挖掘者（死亡） at (133, 0, 39)
+
+【MLF】寻路与job检测-Jake—P3命中→去1F找工作
+
+【MLF】寻路与job检测-Jake—执行UseStairs: 2F→1F
+
+\[MLF] Transferred Jake to map 0 at (138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Serrano—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Serrano—  2F无匹配工作
+
+【MLF】寻路与job检测-Serrano—P3未命中，无跨层工作
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Inalas—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Inalas—  2F无匹配工作
+
+【MLF】寻路与job检测-Inalas—P3未命中，无跨层工作
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Serrano—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Serrano—  2F无匹配工作
+
+【MLF】寻路与job检测-Serrano—P3未命中，无跨层工作
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Jake—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Jake—  2F有工作: 蓝图材料已齐(Construction)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Jake—P3命中→去2F找工作
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Jake—执行UseStairs: 1F→2F
+
+\[MLF] Transferred Jake to map 1 at (138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Serrano—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Serrano—  2F无匹配工作
+
+【MLF】寻路与job检测-Serrano—P3未命中，无跨层工作
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Inalas—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Inalas—  2F无匹配工作
+
+【MLF】寻路与job检测-Inalas—P3未命中，无跨层工作
+
+【MLF】寻路与job检测-Jake—在2F，本层无工作，开始跨层扫描
+
+【MLF】FindStairsToFloor: pawnMap(elev=1)→targetElev=0, targetMap=0, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=2 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Jake—P3: 设置意图 → Alina, 挖掘者（死亡） at (133, 0, 39)
+
+【MLF】寻路与job检测-Jake—P3命中→去1F找工作
+
+【MLF】寻路与job检测-Jake—执行UseStairs: 2F→1F
+
+\[MLF] Transferred Jake to map 0 at (138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+\[MLF] Focus switched: 0 -> 1
+
+\[MLF] Focus switched: 1 -> 0
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Jake—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Jake—  2F有工作: 蓝图材料已齐(Construction)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Jake—P3命中→去2F找工作
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Inalas—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Inalas—  2F无匹配工作
+
+【MLF】寻路与job检测-Inalas—P3未命中，无跨层工作
+
+【MLF】寻路与job检测-Jake—执行UseStairs: 1F→2F
+
+\[MLF] Transferred Jake to map 1 at (138, 0, 120)
+
+【MLF】寻路与job检测-Jake—在2F，本层无工作，开始跨层扫描
+
+【MLF】FindStairsToFloor: pawnMap(elev=1)→targetElev=0, targetMap=0, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=2 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Jake—P3: 设置意图 → Alina, 挖掘者（死亡） at (133, 0, 39)
+
+【MLF】寻路与job检测-Jake—P3命中→去1F找工作
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Serrano—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Serrano—  2F无匹配工作
+
+【MLF】寻路与job检测-Serrano—P3未命中，无跨层工作
+
+【MLF】寻路与job检测-Jake—执行UseStairs: 2F→1F
+
+\[MLF] Transferred Jake to map 0 at (138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Inalas—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Inalas—  2F无匹配工作
+
+【MLF】寻路与job检测-Inalas—P3未命中，无跨层工作
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Serrano—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Serrano—  2F无匹配工作
+
+【MLF】寻路与job检测-Serrano—P3未命中，无跨层工作
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Inalas—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Inalas—  2F无匹配工作
+
+【MLF】寻路与job检测-Inalas—P3未命中，无跨层工作
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Serrano—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Serrano—  2F无匹配工作
+
+【MLF】寻路与job检测-Serrano—P3未命中，无跨层工作
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Jake—在1F，本层无工作，开始跨层扫描
+
+【MLF】寻路与job检测-Jake—  2F有工作: 蓝图材料已齐(Construction)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Jake—P3命中→去2F找工作
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Jake—执行UseStairs: 1F→2F
+
+\[MLF] Transferred Jake to map 1 at (138, 0, 120)
+
+【MLF】寻路与job检测-Jake—在2F，本层无工作，开始跨层扫描
+
+【MLF】FindStairsToFloor: pawnMap(elev=1)→targetElev=0, targetMap=0, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=2 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】寻路与job检测-Jake—P3: 设置意图 → Alina, 挖掘者（死亡） at (133, 0, 39)
+
+【MLF】寻路与job检测-Jake—P3命中→去1F找工作
+
+【MLF】寻路与job检测-Jake—执行UseStairs: 2F→1F
+
+\[MLF] Transferred Jake to map 0 at (138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
+
+【MLF】FindStairsToFloor: pawnMap(elev=0)→targetElev=1, targetMap=1, 本层楼梯数=1
+
+【MLF】  楼梯\[0] pos=(138, 0, 120) targetElev=1 → 目标层同位置有楼梯=True
+
+【MLF】FindStairsToFloor: 结果=(138, 0, 120)
 
