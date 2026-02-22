@@ -18,6 +18,9 @@ namespace MapLevelFramework.CrossFloor
             = new Dictionary<long, (int, bool)>();
         private const int CacheDurationTicks = 120;
 
+        // 递归防环：记录已访问的 mapId，避免 CanReachViaStairs 无限递归
+        private static readonly HashSet<int> visitedMaps = new HashSet<int>();
+
         /// <summary>
         /// 跨楼层可达性检查。
         /// </summary>
@@ -45,6 +48,7 @@ namespace MapLevelFramework.CrossFloor
 
             if (working) return false;
             working = true;
+            visitedMaps.Clear();
             try
             {
                 bool result = CanReachViaStairs(startMap, start, destMap, destCell, traverseParams);
@@ -54,17 +58,23 @@ namespace MapLevelFramework.CrossFloor
             finally
             {
                 working = false;
+                visitedMaps.Clear();
             }
         }
 
         /// <summary>
         /// 分段检查：pawn 能到达当前层的楼梯 → 楼梯目标层能到达 dest。
+        /// 使用 visitedMaps 防止无限递归（A→B→A→B→...）。
         /// </summary>
         private static bool CanReachViaStairs(
             Map startMap, IntVec3 start,
             Map destMap, IntVec3 destCell,
             TraverseParms traverseParams)
         {
+            // 防环：标记当前层已访问
+            if (!visitedMaps.Add(startMap.uniqueID))
+                return false;
+
             // 获取当前地图上所有楼梯
             var allStairs = StairsCache.GetAllStairsOnMap(startMap);
             if (allStairs == null || allStairs.Count == 0) return false;
@@ -93,6 +103,7 @@ namespace MapLevelFramework.CrossFloor
                 foreach (Map floorMap in startMap.BaseMapAndFloorMaps())
                 {
                     if (floorMap == startMap) continue;
+                    if (visitedMaps.Contains(floorMap.uniqueID)) continue;
                     if (!FloorMapUtility.HasStairsAtPosition(floorMap, stairPos)) continue;
 
                     if (floorMap == destMap)
