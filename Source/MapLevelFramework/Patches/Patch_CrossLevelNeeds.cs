@@ -33,7 +33,7 @@ namespace MapLevelFramework.Patches
                 // 原版给了 job（说明 pawn 该休息了，包括管制时间 Sleep）或者 pawn 已经 Tired
                 if (__result != null || rest.CurCategory >= RestCategory.Tired)
                 {
-                    Job stairJob = CrossFloorJobUtility.TryGoToMap(pawn, ownedBed.Map);
+                    Job stairJob = CrossFloorJobUtility.TryGoToMap(pawn, ownedBed.Map, ownedBed.Position);
                     if (stairJob != null)
                     {
                         CrossLevelNeedsUtility.LogNeed(pawn, "休息",

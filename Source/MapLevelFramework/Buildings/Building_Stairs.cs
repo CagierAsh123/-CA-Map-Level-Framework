@@ -8,14 +8,16 @@ using MapLevelFramework.CrossFloor;
 namespace MapLevelFramework
 {
     /// <summary>
-    /// 楼梯建筑 - 放置后创建/更新目标层级。
-    /// 上楼梯：扫描屋顶连通区域创建上层。
-    /// 下楼梯：创建地下层（初始一格 + 边界岩石）。
+    /// 楼层传送器 - 放置后创建/更新目标层级。
+    /// 上楼传送器：扫描屋顶连通区域创建上层。
+    /// 下楼传送器：创建地下层（初始一格 + 边界岩石）。
     ///
-    /// targetElevation 表示这个楼梯连接到的目标层级：
+    /// targetElevation 表示这个传送器连接到的目标层级：
     /// - 正数 = 上层（1→2F, 2→3F）
     /// - 0 = 地面层
     /// - 负数 = 地下层（-1→B1, -2→B2）
+    ///
+    /// buildingLabel 楼号标识（A, B, C...），同位置跨层共享。
     /// </summary>
     public class Building_Stairs : Building
     {
@@ -25,7 +27,12 @@ namespace MapLevelFramework
         public int targetElevation = 1;
 
         /// <summary>
-        /// 是否是自动生成的楼梯（不触发层级创建）。
+        /// 楼号标识（A, B, C...）。同位置跨层的传送器共享同一楼号。
+        /// </summary>
+        public string buildingLabel;
+
+        /// <summary>
+        /// 是否是自动生成的传送器（不触发层级创建）。
         /// </summary>
         private bool autoSpawned;
 
@@ -39,6 +46,16 @@ namespace MapLevelFramework
         /// </summary>
         public bool GoesDown => def.GetModExtension<StairsExtension>()?.goesDown ?? false;
 
+        public override string Label
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(buildingLabel))
+                    return $"{base.Label} {buildingLabel}";
+                return base.Label;
+            }
+        }
+
         public override void SpawnSetup(Map map, bool respawningAfterLoad)
         {
             base.SpawnSetup(map, respawningAfterLoad);
@@ -46,8 +63,12 @@ namespace MapLevelFramework
             // 缓存电力组件
             CompPowerTrader = GetComp<CompPowerTrader>();
 
-            // 注册到楼梯缓存（包括 respawningAfterLoad 和 autoSpawned）
+            // 注册到缓存
             StairsCache.Register(this);
+
+            // 分配楼号（加载时已有则跳过）
+            if (string.IsNullOrEmpty(buildingLabel))
+                buildingLabel = AssignBuildingLabel(map, Position);
 
             if (respawningAfterLoad) return;
             if (autoSpawned) return;
@@ -373,6 +394,7 @@ namespace MapLevelFramework
             var stairsDef = this.def;
             var stairs = (Building_Stairs)ThingMaker.MakeThing(stairsDef, this.Stuff);
             stairs.autoSpawned = true;
+            stairs.buildingLabel = this.buildingLabel;
             // 继续延伸：指向下一层（不是指回源层）
             // 上楼梯：targetElevation 已经是当前新层的 elevation，下一层 = elevation + 1
             // 下楼梯：下一层 = elevation - 1
@@ -489,6 +511,56 @@ namespace MapLevelFramework
             return new CellRect(minX, minZ, maxX - minX + 1, maxZ - minZ + 1);
         }
 
+        // ========== 楼号分配 ==========
+
+        /// <summary>
+        /// 分配楼号。同位置跨层共享，否则取下一个可用字母。
+        /// </summary>
+        private string AssignBuildingLabel(Map map, IntVec3 pos)
+        {
+            // 先查其他楼层同位置的传送器，继承楼号
+            foreach (Map otherMap in map.BaseMapAndFloorMaps())
+            {
+                if (otherMap == map) continue;
+                if (!FloorMapUtility.HasStairsAtPosition(otherMap, pos)) continue;
+                var things = otherMap.thingGrid.ThingsListAtFast(pos);
+                for (int i = 0; i < things.Count; i++)
+                {
+                    Building_Stairs s = things[i] as Building_Stairs;
+                    if (s != null && !string.IsNullOrEmpty(s.buildingLabel))
+                        return s.buildingLabel;
+                }
+            }
+
+            // 没有同位置的 → 收集已用楼号，分配下一个
+            var used = new HashSet<string>();
+            foreach (Map anyMap in map.BaseMapAndFloorMaps())
+            {
+                var allStairs = StairsCache.GetAllStairsOnMap(anyMap);
+                if (allStairs == null) continue;
+                for (int i = 0; i < allStairs.Count; i++)
+                {
+                    if (!string.IsNullOrEmpty(allStairs[i].buildingLabel))
+                        used.Add(allStairs[i].buildingLabel);
+                }
+            }
+
+            // A, B, C, ... Z, AA, AB, ...
+            for (int n = 0; ; n++)
+            {
+                string label = NumberToLabel(n);
+                if (!used.Contains(label))
+                    return label;
+            }
+        }
+
+        private static string NumberToLabel(int n)
+        {
+            if (n < 26)
+                return ((char)('A' + n)).ToString();
+            return NumberToLabel(n / 26 - 1) + (char)('A' + n % 26);
+        }
+
         // ========== 销毁 ==========
 
         public override void DeSpawn(DestroyMode mode)
@@ -543,6 +615,7 @@ namespace MapLevelFramework
             base.ExposeData();
             Scribe_Values.Look(ref targetElevation, "targetElevation", 1);
             Scribe_Values.Look(ref autoSpawned, "autoSpawned", false);
+            Scribe_Values.Look(ref buildingLabel, "buildingLabel", null);
         }
     }
 }

@@ -136,7 +136,7 @@
   <JobDef>
     <defName>MLF_UseStairs</defName>
     <driverClass>MapLevelFramework.JobDriver_UseStairs</driverClass>
-    <reportString>使用楼梯。</reportString>
+    <reportString>使用楼层传送器。</reportString>
     <allowOpportunisticPrefix>false</allowOpportunisticPrefix>
   </JobDef>
 
@@ -216,8 +216,8 @@
   <!-- 楼梯（上楼） -->
   <ThingDef ParentName="BuildingBase">
     <defName>MLF_Stairs</defName>
-    <label>楼梯（上）</label>
-    <description>连接地面层和上层的楼梯。在有屋顶的房间内建造，即可创建二楼。</description>
+    <label>楼层传送器（上）</label>
+    <description>连接地面层和上层的楼层传送器。在有屋顶的房间内建造，即可创建二楼。\n\n作者累了，采用偷懒方案：任意传送器之间可以互相传送，无需在同一位置。</description>
     <thingClass>MapLevelFramework.Building_Stairs</thingClass>
     <graphicData>
       <texPath>楼梯</texPath>
@@ -257,8 +257,8 @@
   <!-- 楼梯（下楼） -->
   <ThingDef ParentName="BuildingBase">
     <defName>MLF_StairsDown</defName>
-    <label>楼梯（下）</label>
-    <description>通往地下层的楼梯。建造后即可开辟地下空间。</description>
+    <label>楼层传送器（下）</label>
+    <description>通往地下层的楼层传送器。建造后即可开辟地下空间。\n\n作者累了，采用偷懒方案：任意传送器之间可以互相传送，无需在同一位置。</description>
     <thingClass>MapLevelFramework.Building_Stairs</thingClass>
     <graphicData>
       <texPath>楼梯</texPath>

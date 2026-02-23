@@ -16,7 +16,7 @@ namespace MapLevelFramework.CrossFloor
         /// <summary>
         /// 为跨层目标创建 UseStairs job。
         /// 目标在其他楼层且可达 → 返回走楼梯的 job。
-        /// 目标在当前层或不可达 → 返回 null。
+        /// targetC 存储目标位置提示，传送时选离它最近的传送器落点。
         /// </summary>
         public static Job TryMakeStairsJobForTarget(Pawn pawn, Thing target)
         {
@@ -30,6 +30,7 @@ namespace MapLevelFramework.CrossFloor
 
             Job job = JobMaker.MakeJob(MLF_JobDefOf.MLF_UseStairs, stairs);
             job.targetB = new IntVec3(destElev, 0, 0);
+            job.targetC = target.Position; // 目的地提示
             return job;
         }
 
@@ -89,9 +90,9 @@ namespace MapLevelFramework.CrossFloor
 
         /// <summary>
         /// 为指定目标地图创建 UseStairs job（不搜索，直接去）。
-        /// 用于已知目标地图的场景（如回自己的床）。
+        /// destHint：最终目标位置，传送时选离它最近的传送器落点。
         /// </summary>
-        public static Job TryGoToMap(Pawn pawn, Map targetMap)
+        public static Job TryGoToMap(Pawn pawn, Map targetMap, IntVec3 destHint = default)
         {
             if (pawn?.Map == null || targetMap == null) return null;
             if (pawn.Map == targetMap) return null;
@@ -102,6 +103,8 @@ namespace MapLevelFramework.CrossFloor
 
             Job job = JobMaker.MakeJob(MLF_JobDefOf.MLF_UseStairs, stairs);
             job.targetB = new IntVec3(targetElev, 0, 0);
+            if (destHint.IsValid)
+                job.targetC = destHint;
             return job;
         }
 

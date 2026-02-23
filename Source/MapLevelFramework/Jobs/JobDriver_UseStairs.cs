@@ -22,6 +22,12 @@ namespace MapLevelFramework
         private int TargetElevation =>
             job.targetB.IsValid ? job.targetB.Cell.x : Stairs.targetElevation;
 
+        /// <summary>
+        /// 目的地提示（最终目标位置，如床的位置）。用于选择离目的地最近的传送器落点。
+        /// </summary>
+        private IntVec3 DestHint =>
+            job.targetC.IsValid ? job.targetC.Cell : IntVec3.Invalid;
+
         private static bool DebugLog =>
             MapLevelFrameworkMod.Settings?.debugPathfindingAndJob ?? false;
 
@@ -46,7 +52,8 @@ namespace MapLevelFramework
                 if (stairs == null) return;
 
                 int targetElev = TargetElevation;
-                if (StairTransferUtility.TryGetTransferTarget(stairs, targetElev, out Map destMap, out IntVec3 destPos))
+                IntVec3 destHint = DestHint;
+                if (StairTransferUtility.TryGetTransferTarget(stairs, targetElev, out Map destMap, out IntVec3 destPos, destHint))
                 {
                     if (DebugLog)
                     {

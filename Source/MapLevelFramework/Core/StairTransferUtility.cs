@@ -1,10 +1,12 @@
 using Verse;
+using Verse.AI;
+using MapLevelFramework.CrossFloor;
 
 namespace MapLevelFramework
 {
     /// <summary>
-    /// 楼梯跨图转移工具 - 将 pawn 从一个地图转移到另一个地图。
-    /// Demo 阶段使用简单的 DeSpawn/Spawn，不保留 job 状态。
+    /// 楼层传送工具 - 将 pawn 从一个地图转移到另一个地图。
+    /// 偷懒方案：任意传送器互通，落点为目标层最近的传送器位置。
     /// </summary>
     public static class StairTransferUtility
     {
@@ -62,10 +64,11 @@ namespace MapLevelFramework
         }
 
         /// <summary>
-        /// 电梯模式：指定目标楼层 elevation，直接传送到该楼层。
-        /// 楼梯位置在所有楼层相同，无需坐标转换。
+        /// 偷懒方案：指定目标楼层 elevation，落点为目标层任意传送器位置。
+        /// 优先同位置，否则找目标层最近的传送器。
+        /// preferredDest：如果有效，选离它最近的传送器（而非离出发点最近）。
         /// </summary>
-        public static bool TryGetTransferTarget(Building_Stairs stairs, int targetElevation, out Map destMap, out IntVec3 destPos)
+        public static bool TryGetTransferTarget(Building_Stairs stairs, int targetElevation, out Map destMap, out IntVec3 destPos, IntVec3 preferredDest = default)
         {
             destMap = null;
             destPos = IntVec3.Invalid;
@@ -99,8 +102,54 @@ namespace MapLevelFramework
                 destMap = level.LevelMap;
             }
 
-            destPos = stairs.Position;
-            return destMap != null && destMap != stairsMap;
+            if (destMap == null || destMap == stairsMap) return false;
+
+            // 同位置且无 preferredDest → 直接用
+            if (!preferredDest.IsValid && FloorMapUtility.HasStairsAtPosition(destMap, stairs.Position))
+            {
+                destPos = stairs.Position;
+                return true;
+            }
+
+            // 找目标层的传送器
+            var targetStairs = StairsCache.GetAllStairsOnMap(destMap);
+            if (targetStairs == null || targetStairs.Count == 0) return false;
+
+            bool hasPreferred = preferredDest.IsValid && preferredDest != IntVec3.Zero;
+            var noPawnParams = TraverseParms.For(TraverseMode.PassDoors, Danger.Deadly);
+
+            // 有 preferredDest 时：优先选和目的地可达的传送器（同区域/同房间），其中取最近的
+            Building_Stairs bestReachable = null;
+            float bestReachDist = float.MaxValue;
+            Building_Stairs bestAny = null;
+            float bestAnyDist = float.MaxValue;
+
+            for (int i = 0; i < targetStairs.Count; i++)
+            {
+                var s = targetStairs[i];
+                if (!s.Spawned) continue;
+                float dist = s.Position.DistanceToSquared(hasPreferred ? preferredDest : stairs.Position);
+
+                if (dist < bestAnyDist)
+                {
+                    bestAny = s;
+                    bestAnyDist = dist;
+                }
+
+                if (hasPreferred && dist < bestReachDist
+                    && destMap.reachability.CanReach(s.Position, preferredDest,
+                        PathEndMode.OnCell, noPawnParams))
+                {
+                    bestReachable = s;
+                    bestReachDist = dist;
+                }
+            }
+
+            // 优先可达的，否则回退到最近的
+            Building_Stairs chosen = bestReachable ?? bestAny;
+            if (chosen == null) return false;
+            destPos = chosen.Position;
+            return true;
         }
     }
 }

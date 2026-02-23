@@ -133,21 +133,22 @@ namespace MapLevelFramework.CrossFloor
         }
 
         /// <summary>
-        /// 获取从该楼梯可直达的所有楼层（同位置有楼梯的楼层）。
-        /// 楼梯井概念：同一 Position 跨楼层的所有楼梯形成一个井，可直达任意楼层。
+        /// 获取从该传送器可直达的所有楼层。
+        /// 偷懒方案：任意传送器互通，所有有传送器的楼层都可达。
         /// </summary>
         public static List<(Map map, int elevation)> GetReachableFloors(Building_Stairs stairs)
         {
             var result = new List<(Map, int)>();
             if (stairs?.Map == null) return result;
 
-            IntVec3 pos = stairs.Position;
             Map stairsMap = stairs.Map;
 
             foreach (Map floorMap in stairsMap.BaseMapAndFloorMaps())
             {
                 if (floorMap == stairsMap) continue;
-                if (HasStairsAtPosition(floorMap, pos))
+                // 偷懒方案：只要目标层有任意传送器就可达
+                var targetStairs = StairsCache.GetAllStairsOnMap(floorMap);
+                if (targetStairs != null && targetStairs.Count > 0)
                 {
                     result.Add((floorMap, GetMapElevation(floorMap)));
                 }
@@ -156,8 +157,8 @@ namespace MapLevelFramework.CrossFloor
         }
 
         /// <summary>
-        /// 电梯模式：在当前地图上找到能直达目标楼层的最近可达楼梯。
-        /// 判断依据：当前地图的楼梯位置在目标楼层也有楼梯（同一楼梯井）。
+        /// 偷懒方案：在当前地图上找到最近可达的传送器。
+        /// 只要目标楼层有任意传送器就行，不要求同位置。
         /// 结果缓存 60 tick，避免同一扫描周期内重复查找。
         /// </summary>
         public static Building_Stairs FindStairsToFloor(Pawn pawn, Map pawnMap, int targetElevation)
@@ -180,6 +181,11 @@ namespace MapLevelFramework.CrossFloor
             if (targetMap == null || targetMap == pawnMap)
                 return null;
 
+            // 偷懒方案：只需目标层有任意传送器
+            var targetStairs = StairsCache.GetAllStairsOnMap(targetMap);
+            if (targetStairs == null || targetStairs.Count == 0)
+                return null;
+
             var allStairs = StairsCache.GetAllStairsOnMap(pawnMap);
             if (allStairs == null || allStairs.Count == 0)
                 return null;
@@ -191,7 +197,7 @@ namespace MapLevelFramework.CrossFloor
             {
                 var s = allStairs[i];
                 if (!s.Spawned) continue;
-                if (!HasStairsAtPosition(targetMap, s.Position)) continue;
+                // 不再检查 HasStairsAtPosition — 任意传送器互通
                 if (!pawn.CanReach(s, PathEndMode.OnCell, Danger.Deadly)) continue;
 
                 float dist = s.Position.DistanceToSquared(pawn.Position);
