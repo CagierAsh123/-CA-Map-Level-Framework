@@ -11,6 +11,7 @@ namespace MapLevelFramework
         public static JobDef MLF_HaulToStairs;
         public static JobDef MLF_HaulAcrossLevel;
         public static JobDef MLF_DeliverResourcesCrossFloor;
+        public static JobDef MLF_ReinstallCrossFloor;
 
         static MLF_JobDefOf()
         {

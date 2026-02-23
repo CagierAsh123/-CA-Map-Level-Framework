@@ -104,6 +104,15 @@ namespace MapLevelFramework.CrossFloor
                 return;
             }
 
+            // P1.5: 其他层有 Blueprint_Install，本层有对应建筑 → 跨层重装
+            Job reinstallJob = TryScanCrossFloorReinstall(pawn, pawnMap);
+            if (reinstallJob != null)
+            {
+                LogPJ(pawn, $"P1.5命中→跨层重装 {reinstallJob.targetA.Thing?.LabelShort}");
+                __result = new ThinkResult(reinstallJob, __instance, null, false);
+                return;
+            }
+
             // P3: 本层无工作 → 去有工作的楼层（智能过滤）
             Job goJob = TryCreateGoToWorkFloorJob(pawn, pawnMap);
             if (goJob != null)
@@ -401,6 +410,62 @@ namespace MapLevelFramework.CrossFloor
                         material, stairs);
                     job.targetC = encoded;
                     job.count = toCarry;
+                    return job;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// P1.5: 其他层有 Blueprint_Install，本层有对应的建筑 → 跨层重装。
+        /// 扫描其他楼层的 Blueprint_Install，检查 ThingToInstall 是否在 pawn 当前层。
+        /// </summary>
+        private static Job TryScanCrossFloorReinstall(Pawn pawn, Map pawnMap)
+        {
+            var ws = pawn.workSettings;
+            if (ws == null || !ws.WorkIsActive(WorkTypeDefOf.Construction)) return null;
+
+            foreach (Map otherMap in pawnMap.BaseMapAndFloorMaps())
+            {
+                if (otherMap == pawnMap) continue;
+
+                int otherElev = FloorMapUtility.GetMapElevation(otherMap);
+
+                // 遍历目标层的所有蓝图，找 Blueprint_Install
+                var blueprints = otherMap.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint);
+                for (int i = 0; i < blueprints.Count; i++)
+                {
+                    Blueprint_Install bp = blueprints[i] as Blueprint_Install;
+                    if (bp == null || !bp.Spawned) continue;
+                    if (bp.IsForbidden(pawn)) continue;
+
+                    // 获取要安装的东西（建筑或 MinifiedThing）
+                    Thing thingToInstall = GenConstruct.MiniToInstallOrBuildingToReinstall(bp);
+                    if (thingToInstall == null) continue;
+
+                    // 必须在 pawn 当前层
+                    if (thingToInstall.Map != pawnMap) continue;
+                    if (!thingToInstall.Spawned) continue;
+
+                    // 跨层重装只处理需要拆卸的建筑（非 MinifiedThing），且必须可 minify
+                    if (!(thingToInstall is Building) || !thingToInstall.def.Minifiable) continue;
+
+                    // pawn 能到达要拆的建筑吗？
+                    if (!pawn.CanReach(thingToInstall, PathEndMode.Touch, Danger.Deadly)) continue;
+                    if (!pawn.CanReserve(thingToInstall)) continue;
+
+                    // 找楼梯
+                    Building_Stairs stairs = FloorMapUtility.FindStairsToFloor(pawn, pawnMap, otherElev);
+                    if (stairs == null) continue;
+
+                    IntVec3 encoded = new IntVec3(otherElev, bp.Position.x, bp.Position.z);
+
+                    Job job = JobMaker.MakeJob(
+                        MLF_JobDefOf.MLF_ReinstallCrossFloor,
+                        thingToInstall, stairs);
+                    job.targetC = encoded;
+
+                    LogPJ(pawn, $"  P1.5命中: 跨层重装 {thingToInstall.LabelShort}→{ElevLabel(otherElev)} at {bp.Position}");
                     return job;
                 }
             }

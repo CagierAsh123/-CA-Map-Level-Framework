@@ -58,6 +58,13 @@ namespace MapLevelFramework.Patches
             IConstructible c = constructible as IConstructible;
             if (c == null) return;
 
+            // Blueprint_Install 走专用跨层重装逻辑，不走材料投递
+            if (constructible is Blueprint_Install bpInstall)
+            {
+                TryCrossFloorInstall(ref result, pawn, bpInstall);
+                return;
+            }
+
             // 检查蓝图/框架的基本条件（原版可能因为其他原因返回 null，如技能不足）
             if (constructible.Faction != pawn.Faction) return;
             if (!GenConstruct.CanConstruct(constructible, pawn, false, false, JobDefOf.HaulToContainer))
@@ -145,6 +152,37 @@ namespace MapLevelFramework.Patches
                     return;
                 }
             }
+        }
+
+        /// <summary>
+        /// 跨层重装：Blueprint_Install 在 pawn 当前层，但要安装的建筑在其他层。
+        /// 原版 InstallJob 因 CanReach 失败返回 null。
+        /// 处理：pawn 先 UseStairs 去建筑所在层，到达后 TryScanCrossFloorReinstall 接管。
+        /// </summary>
+        private static void TryCrossFloorInstall(ref Job result, Pawn pawn, Blueprint_Install bpInstall)
+        {
+            Thing thingToInstall = GenConstruct.MiniToInstallOrBuildingToReinstall(bpInstall);
+            if (thingToInstall?.Map == null || !thingToInstall.Spawned) return;
+
+            // 建筑在 pawn 当前层 → 不是跨层问题，原版应该能处理
+            if (thingToInstall.Map == pawn.Map) return;
+
+            // 建筑在其他层 → pawn 先过去
+            int targetElev = FloorMapUtility.GetMapElevation(thingToInstall.Map);
+            Building_Stairs stairs = FloorMapUtility.FindStairsToFloor(pawn, pawn.Map, targetElev);
+            if (stairs == null) return;
+
+            // 设置意图：到达后找到建筑，TryScanCrossFloorReinstall 会创建 ReinstallCrossFloor job
+            CrossFloorIntent.Set(pawn, thingToInstall.Map.uniqueID, thingToInstall.Position, thingToInstall.def);
+
+            Job stairsJob = JobMaker.MakeJob(MLF_JobDefOf.MLF_UseStairs, stairs);
+            stairsJob.targetB = new IntVec3(targetElev, 0, 0);
+
+            if (DebugLog)
+                Log.Message($"【MLF】跨层重装-{pawn.LabelShort}—" +
+                    $"Blueprint_Install在本层，建筑在elev={targetElev}→UseStairs去拆");
+
+            result = stairsJob;
         }
 
         /// <summary>

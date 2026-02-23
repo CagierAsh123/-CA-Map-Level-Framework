@@ -169,6 +169,13 @@
     <allowOpportunisticPrefix>false</allowOpportunisticPrefix>
   </JobDef>
 
+  <JobDef>
+    <defName>MLF_ReinstallCrossFloor</defName>
+    <driverClass>MapLevelFramework.JobDriver_ReinstallCrossFloor</driverClass>
+    <reportString>跨层重新安装建筑。</reportString>
+    <allowOpportunisticPrefix>false</allowOpportunisticPrefix>
+  </JobDef>
+
   <!-- ========== 精神崩溃：跳楼 ========== -->
 
   <MentalStateDef>
