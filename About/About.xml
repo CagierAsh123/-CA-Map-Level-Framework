@@ -6,7 +6,7 @@
     <li>1.6</li>
   </supportedVersions>
   <packageId>CA.MapLevelFramework</packageId>
-  <description>Framework for adding vertical map levels (floors, underground, sky, underwater) to RimWorld. Provides API for other mods to create and manage sub-maps at different elevation levels.</description>
+  <description>本来想做框架的，后来想想算了</description>
   <modDependencies>
     <li>
       <packageId>brrainz.harmony</packageId>

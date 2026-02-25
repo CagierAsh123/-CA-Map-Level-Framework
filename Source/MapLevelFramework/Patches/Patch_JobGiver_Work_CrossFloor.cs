@@ -21,6 +21,12 @@ namespace MapLevelFramework.CrossFloor
             = new Dictionary<int, int>();
         private const int CooldownTicks = 600;
 
+        // 反弹跳：记录 pawn 因优先级比较跨层时，来源层的 job 优先级
+        // 到达目标层后，用此值作为比较基线，防止 "对面草更绿" 循环
+        private static readonly Dictionary<int, (int sourcePri, int tick)> crossSourcePri
+            = new Dictionary<int, (int, int)>();
+        private const int CrossSourcePriExpiry = 1500; // ~25 秒后过期
+
         // WorkTypeDefOf 里没有的工作类型，按 defName 延迟查找
         private static WorkTypeDef _wtCooking;
         private static WorkTypeDef _wtTailoring;
@@ -71,21 +77,68 @@ namespace MapLevelFramework.CrossFloor
                 return;
             }
 
+            // ===== 意图检查：pawn 因跨层意图到达本层，不做优先级比较，让它安心做事 =====
+            if (CrossFloorIntent.TryGet(pawn, out var intent)
+                && intent.destMapId == pawnMap.uniqueID)
+            {
+                // 已到达意图目标层，清除意图，信任原版分配的 job
+                CrossFloorIntent.Clear(pawn);
+                crossSourcePri.Remove(pawn.thingIDNumber);
+                if (__result.Job != null)
+                {
+                    LogPJ(pawn, $"到达意图目标层{ElevLabel(pawnElev)}，执行原版job: {__result.Job.def?.defName}");
+                    return;
+                }
+                // 原版没给 job，继续走下面的跨层扫描
+                LogPJ(pawn, $"到达意图目标层{ElevLabel(pawnElev)}，但原版无job，继续扫描");
+            }
+
             // ===== 本层有工作：检查其他层是否有更高优先级的 =====
             if (__result.Job != null)
             {
+                // 如果原版给的 job 本身就是 MLF 跨层 job（UseStairs/DeliverCrossFloor 等），
+                // 不做优先级比较，直接放行，避免和跨层建造取材料等逻辑打架
+                if (__result.Job.def == MLF_JobDefOf.MLF_UseStairs
+                    || __result.Job.def == MLF_JobDefOf.MLF_DeliverResourcesCrossFloor)
+                    return;
+
                 // 清除当前楼层的失败标记
                 ClearFailedFloor(pawn.thingIDNumber, pawnMap.uniqueID);
 
                 int localPri = GetJobPriority(pawn, __result.Job);
                 if (localPri <= 1) return; // 已是最高优先级，不用比
 
-                Job betterJob = TryFindHigherPriorityWork(pawn, pawnMap, localPri);
+                // 反弹跳：如果 pawn 刚因优先级比较跨层过来，用来源层的 pri 作为基线
+                // 防止 "1F pri=2 → 去2F → 2F给了pri=3 → 发现1F有pri=2 → 弹回" 的循环
+                int comparePri = localPri;
+                if (crossSourcePri.TryGetValue(pawn.thingIDNumber, out var src)
+                    && curTick - src.tick < CrossSourcePriExpiry)
+                {
+                    // 用来源层 pri 和本层 pri 中更小的（更高优先级的）作为基线
+                    // 这样只有真正比来源层更好的工作才会触发再次跨层
+                    comparePri = Math.Min(localPri, src.sourcePri);
+                    if (comparePri <= 1)
+                    {
+                        // 清除记录，让 pawn 安心做本层的活
+                        crossSourcePri.Remove(pawn.thingIDNumber);
+                        return;
+                    }
+                }
+
+                string crossReason = null;
+                Job betterJob = TryFindHigherPriorityWork(pawn, pawnMap, comparePri, out crossReason);
                 if (betterJob != null)
                 {
                     int destElev = betterJob.targetB.IsValid ? betterJob.targetB.Cell.x : -999;
-                    LogPJ(pawn, $"本层有工作(pri={localPri}, {__result.Job?.def?.defName})，但{ElevLabel(destElev)}有更高优先级工作→跨层");
+                    LogPJ(pawn, $"本层有工作(pri={localPri}, {__result.Job?.def?.defName})，但{ElevLabel(destElev)}有更高优先级工作({crossReason})→跨层");
+                    // 记录来源层 pri，防止对面弹回来
+                    crossSourcePri[pawn.thingIDNumber] = (localPri, curTick);
                     __result = new ThinkResult(betterJob, __instance, null, false);
+                }
+                else
+                {
+                    // 没找到更好的，清除记录
+                    crossSourcePri.Remove(pawn.thingIDNumber);
                 }
                 return;
             }
@@ -153,8 +206,9 @@ namespace MapLevelFramework.CrossFloor
         /// 在其他楼层找比 localPriority 更高优先级的工作。
         /// 返回 UseStairs job（带意图），或 null。
         /// </summary>
-        private static Job TryFindHigherPriorityWork(Pawn pawn, Map pawnMap, int localPriority)
+        private static Job TryFindHigherPriorityWork(Pawn pawn, Map pawnMap, int localPriority, out string reason)
         {
+            reason = null;
             var ws = pawn.workSettings;
             if (ws == null) return null;
 
@@ -188,6 +242,8 @@ namespace MapLevelFramework.CrossFloor
 
             Building_Stairs stairs = FloorMapUtility.FindStairsToFloor(pawn, pawnMap, bestElev);
             if (stairs == null) return null;
+
+            reason = bestTarget != null ? $"{bestTarget.def?.defName}@{bestTarget.Position}" : "unknown";
 
             if (bestTarget != null)
             {
