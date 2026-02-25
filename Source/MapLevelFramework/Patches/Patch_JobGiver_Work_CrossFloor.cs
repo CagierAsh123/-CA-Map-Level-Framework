@@ -84,7 +84,7 @@ namespace MapLevelFramework.CrossFloor
                 if (betterJob != null)
                 {
                     int destElev = betterJob.targetB.IsValid ? betterJob.targetB.Cell.x : -999;
-                    LogPJ(pawn, $"本层有工作(pri={localPri})，但{ElevLabel(destElev)}有更高优先级工作→跨层");
+                    LogPJ(pawn, $"本层有工作(pri={localPri}, {__result.Job?.def?.defName})，但{ElevLabel(destElev)}有更高优先级工作→跨层");
                     __result = new ThinkResult(betterJob, __instance, null, false);
                 }
                 return;
