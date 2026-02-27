@@ -29,6 +29,7 @@ namespace MapLevelFramework.Render
         {
             typeof(SectionLayer_FogOfWar),
             typeof(SectionLayer_Snow),
+            typeof(SectionLayer_ThingsPowerGrid), // 电力覆盖层（蓝色线条）
         };
 
         static LevelRenderer()

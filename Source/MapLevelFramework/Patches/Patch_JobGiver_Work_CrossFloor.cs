@@ -42,6 +42,10 @@ namespace MapLevelFramework.CrossFloor
             = new Dictionary<int, Dictionary<int, int>>();
         private const int FailedFloorCooldown = 2500; // ~42 秒
 
+        // 上次清理 failedFloors 的 tick（每隔一段时间清理过期条目）
+        private static int lastCleanupTick = 0;
+        private const int CleanupInterval = 5000; // ~83 秒清理一次
+
         private static bool DebugLog => MapLevelFrameworkMod.Settings?.debugPathfindingAndJob ?? false;
 
         private static string ElevLabel(int elev)
@@ -71,6 +75,14 @@ namespace MapLevelFramework.CrossFloor
 
             int pawnElev = FloorMapUtility.GetMapElevation(pawnMap);
             int curTick = Find.TickManager?.TicksGame ?? 0;
+
+            // 定期清理过期的 failedFloors 条目
+            if (curTick - lastCleanupTick > CleanupInterval)
+            {
+                CleanupExpiredFailedFloors(curTick);
+                lastCleanupTick = curTick;
+            }
+
             if (lastCrossFloorTick.TryGetValue(pawn.thingIDNumber, out int lastTick)
                 && curTick - lastTick < CooldownTicks)
             {
@@ -144,8 +156,6 @@ namespace MapLevelFramework.CrossFloor
             }
 
             // ===== 本层无工作：跨层扫描 =====
-            // 标记当前楼层为"失败"（原版找不到工作），防止其他层 P3 把 pawn 送回来
-            MarkFloorFailed(pawn.thingIDNumber, pawnMap.uniqueID, curTick);
             LogPJ(pawn, $"在{ElevLabel(pawnElev)}，本层无工作，开始跨层扫描");
 
             // P1: 本层有材料，其他层蓝图需要 → 封装投递 job（全程手持）
@@ -186,6 +196,8 @@ namespace MapLevelFramework.CrossFloor
             }
 
             LogPJ(pawn, "P3未命中，无跨层工作");
+            // P3扫描失败 → 标记当前楼层为"失败"，防止其他层把 pawn 送回来
+            MarkFloorFailed(pawn.thingIDNumber, pawnMap.uniqueID, curTick);
             // 扫描完毕，设置冷却（即使没找到，也避免频繁扫描）
             lastCrossFloorTick[pawn.thingIDNumber] = curTick;
         }
@@ -1763,6 +1775,35 @@ namespace MapLevelFramework.CrossFloor
                 return false;
             }
             return true;
+        }
+
+        /// <summary>
+        /// 清理所有过期的 failedFloors 条目，防止内存泄漏和读档后的残留数据。
+        /// </summary>
+        private static void CleanupExpiredFailedFloors(int curTick)
+        {
+            var toRemovePawns = new List<int>();
+            foreach (var kvp in failedFloors)
+            {
+                int pawnId = kvp.Key;
+                var fails = kvp.Value;
+                var toRemoveMaps = new List<int>();
+
+                foreach (var mapKvp in fails)
+                {
+                    if (curTick - mapKvp.Value >= FailedFloorCooldown)
+                        toRemoveMaps.Add(mapKvp.Key);
+                }
+
+                foreach (int mapId in toRemoveMaps)
+                    fails.Remove(mapId);
+
+                if (fails.Count == 0)
+                    toRemovePawns.Add(pawnId);
+            }
+
+            foreach (int pawnId in toRemovePawns)
+                failedFloors.Remove(pawnId);
         }
 
         public static void ClearCooldowns()
