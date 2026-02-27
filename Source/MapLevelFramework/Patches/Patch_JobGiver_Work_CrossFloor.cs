@@ -101,8 +101,9 @@ namespace MapLevelFramework.CrossFloor
                     LogPJ(pawn, $"到达意图目标层{ElevLabel(pawnElev)}，执行原版job: {__result.Job.def?.defName}");
                     return;
                 }
-                // 原版没给 job，继续走下面的跨层扫描
-                LogPJ(pawn, $"到达意图目标层{ElevLabel(pawnElev)}，但原版无job，继续扫描");
+                // 原版没给 job，标记当前楼层失败，防止立即再次跨层弹跳
+                MarkFloorFailed(pawn.thingIDNumber, pawnMap.uniqueID, curTick);
+                LogPJ(pawn, $"到达意图目标层{ElevLabel(pawnElev)}，但原版无job，标记失败并继续扫描");
             }
 
             // ===== 本层有工作：检查其他层是否有更高优先级的 =====
