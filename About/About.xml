@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-  <name>【CA】地图多层框架 Map Level Framework</name>
+  <name>【CA】Map Level Framework（地圖多層框架 / 地图多层框架）</name>
   <author>Cagier.阳</author>
   <supportedVersions>
     <li>1.6</li>
   </supportedVersions>
   <packageId>CA.MapLevelFramework</packageId>
-  <description>本来想做框架的，后来想想算了</description>
+  <description>EN: Multi-level map framework (implemented as teleporters).
+繁體：多層地圖框架（以傳送器方式實作）。
+简体：多层地图框架（以传送器方式实现）。</description>
   <modDependencies>
     <li>
       <packageId>brrainz.harmony</packageId>

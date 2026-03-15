@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <MLF_JumpOff.label>试图跳楼</MLF_JumpOff.label>
+  <MLF_JumpOff.beginLetterLabel>试图跳楼</MLF_JumpOff.beginLetterLabel>
+  <MLF_JumpOff.beginLetter>{0} 精神崩溃，正冲向楼层边缘试图跳下去！</MLF_JumpOff.beginLetter>
+  <MLF_JumpOff.recoveryMessage>{0} 不再试图跳楼了。</MLF_JumpOff.recoveryMessage>
+  <MLF_JumpOff.baseInspectLine>精神状态：试图跳楼</MLF_JumpOff.baseInspectLine>
+</LanguageData>

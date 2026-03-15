@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <MLF_UseStairs.reportString>使用楼层传送器。</MLF_UseStairs.reportString>
+  <MLF_JumpDown.reportString>跳下楼。</MLF_JumpDown.reportString>
+  <MLF_HaulToStairs.reportString>搬运材料到楼梯。</MLF_HaulToStairs.reportString>
+  <MLF_HaulAcrossLevel.reportString>搬运物品到其他楼层。</MLF_HaulAcrossLevel.reportString>
+  <MLF_DeliverResourcesCrossFloor.reportString>搬运建材到其他楼层的蓝图。</MLF_DeliverResourcesCrossFloor.reportString>
+  <MLF_ReinstallCrossFloor.reportString>跨层重新安装建筑。</MLF_ReinstallCrossFloor.reportString>
+</LanguageData>

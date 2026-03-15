@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <MLF_UseStairs.reportString>Using level teleporter.</MLF_UseStairs.reportString>
+  <MLF_JumpDown.reportString>Jumping down.</MLF_JumpDown.reportString>
+  <MLF_HaulToStairs.reportString>Hauling resources to stairs.</MLF_HaulToStairs.reportString>
+  <MLF_HaulAcrossLevel.reportString>Hauling items to another level.</MLF_HaulAcrossLevel.reportString>
+  <MLF_DeliverResourcesCrossFloor.reportString>Delivering materials to blueprints on another level.</MLF_DeliverResourcesCrossFloor.reportString>
+  <MLF_ReinstallCrossFloor.reportString>Reinstalling a building across levels.</MLF_ReinstallCrossFloor.reportString>
+</LanguageData>

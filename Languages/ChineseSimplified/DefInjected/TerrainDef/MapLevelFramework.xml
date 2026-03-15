@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <MLF_OpenAir.label>露天</MLF_OpenAir.label>
+  <MLF_OpenAir.description>这里没有地板——下方是露天空间。</MLF_OpenAir.description>
+
+  <MLF_LevelBase.label>楼层基底</MLF_LevelBase.label>
+  <MLF_LevelBase.description>楼层的结构基底，可在上面铺设任意地板。</MLF_LevelBase.description>
+
+  <MLF_DirtFloor.label>泥地</MLF_DirtFloor.label>
+  <MLF_DirtFloor.description>挖掘岩石后露出的泥土地面。</MLF_DirtFloor.description>
+</LanguageData>

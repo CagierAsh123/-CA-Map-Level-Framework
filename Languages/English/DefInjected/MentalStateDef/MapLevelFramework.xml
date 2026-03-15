@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <MLF_JumpOff.label>Attempting to jump off</MLF_JumpOff.label>
+  <MLF_JumpOff.beginLetterLabel>Attempting to jump off</MLF_JumpOff.beginLetterLabel>
+  <MLF_JumpOff.beginLetter>{0} is having a mental break and is rushing to the edge to jump off!</MLF_JumpOff.beginLetter>
+  <MLF_JumpOff.recoveryMessage>{0} is no longer attempting to jump off.</MLF_JumpOff.recoveryMessage>
+  <MLF_JumpOff.baseInspectLine>Mental state: attempting to jump off</MLF_JumpOff.baseInspectLine>
+</LanguageData>

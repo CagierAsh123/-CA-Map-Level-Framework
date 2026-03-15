@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <MLF_OpenAir.label>Open air</MLF_OpenAir.label>
+  <MLF_OpenAir.description>There is no floor here — below is open space.</MLF_OpenAir.description>
+
+  <MLF_LevelBase.label>Level base</MLF_LevelBase.label>
+  <MLF_LevelBase.description>The structural base of a level. Any floor can be built on top.</MLF_LevelBase.description>
+
+  <MLF_DirtFloor.label>Dirt</MLF_DirtFloor.label>
+  <MLF_DirtFloor.description>Exposed dirt after mining rock.</MLF_DirtFloor.description>
+</LanguageData>

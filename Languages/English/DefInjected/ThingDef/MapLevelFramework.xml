@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <MLF_Stairs.label>Level teleporter (up)</MLF_Stairs.label>
+  <MLF_Stairs.description>Connects the ground level and the upper level. Build it inside a roofed room to create a second floor.\n\nThe author got tired and used a lazy solution: any teleporter can transport to any other teleporter, regardless of position.\nDon’t ask me why stairs can store power. It’s just advanced technology.</MLF_Stairs.description>
+
+  <MLF_StairsDown.label>Level teleporter (down)</MLF_StairsDown.label>
+  <MLF_StairsDown.description>A level teleporter that leads to the underground. Build it to open up underground space.\n\nThe author got tired and used a lazy solution: any teleporter can transport to any other teleporter, regardless of position.\nDon’t ask me why stairs can store power. It’s just advanced technology.</MLF_StairsDown.description>
+</LanguageData>

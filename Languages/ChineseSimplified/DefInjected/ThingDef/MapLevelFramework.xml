@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <MLF_Stairs.label>楼层传送器（上）</MLF_Stairs.label>
+  <MLF_Stairs.description>连接地面层和上层的楼层传送器。在有屋顶的房间内建造，即可创建二楼。\n\n作者累了，采用偷懒方案：任意传送器之间可以互相传送，无需在同一位置。\n不要问我为什么楼梯可以存电，问就是超凡科技。</MLF_Stairs.description>
+
+  <MLF_StairsDown.label>楼层传送器（下）</MLF_StairsDown.label>
+  <MLF_StairsDown.description>通往地下层的楼层传送器。建造后即可开辟地下空间。\n\n作者累了，采用偷懒方案：任意传送器之间可以互相传送，无需在同一位置。\n不要问我为什么楼梯可以存电，问就是超凡科技。</MLF_StairsDown.description>
+</LanguageData>
